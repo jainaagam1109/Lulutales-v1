@@ -78,15 +78,28 @@ const HappyPlace = () => {
   const matches = (s: { title: string }) =>
     !query || s.title.toLowerCase().includes(query.toLowerCase());
 
+  const isFailed = (s: Story) =>
+    !s.title ||
+    /error|failed/i.test(s.title) ||
+    s.title.trim().toLowerCase() === "story" ||
+    s.title.trim() === "[Story title]";
+
   const personalised = useMemo(
     () => profileStories
-      .filter((s) => s.is_generated === true && s.story_type === "personalised_audio" && !!s.title)
+      .filter((s) => s.is_generated === true && s.story_type === "personalised_audio" && !isFailed(s))
       .filter(matches),
     [profileStories, query]
   );
   const bedtime = useMemo(
     () => profileStories
-      .filter((s) => s.is_generated === true && s.story_type === "bedtime_text" && !!s.title)
+      .filter(
+        (s) =>
+          s.is_generated === true &&
+          s.story_type === "bedtime_text" &&
+          !isFailed(s) &&
+          !!s.story_text &&
+          s.story_text.trim().length > 0
+      )
       .filter(matches),
     [profileStories, query]
   );
