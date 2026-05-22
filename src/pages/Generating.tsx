@@ -79,7 +79,18 @@ const Generating = () => {
             : `We're crafting ${childName}'s story. This usually takes a few minutes.`}
         </p>
         <button
-          onClick={() => nav("/")}
+          onClick={async () => {
+            if (stalled && storyId) {
+              try {
+                await supabase
+                  .from("stories")
+                  .delete()
+                  .eq("id", storyId)
+                  .eq("is_generated", false);
+              } catch (_) {}
+            }
+            nav("/");
+          }}
           className="mt-8 rounded-full border border-border bg-card px-5 py-2 text-xs font-semibold text-primary-deep"
         >
           Back to home

@@ -79,11 +79,15 @@ const HappyPlace = () => {
     !query || s.title.toLowerCase().includes(query.toLowerCase());
 
   const personalised = useMemo(
-    () => profileStories.filter((s) => s.is_generated && s.story_type === "personalised_audio").filter(matches),
+    () => profileStories
+      .filter((s) => s.is_generated === true && s.story_type === "personalised_audio" && !!s.title)
+      .filter(matches),
     [profileStories, query]
   );
   const bedtime = useMemo(
-    () => profileStories.filter((s) => s.is_generated && s.story_type === "bedtime_text").filter(matches),
+    () => profileStories
+      .filter((s) => s.is_generated === true && s.story_type === "bedtime_text" && !!s.title)
+      .filter(matches),
     [profileStories, query]
   );
   const storyRoom = useMemo(
