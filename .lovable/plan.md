@@ -1,43 +1,18 @@
-## Goal
+## Problem
+Failed stories with titles like "error — groq failed" and incomplete `bedtime_text` stories with null `story_text` are still visible in the "My Happy Place" screen.
 
-Back buttons should follow the app's journey, not browser history:
+## Solution
 
-- **Player / episode page** → Back goes to the story detail page (`/story/:id`).
-- **Story detail page** → Back goes to the previous list page (Home `/` or Happy Place `/happy-place`), defaulting to Home.
-- **Bedtime reader** (same role as Player for text stories) → Back goes to the story detail page.
+### 1. Database cleanup — delete failed stories permanently
+Delete 10 failed stories from the `stories` table:
+- 1 `personalised_audio` story titled "error — groq failed"
+- 9 `bedtime_text` stories: 5 with "error" in title, 4 with null `story_text` (including 2 titled "Story" and 2 with custom titles but no content)
 
-## Changes
+### 2. UI filter update in `src/pages/HappyPlace.tsx`
+Tighten the `personalised` and `bedtime` `useMemo` filters to exclude:
+- Stories whose title contains "error" or "failed" (case-insensitive)
+- `bedtime_text` stories with null/empty `story_text`
 
-### 1. `src/pages/Player.tsx`
-Already updated previously: Back uses `nav(id ? "/story/${id}" : "/")`. Leave as is. ✅
-
-### 2. `src/pages/StoryDetail.tsx`
-Currently `nav(-1)`. Replace with explicit destination:
-
-- Read an `origin` hint to decide between `/` and `/happy-place`.
-- Source the hint from `location.state?.from` (set when navigating into the story) and fall back to `document.referrer` path; default to `/`.
-- Use `nav(origin)` (no `replace`) so the destination page is fresh.
-
-### 3. Pass `from` when navigating to a story
-Update the links/handlers that open `/story/:id` so they pass `{ state: { from: <current path> } }`:
-
-- `src/pages/Home.tsx` — story cards / continue-listening card.
-- `src/pages/HappyPlace.tsx` — `StoryRowCard` link (`Link to={...}` becomes `<Link to={to} state={{ from: "/happy-place" }}>`).
-- `src/components/MiniPlayer.tsx` and `src/components/FloatingMiniPlayer.tsx` — if they link to the story page, pass `from: location.pathname`.
-- Any other place that links into `/story/:id` (search via `rg "/story/"`).
-
-If no `from` is provided (e.g. deep link), Story Detail defaults to `/`.
-
-### 4. `src/pages/BedtimeReader.tsx`
-Match Player behavior: Back goes to `/story/${id}` (or `/` if no id). I'll verify the current implementation and update only its Back button.
-
-## Out of scope
-
-- Episode-to-episode prev/next navigation (already uses `replace: true`).
-- Other pages' back buttons (Profile, Insights, Magic Hub forms, etc.) — not mentioned by the user.
-
-## Files touched
-
-- `src/pages/StoryDetail.tsx` — explicit Back target using `location.state.from`.
-- `src/pages/BedtimeReader.tsx` — Back → `/story/:id`.
-- `src/pages/Home.tsx`, `src/pages/HappyPlace.tsx`, `src/components/MiniPlayer.tsx`, `src/components/FloatingMiniPlayer.tsx` — pass `state={{ from: location.pathname }}` when linking to a story.
+### Files to change
+- `src/pages/HappyPlace.tsx` — update filters
+- Database — DELETE queries for failed stories
