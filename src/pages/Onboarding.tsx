@@ -166,7 +166,7 @@ const Onboarding = () => {
           <Select value={gender} onChange={setGender} options={GENDERS} placeholder="Select gender" />
         </div>
 
-        <div className="mb-8">
+        <div className="mb-4">
           <FieldLabel optional tooltip="A quick overview of who's around your child.">
             Family setup
           </FieldLabel>
