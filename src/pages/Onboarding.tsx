@@ -51,8 +51,29 @@ const Onboarding = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && !session) nav("/auth", { replace: true });
+    if (authLoading) return;
+    if (!session) {
+      nav("/auth", { replace: true });
+      return;
+    }
+    // If a profile already exists for this user, skip onboarding entirely.
+    (async () => {
+      const { data: existing } = await supabase
+        .from("child_profiles")
+        .select("id, name, age")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (existing) {
+        localStorage.setItem("lulutales_profile_id", existing.id);
+        localStorage.setItem("lulutales_child_name", existing.name);
+        localStorage.setItem("lulutales_child_age", String(existing.age));
+        nav("/", { replace: true });
+      }
+    })();
   }, [session, authLoading, nav]);
+
 
   const nameState: ValidationState = !touched.name
     ? "untouched"
