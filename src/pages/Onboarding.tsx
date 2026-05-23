@@ -46,6 +46,7 @@ const Onboarding = () => {
   const [gender, setGender] = useState<string>("");
   const [family, setFamily] = useState<string>("");
   const [familyOther, setFamilyOther] = useState<string>("");
+  const [siblingAge, setSiblingAge] = useState<string>("");
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
 
@@ -70,14 +71,29 @@ const Onboarding = () => {
 
   const submit = async () => {
     if (!session) return;
+    setLoading(true);
+    // Avoid duplicate profile creation if one already exists
+    const { data: existing } = await supabase
+      .from("child_profiles")
+      .select("id, name, age")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+    if (existing) {
+      localStorage.setItem("lulutales_profile_id", existing.id);
+      localStorage.setItem("lulutales_child_name", existing.name);
+      localStorage.setItem("lulutales_child_age", String(existing.age));
+      setLoading(false);
+      nav("/");
+      return;
+    }
     setTouched({ name: true, age: true });
     const ageNum = Number(age);
     const parsed = schema.safeParse({ name, age: ageNum });
     if (!parsed.success) {
+      setLoading(false);
       toast.error(parsed.error.errors[0].message);
       return;
     }
-    setLoading(true);
     const { data, error } = await supabase
       .from("child_profiles")
       .insert({
@@ -85,6 +101,7 @@ const Onboarding = () => {
         age: ageNum,
         gender: gender || null,
         family_type: (family === "Other" ? familyOther.trim() : family) || null,
+        sibling_age: siblingAge ? Number(siblingAge) : null,
         user_id: session.user.id,
       })
       .select()
