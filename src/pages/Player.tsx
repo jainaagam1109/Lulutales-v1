@@ -12,6 +12,13 @@ const fmt = (s: number) => {
   return `${m}:${sec}`;
 };
 
+function countdownForDuration(secs: number) {
+  if (secs < 180) return 3;
+  if (secs <= 300) return 5;
+  return 7;
+}
+
+
 const Player = () => {
   const { id = "", episodeNumber = "1" } = useParams();
   const epNum = parseInt(episodeNumber, 10) || 1;
@@ -34,6 +41,8 @@ const Player = () => {
   const [playing, setPlaying] = useState(false);
   const [t, setT] = useState(0);
   const [dur, setDur] = useState(0);
+  const [countdown, setCountdown] = useState<number | null>(null);
+
 
   // Reset playback when episode (audioUrl) changes
   useEffect(() => {
@@ -65,9 +74,9 @@ const Player = () => {
     };
     const onEnd = () => {
       if (hasNext) {
-        shouldAutoplayRef.current = true;
-        nav(`/player/${id}/${epNum + 1}`, { replace: true });
+        setCountdown(countdownForDuration(dur));
       } else {
+
         localStorage.setItem("lulutales_last_story_completed", "1");
         const pid = localStorage.getItem("lulutales_profile_id");
         if (pid && story?.id) {
@@ -86,7 +95,20 @@ const Player = () => {
       a.removeEventListener("loadedmetadata", onMeta);
       a.removeEventListener("ended", onEnd);
     };
-  }, [audioUrl, hasNext, epNum, id, nav, story]);
+  }, [audioUrl, hasNext, epNum, id, nav, story, dur]);
+
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown === 0) {
+      shouldAutoplayRef.current = true;
+      nav(`/player/${id}/${epNum + 1}`, { replace: true });
+      setCountdown(null);
+      return;
+    }
+    const t = setTimeout(() => setCountdown((c) => (c !== null ? c - 1 : null)), 1000);
+    return () => clearTimeout(t);
+  }, [countdown, epNum, id, nav]);
+
 
   const toggle = () => {
     const a = audioRef.current;
@@ -214,6 +236,28 @@ const Player = () => {
         )}
 
         {audioUrl && <audio ref={audioRef} src={audioUrl} preload="metadata" className="hidden" />}
+
+        {countdown !== null && (
+          <div className="mt-6 rounded-2xl border border-border bg-card p-3 text-center shadow-soft">
+            <div className="text-xs font-semibold text-foreground">
+              Next episode in {countdown}s
+            </div>
+            <div className="mt-2 flex justify-center gap-2">
+              <button
+                onClick={() => setCountdown(0)}
+                className="rounded-full bg-gradient-primary px-4 py-1.5 text-[11px] font-bold text-primary-foreground shadow-glow"
+              >
+                Play now
+              </button>
+              <button
+                onClick={() => setCountdown(null)}
+                className="rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-semibold text-primary-deep"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </PhoneShell>
   );

@@ -76,7 +76,9 @@ const Generating = () => {
         <p className="mt-4 max-w-xs text-sm text-muted-foreground">
           {stalled
             ? `This is taking longer than expected. We'll notify you when ${childName}'s story is ready.`
-            : `We're crafting ${childName}'s story. This usually takes a few minutes.`}
+            : `This usually takes about ${
+                story?.story_type === "bedtime_text" ? "~4 minutes" : "~15 minutes"
+              }. Head to your Happy Place and enjoy existing stories while you wait.`}
         </p>
         <button
           onClick={async () => {
@@ -88,12 +90,14 @@ const Generating = () => {
                   .eq("id", storyId)
                   .eq("is_generated", false);
               } catch (_) {}
+              nav("/");
+              return;
             }
-            nav("/");
+            nav("/happy-place");
           }}
           className="mt-8 rounded-full border border-border bg-card px-5 py-2 text-xs font-semibold text-primary-deep"
         >
-          Back to home
+          {stalled ? "Back to home" : "Go to My Happy Place →"}
         </button>
       </main>
     </PhoneShell>

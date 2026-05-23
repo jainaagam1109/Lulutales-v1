@@ -7,6 +7,7 @@ import { PhoneShell } from "@/components/PhoneShell";
 import { TagChip } from "@/components/TagChip";
 import { toast } from "sonner";
 
+
 const StoryDetail = () => {
   const { id = "" } = useParams();
   const nav = useNavigate();
@@ -19,6 +20,7 @@ const StoryDetail = () => {
   const { data: tags = [] } = useQuery({ queryKey: ["story-tags", id], queryFn: () => fetchStoryTags(id), enabled: !!id });
   const { data: episodes = [] } = useQuery({ queryKey: ["episodes", id], queryFn: () => fetchEpisodes(id), enabled: !!id });
   const [saved, setSaved] = useState(false);
+  const [showFullSummary, setShowFullSummary] = useState(false);
 
   useEffect(() => {
     if (id) isSaved(id).then(setSaved);
@@ -64,9 +66,33 @@ const StoryDetail = () => {
           </div>
         )}
 
-        {story.description && (
-          <p className="mt-4 text-sm leading-relaxed text-foreground/80">{story.description}</p>
-        )}
+        {(() => {
+          const summary = (story as any).parent_summary || story.description;
+          if (!summary) return null;
+          const canToggle = summary.length > 200;
+          return (
+            <div className="mt-4">
+              <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                About this story
+              </div>
+              <p
+                className={`text-sm leading-relaxed text-foreground/80 ${
+                  !showFullSummary && canToggle ? "line-clamp-4" : ""
+                }`}
+              >
+                {summary}
+              </p>
+              {canToggle && (
+                <button
+                  onClick={() => setShowFullSummary((v) => !v)}
+                  className="mt-1 text-[11px] font-semibold text-primary-deep"
+                >
+                  {showFullSummary ? "Show less" : "Read more"}
+                </button>
+              )}
+            </div>
+          );
+        })()}
 
         <div className="mt-5 flex gap-2">
           <button

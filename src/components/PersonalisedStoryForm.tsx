@@ -1,5 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ChevronLeft, Sparkles, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { PhoneShell } from "@/components/PhoneShell";
@@ -40,18 +50,21 @@ const FAMILY_SETUPS = [
   { label: "Other", value: "Other" },
 ];
 
-const PERSONALITIES = [
-  "Curious",
-  "Shy",
-  "Playful",
-  "Confident",
-  "Emotional",
-  "Stubborn",
-  "Kind",
-  "Energetic",
-  "Imaginative",
-  "Other",
-].map((p) => ({ label: p, value: p }));
+const PERSONALITY_BY_AGE = [
+  { maxAge: 3, values: ["Playful", "Curious", "Energetic", "Affectionate"] },
+  { maxAge: 5, values: ["Playful", "Curious", "Shy", "Energetic", "Kind", "Imaginative"] },
+  { maxAge: 7, values: ["Playful", "Curious", "Shy", "Confident", "Kind", "Energetic", "Imaginative", "Stubborn"] },
+  { maxAge: 9, values: ["Curious", "Shy", "Confident", "Emotional", "Stubborn", "Kind", "Imaginative", "Independent"] },
+  { maxAge: 99, values: ["Curious", "Shy", "Playful", "Confident", "Emotional", "Stubborn", "Kind", "Energetic", "Imaginative", "Independent"] },
+];
+
+function personalitiesForAge(ageStr: string) {
+  const age = parseInt(ageStr, 10);
+  const bucket = isNaN(age)
+    ? PERSONALITY_BY_AGE[PERSONALITY_BY_AGE.length - 1]
+    : PERSONALITY_BY_AGE.find((b) => age <= b.maxAge) ?? PERSONALITY_BY_AGE[PERSONALITY_BY_AGE.length - 1];
+  return [...bucket.values, "Other"].map((p) => ({ label: p, value: p }));
+}
 
 const HOME_TYPES = [
   { label: "Apartment", value: "Apartment" },
@@ -72,6 +85,7 @@ type FormState = {
   home_type_choice: string;
   home_type_custom: string;
   family_members: string;
+  sibling_age: string;
   address_terms: AddressTerm[];
   theme: string;
   occasion: string;
@@ -89,6 +103,7 @@ const emptyForm: FormState = {
   home_type_choice: "",
   home_type_custom: "",
   family_members: "",
+  sibling_age: "",
   address_terms: [],
   theme: "",
   occasion: "",
@@ -113,6 +128,8 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
   const [form, setForm] = useState<FormState>(emptyForm);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [showIdentityConfirm, setShowIdentityConfirm] = useState(false);
+  const originalProfile = useRef<{ name: string; age: string; gender: string } | null>(null);
 
   useEffect(() => {
     if (!profileId) {
@@ -122,15 +139,21 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
     supabase
       .from("child_profiles")
       .select(
-        "name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms"
+        "name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, last_theme, last_occasion"
       )
       .eq("id", profileId)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
-          const personality = matchToOption(data.personality ?? "", PERSONALITIES);
-          const home = matchToOption(data.home_type ?? "", HOME_TYPES);
-          const family = matchToOption(data.family_type ?? "", FAMILY_SETUPS);
+          const initialOptions = personalitiesForAge(data.age != null ? String(data.age) : "");
+          const personality = matchToOption((data as any).personality ?? "", initialOptions);
+          const home = matchToOption((data as any).home_type ?? "", HOME_TYPES);
+          const family = matchToOption((data as any).family_type ?? "", FAMILY_SETUPS);
+          originalProfile.current = {
+            name: data.name ?? "",
+            age: data.age != null ? String(data.age) : "",
+            gender: data.gender ?? "",
+          };
           setForm({
             name: data.name ?? "",
             age: data.age != null ? String(data.age) : "",
@@ -143,9 +166,10 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
             home_type_choice: home.choice,
             home_type_custom: home.custom,
             family_members: data.family_members ?? "",
+            sibling_age: (data as any).sibling_age != null ? String((data as any).sibling_age) : "",
             address_terms: parseAddressTerms(data.family_address_terms ?? ""),
-            theme: "",
-            occasion: "",
+            theme: (data as any).last_theme ?? "",
+            occasion: (data as any).last_occasion ?? "",
           });
         }
         setLoading(false);
@@ -179,25 +203,19 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
 
   const childName = useMemo(() => form.name.trim() || "your child", [form.name]);
 
-  const submit = async () => {
-    if (!profileId) {
-      toast.error("Please complete onboarding first.");
-      return;
-    }
-    setTouched((t) => ({ ...t, name: true, age: true, theme: true }));
-    if (!form.name.trim() || !isLettersOnly(form.name)) {
-      toast.error("Please enter a valid name (letters only).");
-      return;
-    }
-    if (form.age.trim() && !isNumeric(form.age)) {
-      toast.error("Looks like age should be a number 😊");
-      return;
-    }
-    if (!form.theme.trim()) {
-      toast.error("Please add a theme for the story.");
-      return;
-    }
+  const personalityOptions = useMemo(() => personalitiesForAge(form.age), [form.age]);
 
+  useEffect(() => {
+    if (!form.personality_choice) return;
+    const inList = personalityOptions.some((o) => o.value === form.personality_choice);
+    if (!inList) {
+      setForm((f) => ({ ...f, personality_choice: "", personality_custom: "" }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.age]);
+
+  const proceedWithSubmit = async (updateProfile: boolean) => {
+    if (!profileId) return;
     const personality = resolveChoice(form.personality_choice, form.personality_custom);
     const home_type = resolveChoice(form.home_type_choice, form.home_type_custom);
     const family_address_terms = serializeAddressTerms(form.address_terms);
@@ -222,10 +240,30 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           home_type,
           family_members: form.family_members.trim(),
           family_address_terms,
+          sibling_age: form.sibling_age.trim() || null,
           theme: form.theme.trim(),
           occasion: form.occasion.trim() || null,
         },
       });
+
+      // Fire-and-forget profile update
+      const payload: Record<string, unknown> = {
+        last_theme: form.theme.trim() || null,
+        last_occasion: form.occasion.trim() || null,
+        personality,
+        home_type,
+        city: form.city.trim() || null,
+        family_members: form.family_members.trim() || null,
+        family_address_terms,
+        sibling_age: form.sibling_age ? Number(form.sibling_age) : null,
+      };
+      if (updateProfile) {
+        payload.name = form.name.trim();
+        payload.age = form.age ? Number(form.age) : null;
+        payload.gender = form.gender || null;
+      }
+      void supabase.from("child_profiles").update(payload as any).eq("id", profileId);
+
       toast.success("Story request saved! We'll generate it shortly.");
       nav(`/generating/${created.id}`);
     } catch (e: any) {
@@ -233,6 +271,36 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const submit = async () => {
+    if (!profileId) {
+      toast.error("Please complete onboarding first.");
+      return;
+    }
+    setTouched((t) => ({ ...t, name: true, age: true, theme: true }));
+    if (!form.name.trim() || !isLettersOnly(form.name)) {
+      toast.error("Please enter a valid name (letters only).");
+      return;
+    }
+    if (form.age.trim() && !isNumeric(form.age)) {
+      toast.error("Looks like age should be a number 😊");
+      return;
+    }
+    if (!form.theme.trim()) {
+      toast.error("Please add a theme for the story.");
+      return;
+    }
+
+    const orig = originalProfile.current;
+    if (
+      orig &&
+      (orig.name !== form.name || orig.age !== form.age || orig.gender !== form.gender)
+    ) {
+      setShowIdentityConfirm(true);
+      return;
+    }
+    void proceedWithSubmit(false);
   };
 
   return (
@@ -344,6 +412,20 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                 />
               </div>
               <div>
+                <FieldLabel
+                  optional
+                  tooltip="If your child has a sibling, their age helps us write a more realistic family dynamic."
+                >
+                  Sibling's age
+                </FieldLabel>
+                <TextInput
+                  value={form.sibling_age}
+                  onChange={(e) => set("sibling_age", e.target.value)}
+                  inputMode="numeric"
+                  placeholder="e.g. 3"
+                />
+              </div>
+              <div>
                 <FieldLabel tooltip="Helps us make the story feel more personal and familiar.">
                   Family address terms
                 </FieldLabel>
@@ -407,7 +489,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                     set("personality_choice", v);
                     if (v !== "Other") set("personality_custom", "");
                   }}
-                  options={PERSONALITIES}
+                  options={personalityOptions}
                   placeholder="e.g. playful, shy, curious"
                 />
                 {form.personality_choice === "Other" && (
@@ -455,6 +537,34 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         )}
       </main>
       <FloatingMiniPlayer />
+      <AlertDialog open={showIdentityConfirm} onOpenChange={setShowIdentityConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Update {childName}'s profile?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You've changed the name, age, or gender. Save to profile or use for this story only?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setShowIdentityConfirm(false);
+                void proceedWithSubmit(false);
+              }}
+            >
+              This story only
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowIdentityConfirm(false);
+                void proceedWithSubmit(true);
+              }}
+            >
+              Update profile
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PhoneShell>
   );
 };
