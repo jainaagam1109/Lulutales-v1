@@ -236,6 +236,28 @@ const Player = () => {
         )}
 
         {audioUrl && <audio ref={audioRef} src={audioUrl} preload="metadata" className="hidden" />}
+
+        {countdown !== null && (
+          <div className="mt-6 rounded-2xl border border-border bg-card p-3 text-center shadow-soft">
+            <div className="text-xs font-semibold text-foreground">
+              Next episode in {countdown}s
+            </div>
+            <div className="mt-2 flex justify-center gap-2">
+              <button
+                onClick={() => setCountdown(0)}
+                className="rounded-full bg-gradient-primary px-4 py-1.5 text-[11px] font-bold text-primary-foreground shadow-glow"
+              >
+                Play now
+              </button>
+              <button
+                onClick={() => setCountdown(null)}
+                className="rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-semibold text-primary-deep"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </PhoneShell>
   );
