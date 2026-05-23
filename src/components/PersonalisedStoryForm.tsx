@@ -1,5 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ChevronLeft, Sparkles, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { PhoneShell } from "@/components/PhoneShell";
@@ -40,18 +50,21 @@ const FAMILY_SETUPS = [
   { label: "Other", value: "Other" },
 ];
 
-const PERSONALITIES = [
-  "Curious",
-  "Shy",
-  "Playful",
-  "Confident",
-  "Emotional",
-  "Stubborn",
-  "Kind",
-  "Energetic",
-  "Imaginative",
-  "Other",
-].map((p) => ({ label: p, value: p }));
+const PERSONALITY_BY_AGE = [
+  { maxAge: 3, values: ["Playful", "Curious", "Energetic", "Affectionate"] },
+  { maxAge: 5, values: ["Playful", "Curious", "Shy", "Energetic", "Kind", "Imaginative"] },
+  { maxAge: 7, values: ["Playful", "Curious", "Shy", "Confident", "Kind", "Energetic", "Imaginative", "Stubborn"] },
+  { maxAge: 9, values: ["Curious", "Shy", "Confident", "Emotional", "Stubborn", "Kind", "Imaginative", "Independent"] },
+  { maxAge: 99, values: ["Curious", "Shy", "Playful", "Confident", "Emotional", "Stubborn", "Kind", "Energetic", "Imaginative", "Independent"] },
+];
+
+function personalitiesForAge(ageStr: string) {
+  const age = parseInt(ageStr, 10);
+  const bucket = isNaN(age)
+    ? PERSONALITY_BY_AGE[PERSONALITY_BY_AGE.length - 1]
+    : PERSONALITY_BY_AGE.find((b) => age <= b.maxAge) ?? PERSONALITY_BY_AGE[PERSONALITY_BY_AGE.length - 1];
+  return [...bucket.values, "Other"].map((p) => ({ label: p, value: p }));
+}
 
 const HOME_TYPES = [
   { label: "Apartment", value: "Apartment" },
