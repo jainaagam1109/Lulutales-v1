@@ -29,6 +29,7 @@ export type Database = {
           last_theme: string | null
           name: string
           personality: string | null
+          sibling_age: number | null
           user_id: string
         }
         Insert: {
@@ -45,6 +46,7 @@ export type Database = {
           last_theme?: string | null
           name: string
           personality?: string | null
+          sibling_age?: number | null
           user_id: string
         }
         Update: {
@@ -61,6 +63,7 @@ export type Database = {
           last_theme?: string | null
           name?: string
           personality?: string | null
+          sibling_age?: number | null
           user_id?: string
         }
         Relationships: []
