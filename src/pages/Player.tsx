@@ -44,7 +44,7 @@ const Player = () => {
   const [countdown, setCountdown] = useState<number | null>(null);
 
 
-  // Reset playback when episode (audioUrl) changes
+  // Reset playback when episode (audioUrl) changes; auto-play after 3s
   useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
@@ -53,7 +53,20 @@ const Player = () => {
     setT(0);
     setDur(0);
     setPlaying(false);
-  }, [audioUrl]);
+    if (!audioUrl) return;
+    const timer = setTimeout(() => {
+      a.play()
+        .then(() => {
+          setPlaying(true);
+          if (story?.id) {
+            localStorage.setItem("lulutales_last_story", story.id);
+            localStorage.removeItem("lulutales_last_story_completed");
+          }
+        })
+        .catch(() => {});
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [audioUrl, story?.id]);
 
   useEffect(() => {
     const a = audioRef.current;
