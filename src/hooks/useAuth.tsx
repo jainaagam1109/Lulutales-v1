@@ -32,6 +32,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem("lulutales_profile_id");
     localStorage.removeItem("lulutales_child_name");
     localStorage.removeItem("lulutales_child_age");
+    Object.keys(sessionStorage)
+      .filter((k) => k.startsWith("lulutales_profile_checked_"))
+      .forEach((k) => sessionStorage.removeItem(k));
   };
 
   return <Ctx.Provider value={{ session, user: session?.user ?? null, loading, signOut }}>{children}</Ctx.Provider>;

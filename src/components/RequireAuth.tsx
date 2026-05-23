@@ -62,6 +62,7 @@ export const RequireAuth = ({ children }: Props) => {
       } else {
         setRedirectTo(null);
       }
+      sessionStorage.setItem(cacheKey, "1");
       setChecking(false);
     })();
   }, [session, loading, location.pathname]);
