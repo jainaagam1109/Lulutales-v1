@@ -203,25 +203,19 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
 
   const childName = useMemo(() => form.name.trim() || "your child", [form.name]);
 
-  const submit = async () => {
-    if (!profileId) {
-      toast.error("Please complete onboarding first.");
-      return;
-    }
-    setTouched((t) => ({ ...t, name: true, age: true, theme: true }));
-    if (!form.name.trim() || !isLettersOnly(form.name)) {
-      toast.error("Please enter a valid name (letters only).");
-      return;
-    }
-    if (form.age.trim() && !isNumeric(form.age)) {
-      toast.error("Looks like age should be a number 😊");
-      return;
-    }
-    if (!form.theme.trim()) {
-      toast.error("Please add a theme for the story.");
-      return;
-    }
+  const personalityOptions = useMemo(() => personalitiesForAge(form.age), [form.age]);
 
+  useEffect(() => {
+    if (!form.personality_choice) return;
+    const inList = personalityOptions.some((o) => o.value === form.personality_choice);
+    if (!inList) {
+      setForm((f) => ({ ...f, personality_choice: "", personality_custom: "" }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.age]);
+
+  const proceedWithSubmit = async (updateProfile: boolean) => {
+    if (!profileId) return;
     const personality = resolveChoice(form.personality_choice, form.personality_custom);
     const home_type = resolveChoice(form.home_type_choice, form.home_type_custom);
     const family_address_terms = serializeAddressTerms(form.address_terms);
@@ -246,10 +240,30 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           home_type,
           family_members: form.family_members.trim(),
           family_address_terms,
+          sibling_age: form.sibling_age.trim() || null,
           theme: form.theme.trim(),
           occasion: form.occasion.trim() || null,
         },
       });
+
+      // Fire-and-forget profile update
+      const payload: Record<string, unknown> = {
+        last_theme: form.theme.trim() || null,
+        last_occasion: form.occasion.trim() || null,
+        personality,
+        home_type,
+        city: form.city.trim() || null,
+        family_members: form.family_members.trim() || null,
+        family_address_terms,
+        sibling_age: form.sibling_age ? Number(form.sibling_age) : null,
+      };
+      if (updateProfile) {
+        payload.name = form.name.trim();
+        payload.age = form.age ? Number(form.age) : null;
+        payload.gender = form.gender || null;
+      }
+      void supabase.from("child_profiles").update(payload as any).eq("id", profileId);
+
       toast.success("Story request saved! We'll generate it shortly.");
       nav(`/generating/${created.id}`);
     } catch (e: any) {
@@ -257,6 +271,36 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const submit = async () => {
+    if (!profileId) {
+      toast.error("Please complete onboarding first.");
+      return;
+    }
+    setTouched((t) => ({ ...t, name: true, age: true, theme: true }));
+    if (!form.name.trim() || !isLettersOnly(form.name)) {
+      toast.error("Please enter a valid name (letters only).");
+      return;
+    }
+    if (form.age.trim() && !isNumeric(form.age)) {
+      toast.error("Looks like age should be a number 😊");
+      return;
+    }
+    if (!form.theme.trim()) {
+      toast.error("Please add a theme for the story.");
+      return;
+    }
+
+    const orig = originalProfile.current;
+    if (
+      orig &&
+      (orig.name !== form.name || orig.age !== form.age || orig.gender !== form.gender)
+    ) {
+      setShowIdentityConfirm(true);
+      return;
+    }
+    void proceedWithSubmit(false);
   };
 
   return (
