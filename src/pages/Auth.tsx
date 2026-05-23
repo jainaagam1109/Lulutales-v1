@@ -49,7 +49,7 @@ const Auth = () => {
       toast.error(result.error.message ?? "Google sign-in failed");
       return;
     }
-    if (result.redirected) return; // browser redirects
+    // Browser will redirect on success.
     setBusy(false);
   };
 

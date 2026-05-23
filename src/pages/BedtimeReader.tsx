@@ -1,62 +1,44 @@
 import { useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, Sun, Moon } from "lucide-react";
 import { fetchStory } from "@/lib/stories";
-import { TagChip } from "@/components/TagChip";
+import { parseBedtimeStory } from "@/lib/parseBedtimeStory";
 
 const SIZES = [16, 18, 20];
 
 const BedtimeReader = () => {
   const { id = "" } = useParams();
   const nav = useNavigate();
-  const location = useLocation();
-  const from = (location.state as { from?: string } | null)?.from;
-  const backTo = from === "/happy-place" ? "/happy-place" : "/";
   const { data: story } = useQuery({ queryKey: ["story", id], queryFn: () => fetchStory(id) });
 
   const [sizeIdx, setSizeIdx] = useState(1);
   const [dark, setDark] = useState(false);
 
   const fontSize = SIZES[sizeIdx];
+  const { prose } = parseBedtimeStory(story?.story_text);
 
   const bg = dark ? "#0F1923" : "#FFFFFF";
   const fg = dark ? "#F5F0E8" : "#1A1612";
   const subtle = dark ? "rgba(245,240,232,0.7)" : "rgba(26,22,18,0.6)";
-  const border = dark ? "rgba(245,240,232,0.12)" : "rgba(26,22,18,0.08)";
+  const border = dark ? "rgba(245,240,232,0.18)" : "rgba(26,22,18,0.12)";
 
   return (
     <div className="fixed inset-0 flex flex-col" style={{ background: bg, color: fg }}>
-      <header
-        className="flex items-center gap-2 px-5 pt-5 pb-3"
-        style={{ borderBottom: `1px solid ${border}` }}
+      <button
+        onClick={() => nav(`/bedtime/${id}`)}
+        className="absolute left-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full"
+        style={{ color: fg, background: dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)" }}
+        aria-label="Back"
       >
-        <button
-          onClick={() => nav(backTo)}
-          className="flex h-9 w-9 items-center justify-center rounded-full"
-          style={{ color: fg }}
-          aria-label="Back"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        <div className="flex-1 text-center">
-          <div className="text-base font-extrabold" style={{ color: fg }}>
-            {story?.title ?? "Bedtime story"}
-          </div>
-          {story?.theme && (
-            <div className="mt-1 inline-block">
-              <TagChip label={story.theme} />
-            </div>
-          )}
-        </div>
-        <div className="h-9 w-9" />
-      </header>
+        <ChevronLeft className="h-5 w-5" />
+      </button>
 
       <main
         className="flex-1 overflow-y-auto"
-        style={{ padding: "24px", paddingBottom: "120px" }}
+        style={{ padding: "72px 24px 120px" }}
       >
-        {story?.story_text ? (
+        {prose ? (
           <article
             style={{
               fontSize: `${fontSize}px`,
@@ -67,7 +49,7 @@ const BedtimeReader = () => {
               margin: "0 auto",
             }}
           >
-            {story.story_text}
+            {prose}
           </article>
         ) : (
           <p className="mx-auto max-w-md pt-10 text-center text-sm" style={{ color: subtle }}>
