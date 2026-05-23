@@ -41,17 +41,15 @@ const Auth = () => {
 
   const google = async () => {
     setBusy(true);
-    const result = await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: window.location.origin },
     });
-    if (result.error) {
+    if (error) {
       setBusy(false);
-      toast.error(result.error.message ?? "Google sign-in failed");
-      return;
+      toast.error(error.message ?? "Google sign-in failed");
     }
-    if (result.redirected) return; // browser redirects
-    setBusy(false);
+    // On success the browser is redirected to Google.
   };
 
   return (
