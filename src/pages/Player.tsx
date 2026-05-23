@@ -95,7 +95,20 @@ const Player = () => {
       a.removeEventListener("loadedmetadata", onMeta);
       a.removeEventListener("ended", onEnd);
     };
-  }, [audioUrl, hasNext, epNum, id, nav, story]);
+  }, [audioUrl, hasNext, epNum, id, nav, story, dur]);
+
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown === 0) {
+      shouldAutoplayRef.current = true;
+      nav(`/player/${id}/${epNum + 1}`, { replace: true });
+      setCountdown(null);
+      return;
+    }
+    const t = setTimeout(() => setCountdown((c) => (c !== null ? c - 1 : null)), 1000);
+    return () => clearTimeout(t);
+  }, [countdown, epNum, id, nav]);
+
 
   const toggle = () => {
     const a = audioRef.current;
