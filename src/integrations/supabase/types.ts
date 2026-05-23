@@ -25,6 +25,8 @@ export type Database = {
           gender: string | null
           home_type: string | null
           id: string
+          last_occasion: string | null
+          last_theme: string | null
           name: string
           personality: string | null
           user_id: string
@@ -39,6 +41,8 @@ export type Database = {
           gender?: string | null
           home_type?: string | null
           id?: string
+          last_occasion?: string | null
+          last_theme?: string | null
           name: string
           personality?: string | null
           user_id: string
@@ -53,6 +57,8 @@ export type Database = {
           gender?: string | null
           home_type?: string | null
           id?: string
+          last_occasion?: string | null
+          last_theme?: string | null
           name?: string
           personality?: string | null
           user_id?: string
@@ -111,6 +117,7 @@ export type Database = {
           is_featured: boolean
           is_generated: boolean
           owner_profile_id: string | null
+          parent_summary: string | null
           story_text: string | null
           story_type: string | null
           theme: string | null
@@ -127,6 +134,7 @@ export type Database = {
           is_featured?: boolean
           is_generated?: boolean
           owner_profile_id?: string | null
+          parent_summary?: string | null
           story_text?: string | null
           story_type?: string | null
           theme?: string | null
@@ -143,6 +151,7 @@ export type Database = {
           is_featured?: boolean
           is_generated?: boolean
           owner_profile_id?: string | null
+          parent_summary?: string | null
           story_text?: string | null
           story_type?: string | null
           theme?: string | null
