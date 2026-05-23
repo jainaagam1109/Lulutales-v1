@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { PhoneShell } from "@/components/PhoneShell";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/myproject/client";
 import type { Tables } from "@/integrations/supabase/types";
 
 const MAX_WAIT_MS = 10 * 60 * 1000;

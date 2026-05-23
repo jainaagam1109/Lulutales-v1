@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/myproject/client";
 import { PhoneShell } from "@/components/PhoneShell";
 import { useAuth } from "@/hooks/useAuth";
 

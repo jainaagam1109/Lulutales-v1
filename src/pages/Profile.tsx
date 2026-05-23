@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { PhoneShell } from "@/components/PhoneShell";
 import { FloatingMiniPlayer } from "@/components/FloatingMiniPlayer";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/myproject/client";
 
 type Kid = {
   id: string;

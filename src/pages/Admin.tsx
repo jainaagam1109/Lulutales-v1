@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/myproject/client";
 import { PhoneShell } from "@/components/PhoneShell";
 import { toast } from "sonner";
 import { Upload, X } from "lucide-react";
