@@ -6,7 +6,7 @@ import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { ProfileAvatarButton } from "@/components/ProfileAvatarButton";
 import { fetchStoriesForProfile } from "@/lib/stories";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/myproject/client";
 import {
   recordVisit,
   getVisits,

@@ -18,7 +18,7 @@ import {
   ValidationState,
 } from "@/components/StoryFormFields";
 import { createPersonalisedStory } from "@/lib/stories";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/myproject/client";
 
 type Props = {
   storyType: "personalised_audio" | "bedtime_text";
