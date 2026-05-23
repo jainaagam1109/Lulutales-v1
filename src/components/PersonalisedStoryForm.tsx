@@ -412,6 +412,20 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                 />
               </div>
               <div>
+                <FieldLabel
+                  optional
+                  tooltip="If your child has a sibling, their age helps us write a more realistic family dynamic."
+                >
+                  Sibling's age
+                </FieldLabel>
+                <TextInput
+                  value={form.sibling_age}
+                  onChange={(e) => set("sibling_age", e.target.value)}
+                  inputMode="numeric"
+                  placeholder="e.g. 3"
+                />
+              </div>
+              <div>
                 <FieldLabel tooltip="Helps us make the story feel more personal and familiar.">
                   Family address terms
                 </FieldLabel>
@@ -475,7 +489,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                     set("personality_choice", v);
                     if (v !== "Other") set("personality_custom", "");
                   }}
-                  options={PERSONALITIES}
+                  options={personalityOptions}
                   placeholder="e.g. playful, shy, curious"
                 />
                 {form.personality_choice === "Other" && (
