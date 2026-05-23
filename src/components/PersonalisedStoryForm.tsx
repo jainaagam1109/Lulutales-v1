@@ -85,6 +85,7 @@ type FormState = {
   home_type_choice: string;
   home_type_custom: string;
   family_members: string;
+  sibling_age: string;
   address_terms: AddressTerm[];
   theme: string;
   occasion: string;
@@ -102,6 +103,7 @@ const emptyForm: FormState = {
   home_type_choice: "",
   home_type_custom: "",
   family_members: "",
+  sibling_age: "",
   address_terms: [],
   theme: "",
   occasion: "",
@@ -126,6 +128,8 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
   const [form, setForm] = useState<FormState>(emptyForm);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [showIdentityConfirm, setShowIdentityConfirm] = useState(false);
+  const originalProfile = useRef<{ name: string; age: string; gender: string } | null>(null);
 
   useEffect(() => {
     if (!profileId) {
@@ -135,15 +139,21 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
     supabase
       .from("child_profiles")
       .select(
-        "name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms"
+        "name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, last_theme, last_occasion"
       )
       .eq("id", profileId)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
-          const personality = matchToOption(data.personality ?? "", PERSONALITIES);
-          const home = matchToOption(data.home_type ?? "", HOME_TYPES);
-          const family = matchToOption(data.family_type ?? "", FAMILY_SETUPS);
+          const initialOptions = personalitiesForAge(data.age != null ? String(data.age) : "");
+          const personality = matchToOption((data as any).personality ?? "", initialOptions);
+          const home = matchToOption((data as any).home_type ?? "", HOME_TYPES);
+          const family = matchToOption((data as any).family_type ?? "", FAMILY_SETUPS);
+          originalProfile.current = {
+            name: data.name ?? "",
+            age: data.age != null ? String(data.age) : "",
+            gender: data.gender ?? "",
+          };
           setForm({
             name: data.name ?? "",
             age: data.age != null ? String(data.age) : "",
@@ -156,9 +166,10 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
             home_type_choice: home.choice,
             home_type_custom: home.custom,
             family_members: data.family_members ?? "",
+            sibling_age: (data as any).sibling_age != null ? String((data as any).sibling_age) : "",
             address_terms: parseAddressTerms(data.family_address_terms ?? ""),
-            theme: "",
-            occasion: "",
+            theme: (data as any).last_theme ?? "",
+            occasion: (data as any).last_occasion ?? "",
           });
         }
         setLoading(false);
