@@ -266,10 +266,11 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         },
       });
 
-      // Fire-and-forget profile update
+      // Persist details back to the child profile so the next story prefills.
       const payload: Record<string, unknown> = {
         last_theme: form.theme.trim() || null,
         last_occasion: form.occasion.trim() || null,
+        family_type: resolveChoice(form.family_type_choice, form.family_type_custom) || null,
         personality,
         home_type,
         city: form.city.trim() || null,
@@ -282,7 +283,15 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         payload.age = form.age ? Number(form.age) : null;
         payload.gender = form.gender || null;
       }
-      void supabase.from("child_profiles").update(payload as any).eq("id", profileId);
+      const { error: updateErr } = await supabase
+        .from("child_profiles")
+        .update(payload as any)
+        .eq("id", profileId);
+      if (updateErr) {
+        console.error("[PersonalisedStoryForm] profile update failed", updateErr);
+        toast.error("Story saved, but couldn't update profile details.");
+      }
+
 
       toast.success("Story request saved! We'll generate it shortly.");
       nav(`/generating/${created.id}`);
