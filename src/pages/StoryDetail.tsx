@@ -20,6 +20,7 @@ const StoryDetail = () => {
   const { data: tags = [] } = useQuery({ queryKey: ["story-tags", id], queryFn: () => fetchStoryTags(id), enabled: !!id });
   const { data: episodes = [] } = useQuery({ queryKey: ["episodes", id], queryFn: () => fetchEpisodes(id), enabled: !!id });
   const [saved, setSaved] = useState(false);
+  const [showFullSummary, setShowFullSummary] = useState(false);
 
   useEffect(() => {
     if (id) isSaved(id).then(setSaved);
