@@ -136,45 +136,65 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
       setLoading(false);
       return;
     }
-    supabase
-      .from("child_profiles")
-      .select(
-        "name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, last_theme, last_occasion"
-      )
-      .eq("id", profileId)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
-          const initialOptions = personalitiesForAge(data.age != null ? String(data.age) : "");
-          const personality = matchToOption((data as any).personality ?? "", initialOptions);
-          const home = matchToOption((data as any).home_type ?? "", HOME_TYPES);
-          const family = matchToOption((data as any).family_type ?? "", FAMILY_SETUPS);
-          originalProfile.current = {
-            name: data.name ?? "",
-            age: data.age != null ? String(data.age) : "",
-            gender: data.gender ?? "",
-          };
-          setForm({
-            name: data.name ?? "",
-            age: data.age != null ? String(data.age) : "",
-            gender: data.gender ?? "",
-            family_type_choice: family.choice,
-            family_type_custom: family.custom,
-            city: data.city ?? "",
-            personality_choice: personality.choice,
-            personality_custom: personality.custom,
-            home_type_choice: home.choice,
-            home_type_custom: home.custom,
-            family_members: data.family_members ?? "",
-            sibling_age: (data as any).sibling_age != null ? String((data as any).sibling_age) : "",
-            address_terms: parseAddressTerms(data.family_address_terms ?? ""),
-            theme: (data as any).last_theme ?? "",
-            occasion: (data as any).last_occasion ?? "",
-          });
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("child_profiles")
+          .select(
+            "name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, last_theme, last_occasion"
+          )
+          .eq("id", profileId)
+          .maybeSingle();
+        if (error) throw error;
+        if (!data) {
+          // Stale id — clear so RequireAuth re-runs selection next nav
+          console.warn("[PersonalisedStoryForm] profile id not found, clearing localStorage", profileId);
+          localStorage.removeItem("lulutales_profile_id");
+          const cachedName = localStorage.getItem("lulutales_child_name") ?? "";
+          const cachedAge = localStorage.getItem("lulutales_child_age") ?? "";
+          setForm((f) => ({ ...f, name: cachedName, age: cachedAge }));
+          toast.info("Couldn't load saved profile — please re-enter details.");
+          setLoading(false);
+          return;
         }
+        const initialOptions = personalitiesForAge(data.age != null ? String(data.age) : "");
+        const personality = matchToOption((data as any).personality ?? "", initialOptions);
+        const home = matchToOption((data as any).home_type ?? "", HOME_TYPES);
+        const family = matchToOption((data as any).family_type ?? "", FAMILY_SETUPS);
+        originalProfile.current = {
+          name: data.name ?? "",
+          age: data.age != null ? String(data.age) : "",
+          gender: data.gender ?? "",
+        };
+        setForm({
+          name: data.name ?? "",
+          age: data.age != null ? String(data.age) : "",
+          gender: data.gender ?? "",
+          family_type_choice: family.choice,
+          family_type_custom: family.custom,
+          city: data.city ?? "",
+          personality_choice: personality.choice,
+          personality_custom: personality.custom,
+          home_type_choice: home.choice,
+          home_type_custom: home.custom,
+          family_members: data.family_members ?? "",
+          sibling_age: (data as any).sibling_age != null ? String((data as any).sibling_age) : "",
+          address_terms: parseAddressTerms(data.family_address_terms ?? ""),
+          theme: (data as any).last_theme ?? "",
+          occasion: (data as any).last_occasion ?? "",
+        });
+      } catch (e) {
+        console.error("[PersonalisedStoryForm] prefill failed", e);
+        const cachedName = localStorage.getItem("lulutales_child_name") ?? "";
+        const cachedAge = localStorage.getItem("lulutales_child_age") ?? "";
+        setForm((f) => ({ ...f, name: cachedName, age: cachedAge }));
+        toast.info("Couldn't load saved profile — please re-enter details.");
+      } finally {
         setLoading(false);
-      });
+      }
+    })();
   }, [profileId]);
+
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
