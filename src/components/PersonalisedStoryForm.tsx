@@ -537,6 +537,34 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         )}
       </main>
       <FloatingMiniPlayer />
+      <AlertDialog open={showIdentityConfirm} onOpenChange={setShowIdentityConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Update {childName}'s profile?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You've changed the name, age, or gender. Save to profile or use for this story only?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setShowIdentityConfirm(false);
+                void proceedWithSubmit(false);
+              }}
+            >
+              This story only
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowIdentityConfirm(false);
+                void proceedWithSubmit(true);
+              }}
+            >
+              Update profile
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PhoneShell>
   );
 };
