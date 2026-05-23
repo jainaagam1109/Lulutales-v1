@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/myproject/client";
-
 import { PhoneShell } from "@/components/PhoneShell";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -41,15 +40,17 @@ const Auth = () => {
 
   const google = async () => {
     setBusy(true);
-    const { error } = await supabase.auth.signInWithOAuth({
+    const result = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: window.location.origin },
     });
-    if (error) {
+    if (result.error) {
       setBusy(false);
-      toast.error(error.message ?? "Google sign-in failed");
+      toast.error(result.error.message ?? "Google sign-in failed");
+      return;
     }
-    // On success the browser is redirected to Google.
+    if (result.redirected) return; // browser redirects
+    setBusy(false);
   };
 
   return (
