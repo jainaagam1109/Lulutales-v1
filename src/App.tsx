@@ -14,6 +14,9 @@ import Player from "./pages/Player";
 import HappyPlace from "./pages/HappyPlace";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
+import AdminUpload from "./pages/AdminUpload";
+import AdminHealth from "./pages/AdminHealth";
+import { RequireAdmin } from "@/components/RequireAdmin";
 import Dashboard from "./pages/Dashboard";
 import Insights from "./pages/Insights";
 import MagicHub from "./pages/MagicHub";
@@ -44,7 +47,9 @@ const App = () => (
             <Route path="/happy-place" element={<RequireAuth><HappyPlace /></RequireAuth>} />
             <Route path="/library" element={<Navigate to="/happy-place" replace />} />
             <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
-            <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
+            <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
+            <Route path="/admin/upload" element={<RequireAdmin><AdminUpload /></RequireAdmin>} />
+            <Route path="/admin/health" element={<RequireAdmin><AdminHealth /></RequireAdmin>} />
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
             <Route path="/insights" element={<RequireAuth><Insights /></RequireAuth>} />
             <Route path="/magic-hub" element={<RequireAuth><MagicHub /></RequireAuth>} />
