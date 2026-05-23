@@ -190,6 +190,22 @@ const Onboarding = () => {
           )}
         </div>
 
+        <div className="mb-8">
+          <FieldLabel
+            optional
+            tooltip="If your child has a sibling, their age helps us write a more realistic family dynamic."
+          >
+            Sibling's age
+          </FieldLabel>
+          <TextInput
+            value={siblingAge}
+            onChange={(e) => setSiblingAge(e.target.value)}
+            inputMode="numeric"
+            placeholder="e.g. 3"
+          />
+        </div>
+
+
         <button
           onClick={submit}
           disabled={loading}
