@@ -12,6 +12,13 @@ const fmt = (s: number) => {
   return `${m}:${sec}`;
 };
 
+function countdownForDuration(secs: number) {
+  if (secs < 180) return 3;
+  if (secs <= 300) return 5;
+  return 7;
+}
+
+
 const Player = () => {
   const { id = "", episodeNumber = "1" } = useParams();
   const epNum = parseInt(episodeNumber, 10) || 1;
@@ -34,6 +41,8 @@ const Player = () => {
   const [playing, setPlaying] = useState(false);
   const [t, setT] = useState(0);
   const [dur, setDur] = useState(0);
+  const [countdown, setCountdown] = useState<number | null>(null);
+
 
   // Reset playback when episode (audioUrl) changes
   useEffect(() => {
@@ -65,9 +74,9 @@ const Player = () => {
     };
     const onEnd = () => {
       if (hasNext) {
-        shouldAutoplayRef.current = true;
-        nav(`/player/${id}/${epNum + 1}`, { replace: true });
+        setCountdown(countdownForDuration(dur));
       } else {
+
         localStorage.setItem("lulutales_last_story_completed", "1");
         const pid = localStorage.getItem("lulutales_profile_id");
         if (pid && story?.id) {
