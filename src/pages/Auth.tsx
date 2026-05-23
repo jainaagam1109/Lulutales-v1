@@ -41,7 +41,10 @@ const Auth = () => {
 
   const google = async () => {
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    const result = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
+    });
     if (result.error) {
       setBusy(false);
       toast.error(result.error.message ?? "Google sign-in failed");
@@ -55,7 +58,9 @@ const Auth = () => {
     <PhoneShell>
       <div className="flex-1 px-6 pb-10 pt-12">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-3xl bg-secondary text-3xl">🎙️</div>
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-3xl bg-secondary text-3xl">
+            🎙️
+          </div>
           <h1 className="text-2xl font-extrabold text-foreground">Lulutales</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "signin" ? "Welcome back" : "Create your account"}
@@ -77,7 +82,9 @@ const Auth = () => {
         </div>
 
         <label className="mb-3 block">
-          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Email</span>
+          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Email
+          </span>
           <input
             type="email"
             value={email}
@@ -87,7 +94,9 @@ const Auth = () => {
           />
         </label>
         <label className="mb-5 block">
-          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Password</span>
+          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Password
+          </span>
           <input
             type="password"
             value={password}
