@@ -49,6 +49,7 @@ export const RequireAuth = ({ children }: Props) => {
         return;
       }
       const kids = data ?? [];
+      let validActive = false;
       if (kids.length === 0) {
         setRedirectTo("/onboarding");
       } else if (!activeId || !kids.find((k) => k.id === activeId)) {
@@ -56,13 +57,16 @@ export const RequireAuth = ({ children }: Props) => {
           localStorage.setItem("lulutales_profile_id", kids[0].id);
           localStorage.setItem("lulutales_child_name", kids[0].name);
           setRedirectTo(null);
+          validActive = true;
         } else {
+          localStorage.removeItem("lulutales_profile_id");
           setRedirectTo("/select-profile");
         }
       } else {
         setRedirectTo(null);
+        validActive = true;
       }
-      sessionStorage.setItem(cacheKey, "1");
+      if (validActive) sessionStorage.setItem(cacheKey, "1");
       setChecking(false);
     })();
   }, [session, loading, location.pathname]);
