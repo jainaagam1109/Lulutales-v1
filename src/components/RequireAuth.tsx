@@ -33,7 +33,7 @@ export const RequireAuth = ({ children }: Props) => {
     }
     const activeId = localStorage.getItem("lulutales_profile_id");
     const cacheKey = `lulutales_profile_checked_${session.user.id}`;
-    if (sessionStorage.getItem(cacheKey)) {
+    if (activeId && sessionStorage.getItem(cacheKey)) {
       setRedirectTo(null);
       setChecking(false);
       return;
