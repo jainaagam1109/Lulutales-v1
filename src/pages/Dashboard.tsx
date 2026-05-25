@@ -318,13 +318,6 @@ const Dashboard = () => {
           </section>
         )}
 
-        {/* Weekly tip */}
-        <section className="rounded-2xl border border-tag-warm-border bg-tag-warm-bg p-4">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-tag-warm-fg">
-            Did you know · Week {week}
-          </div>
-          <p className="mt-1.5 text-sm leading-relaxed text-tag-warm-fg">{tip}</p>
-        </section>
       </main>
 
       <BottomNav />
