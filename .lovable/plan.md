@@ -1,27 +1,23 @@
-## Root cause
-The previous story details are reloaded from `child_profiles`, but the story form is not reliably persisting all entered fields back to that table after submit.
+## Change Theme input to an age-aware dropdown
 
-Two likely issues in the current flow:
-1. **Profile save is fire-and-forget** in `src/components/PersonalisedStoryForm.tsx` (`void supabase.from(...).update(...)`), so failures are silent and the app navigates away immediately.
-2. **Not all fields are being saved** — notably `family_type` is used for prefill, but it is not included in the profile update payload after story creation.
+Replace the free-text Theme field in `src/components/PersonalisedStoryForm.tsx` with a Select populated from an age→themes mapping, plus a "Custom" option that reveals a text input.
 
-## Plan
-1. **Make profile persistence explicit in `src/components/PersonalisedStoryForm.tsx`**
-   - Await the `child_profiles` update instead of firing it in the background.
-   - Keep the existing story creation flow intact.
-   - If the profile update fails, surface a toast instead of failing silently.
+### Mapping
+Add a new module `src/lib/themeOptions.ts` exporting:
+- `THEMES_BY_AGE: Record<string, {label, value}[]>` — exactly the 2–10 lists from the request.
+- `getThemeOptions(age: number)` — returns the list for ages 2–10, or an empty list for any age outside that range.
 
-2. **Save the same fields that are later used for prefill**
-   - Include `family_type` in the update payload.
-   - Verify the payload matches the fields loaded on mount (`family_type`, `city`, `personality`, `home_type`, `family_members`, `family_address_terms`, `sibling_age`, `last_theme`, `last_occasion`, and identity fields when chosen).
+### Form behavior (`PersonalisedStoryForm.tsx`)
+- Keep `form.theme` as the source of truth that gets submitted (no schema/API change).
+- Add local UI state: `themeChoice` (the dropdown selection: a preset value, `""`, or `"__custom"`) and `customTheme` (text).
+- Compute `options = getThemeOptions(Number(form.age))`.
+  - If `options.length === 0` (age out of 2–10 range, or age empty): skip the dropdown and render only the custom text input (same as today's text field) — this matches the "Show only Custom" choice.
+  - Otherwise render the `Select` with all options plus a final `{ label: "Custom (type your own)", value: "__custom" }`. When `__custom` is picked, show the text input beneath it.
+- When the user picks a preset, set `form.theme` to that option's `value`. When they pick Custom, set `form.theme` to whatever they type.
+- When `form.age` changes, reset `themeChoice`, `customTheme`, and `form.theme` to empty so a stale preset from a different age doesn't carry over.
+- On load: leave the dropdown blank even if `last_theme` was prefilled — clear `form.theme` after the existing prefill effect (per "Leave blank" answer). `last_occasion` and other prefilled fields are untouched.
+- Validation: keep existing required-theme check (`form.theme.trim()` non-empty). Error message stays the same; for the dropdown variant the error renders under the Select.
+- Tooltip and `FieldLabel` copy unchanged.
 
-3. **Preserve current UX and styling**
-   - No visual/layout/color changes.
-   - No dependency changes.
-   - Only adjust the persistence logic in the existing form.
-
-## Files to change
-- `src/components/PersonalisedStoryForm.tsx`
-
-## Expected result
-After creating a story, reopening the form should prefill the most recently entered details from the previous story creation instead of showing blanks or older values.
+### Out of scope
+No DB migration, no changes to story generation payload, no changes to other form fields.

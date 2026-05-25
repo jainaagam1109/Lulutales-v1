@@ -29,6 +29,7 @@ import {
 } from "@/components/StoryFormFields";
 import { createPersonalisedStory } from "@/lib/stories";
 import { supabase } from "@/integrations/myproject/client";
+import { getThemeOptions, CUSTOM_THEME_VALUE } from "@/lib/themeOptions";
 
 type Props = {
   storyType: "personalised_audio" | "bedtime_text";
@@ -130,6 +131,18 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
   const [submitting, setSubmitting] = useState(false);
   const [showIdentityConfirm, setShowIdentityConfirm] = useState(false);
   const originalProfile = useRef<{ name: string; age: string; gender: string } | null>(null);
+  const [themeChoice, setThemeChoice] = useState<string>("");
+  const [customTheme, setCustomTheme] = useState<string>("");
+  const themeOptions = useMemo(() => getThemeOptions(form.age), [form.age]);
+  const prevAgeRef = useRef<string>("");
+  useEffect(() => {
+    if (prevAgeRef.current && prevAgeRef.current !== form.age) {
+      setThemeChoice("");
+      setCustomTheme("");
+      setForm((f) => ({ ...f, theme: "" }));
+    }
+    prevAgeRef.current = form.age;
+  }, [form.age]);
 
   useEffect(() => {
     if (!profileId) {
@@ -180,7 +193,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           family_members: data.family_members ?? "",
           sibling_age: (data as any).sibling_age != null ? String((data as any).sibling_age) : "",
           address_terms: parseAddressTerms(data.family_address_terms ?? ""),
-          theme: (data as any).last_theme ?? "",
+          theme: "",
           occasion: (data as any).last_occasion ?? "",
         });
       } catch (e) {
@@ -533,14 +546,55 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
               </div>
               <div>
                 <FieldLabel tooltip="What value or lesson should the story teach?">Theme</FieldLabel>
-                <TextInput
-                  value={form.theme}
-                  onChange={(e) => set("theme", e.target.value)}
-                  onBlur={() => markTouched("theme")}
-                  placeholder="e.g. Friendship, Courage, Sharing, Healthy habits"
-                  state={themeState}
-                  errorMessage="A short theme helps us start the story."
-                />
+                {themeOptions.length > 0 ? (
+                  <>
+                    <Select
+                      value={themeChoice}
+                      onChange={(v) => {
+                        setThemeChoice(v);
+                        markTouched("theme");
+                        if (v === CUSTOM_THEME_VALUE) {
+                          set("theme", customTheme.trim());
+                        } else {
+                          set("theme", v);
+                        }
+                      }}
+                      options={[
+                        ...themeOptions,
+                        { label: "Custom (type your own)", value: CUSTOM_THEME_VALUE },
+                      ]}
+                      placeholder="Pick a theme"
+                      state={themeState}
+                    />
+                    {themeChoice === CUSTOM_THEME_VALUE && (
+                      <div className="mt-2">
+                        <TextInput
+                          value={customTheme}
+                          onChange={(e) => {
+                            setCustomTheme(e.target.value);
+                            set("theme", e.target.value);
+                          }}
+                          onBlur={() => markTouched("theme")}
+                          placeholder="e.g. Friendship, Courage, Sharing"
+                          state={themeState}
+                          errorMessage="A short theme helps us start the story."
+                        />
+                      </div>
+                    )}
+                    {themeState === "error" && themeChoice !== CUSTOM_THEME_VALUE && (
+                      <p className="mt-1 text-[11px] text-destructive">A short theme helps us start the story.</p>
+                    )}
+                  </>
+                ) : (
+                  <TextInput
+                    value={form.theme}
+                    onChange={(e) => set("theme", e.target.value)}
+                    onBlur={() => markTouched("theme")}
+                    placeholder="e.g. Friendship, Courage, Sharing, Healthy habits"
+                    state={themeState}
+                    errorMessage="A short theme helps us start the story."
+                  />
+                )}
               </div>
               <div>
                 <FieldLabel tooltip="Adds context to the story (optional)" optional>
