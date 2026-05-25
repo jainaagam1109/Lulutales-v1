@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, Sun, Moon } from "lucide-react";
 import { fetchStory } from "@/lib/stories";
 import { parseBedtimeStory } from "@/lib/parseBedtimeStory";
+import { supabase } from "@/integrations/supabase/client";
 
 const SIZES = [16, 18, 20];
 
@@ -14,6 +15,25 @@ const BedtimeReader = () => {
 
   const [sizeIdx, setSizeIdx] = useState(1);
   const [dark, setDark] = useState(false);
+  const hasRecordedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasRecordedRef.current || !story?.id) return;
+    const profileId = localStorage.getItem("lulutales_profile_id");
+    if (!profileId) return;
+    hasRecordedRef.current = true;
+    void (async () => {
+      try {
+        await supabase.from("story_analytics").insert({
+          profile_id: profileId,
+          story_id: story.id,
+          episode_id: null,
+          event_type: "play",
+          position_seconds: 0,
+        });
+      } catch {}
+    })();
+  }, [story?.id]);
 
   const fontSize = SIZES[sizeIdx];
   const { prose } = parseBedtimeStory(story?.story_text);

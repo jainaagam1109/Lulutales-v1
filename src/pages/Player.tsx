@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, Play, Pause } from "lucide-react";
 import { fetchStory, fetchEpisodes } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
+import { supabase } from "@/integrations/supabase/client";
 
 const fmt = (s: number) => {
   if (!isFinite(s)) return "0:00";
@@ -25,6 +26,7 @@ const Player = () => {
   const nav = useNavigate();
   const audioRef = useRef<HTMLAudioElement>(null);
   const shouldAutoplayRef = useRef(false);
+  const hasRecordedRef = useRef(false);
   const { data: story } = useQuery({ queryKey: ["story", id], queryFn: () => fetchStory(id) });
   const { data: episodes, isLoading: epLoading } = useQuery({
     queryKey: ["episodes", id],
@@ -122,6 +124,24 @@ const Player = () => {
     return () => clearTimeout(t);
   }, [countdown, epNum, id, nav]);
 
+
+  useEffect(() => {
+    if (!playing || hasRecordedRef.current) return;
+    const profileId = localStorage.getItem("lulutales_profile_id");
+    if (!profileId || !story?.id) return;
+    hasRecordedRef.current = true;
+    void (async () => {
+      try {
+        await supabase.from("story_analytics").insert({
+          profile_id: profileId,
+          story_id: story.id,
+          episode_id: current?.id ?? null,
+          event_type: "play",
+          position_seconds: 0,
+        });
+      } catch {}
+    })();
+  }, [playing, story?.id, current?.id]);
 
   const toggle = () => {
     const a = audioRef.current;
