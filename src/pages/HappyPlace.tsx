@@ -75,8 +75,16 @@ const HappyPlace = () => {
   });
 
   const [query, setQuery] = useState("");
-  const matches = (s: { title: string }) =>
-    !query || s.title.toLowerCase().includes(query.toLowerCase());
+  const matches = (s: Story) => {
+    if (!query) return true;
+    const q = query.toLowerCase();
+    return (
+      (s.title ?? "").toLowerCase().includes(q) ||
+      (s.theme ?? "").toLowerCase().includes(q) ||
+      (s.description ?? "").toLowerCase().includes(q) ||
+      ((s as any).story_text ?? "").toLowerCase().includes(q)
+    );
+  };
 
   const isFailed = (s: Story) =>
     !s.title ||
