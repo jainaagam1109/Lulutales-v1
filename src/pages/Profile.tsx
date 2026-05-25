@@ -477,9 +477,9 @@ const Profile = () => {
               </button>
             </div>
           )}
-          <Row icon={Shield} label="Permissions" onClick={() => toast("Coming soon")} />
-          <Row icon={Share2} label="Share app" onClick={handleShare} />
-          <Row icon={Mail} label="Contact us" sub="hello@storyloom.app" onClick={() => (window.location.href = "mailto:hello@storyloom.app")} />
+          <Row icon={Share2} label="Share app" sub="Copies link to clipboard" onClick={handleShare} />
+          <Row icon={Mail} label="Contact us" sub="jainaagam1109@gmail.com" onClick={() => (window.location.href = "mailto:jainaagam1109@gmail.com")} />
+
           <Row icon={LogOut} label="Log out" onClick={handleSignOut} danger />
         </section>
       </main>
