@@ -39,7 +39,7 @@ const StoryRowCard = ({
 );
 
 const EmptyCard = () => (
-  <div className="ml-5 flex h-32 w-44 flex-shrink-0 items-center justify-center rounded-2xl border border-dashed border-border bg-card/60 text-center text-[11px] font-semibold text-muted-foreground">
+  <div className="flex h-32 w-44 flex-shrink-0 items-center justify-center rounded-2xl border border-dashed border-border bg-card/60 text-center text-[11px] font-semibold text-muted-foreground">
     Coming soon
   </div>
 );
