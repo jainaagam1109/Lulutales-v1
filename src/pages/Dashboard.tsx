@@ -15,7 +15,7 @@ import {
   computeStreak,
   computeBadges,
 } from "@/lib/progress";
-import { getWeeklyTip } from "@/lib/weeklyTips";
+
 
 type Pronouns = { object: string; possessive: string };
 
