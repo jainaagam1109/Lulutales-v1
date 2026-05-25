@@ -9,27 +9,14 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { ProfileAvatarButton } from "@/components/ProfileAvatarButton";
 import { TagChip } from "@/components/TagChip";
 
-type CardVisual = "sparkle" | "moon" | "headphones";
-
-const visualFor = (v: CardVisual) =>
-  v === "sparkle" ? "✨" : v === "moon" ? "🌙" : "🎧";
-
-const StoryRowCard = ({
-  story,
-  visual,
-  to,
-}: {
-  story: Story;
-  visual: CardVisual;
-  to: string;
-}) => (
+const StoryRowCard = ({ story, to }: { story: Story; to: string }) => (
   <Link
     to={to}
     state={{ from: "/happy-place" }}
     className="flex w-44 flex-shrink-0 flex-col gap-2 rounded-2xl border border-border bg-card p-3 shadow-soft transition-colors hover:border-primary/40"
   >
     <div className="flex h-20 items-center justify-center rounded-xl bg-gradient-card text-4xl">
-      {visualFor(visual)}
+      {story.thumbnail && story.thumbnail.trim() ? story.thumbnail : "📖"}
     </div>
     {story.theme && <TagChip label={story.theme} />}
     <div className="line-clamp-2 text-xs font-bold leading-snug text-foreground">
@@ -46,22 +33,21 @@ const EmptyCard = () => (
 
 const Row = ({
   stories,
-  visual,
   linkFor,
 }: {
   stories: Story[];
-  visual: CardVisual;
   linkFor: (s: Story) => string;
 }) => {
   if (stories.length === 0) return <EmptyCard />;
   return (
     <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
       {stories.map((s) => (
-        <StoryRowCard key={s.id} story={s} visual={visual} to={linkFor(s)} />
+        <StoryRowCard key={s.id} story={s} to={linkFor(s)} />
       ))}
     </div>
   );
 };
+
 
 const HappyPlace = () => {
   const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
@@ -122,7 +108,6 @@ const HappyPlace = () => {
         <div className="flex items-center gap-3">
           <ProfileAvatarButton />
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-primary-deep">For {childName}</div>
             <h1 className="text-2xl font-extrabold text-foreground">{childName}'s Happy Place</h1>
           </div>
         </div>
@@ -141,18 +126,19 @@ const HappyPlace = () => {
       <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-6">
         <section>
           <SectionHeader title={`Curated for ${childName}`} />
-          <Row stories={personalised} visual="sparkle" linkFor={(s) => `/story/${s.id}`} />
+          <Row stories={personalised} linkFor={(s) => `/story/${s.id}`} />
         </section>
 
         <section>
           <SectionHeader title="Bedtime Stories" />
-          <Row stories={bedtime} visual="moon" linkFor={(s) => `/bedtime/${s.id}`} />
+          <Row stories={bedtime} linkFor={(s) => `/bedtime/${s.id}`} />
         </section>
 
         <section>
           <SectionHeader title="Story Room" />
-          <Row stories={storyRoom} visual="headphones" linkFor={(s) => `/story/${s.id}`} />
+          <Row stories={storyRoom} linkFor={(s) => `/story/${s.id}`} />
         </section>
+
       </main>
 
       <BottomNav />
