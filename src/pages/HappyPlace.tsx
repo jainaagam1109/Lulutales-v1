@@ -9,21 +9,29 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { ProfileAvatarButton } from "@/components/ProfileAvatarButton";
 import { TagChip } from "@/components/TagChip";
 
-const StoryRowCard = ({ story, to }: { story: Story; to: string }) => (
-  <Link
-    to={to}
-    state={{ from: "/happy-place" }}
-    className="flex w-44 flex-shrink-0 flex-col gap-2 rounded-2xl border border-border bg-card p-3 shadow-soft transition-colors hover:border-primary/40"
-  >
-    <div className="flex h-20 items-center justify-center rounded-xl bg-gradient-card text-4xl">
-      {story.thumbnail && story.thumbnail.trim() ? story.thumbnail : "📖"}
-    </div>
-    {story.theme && <TagChip label={story.theme} />}
-    <div className="line-clamp-2 text-xs font-bold leading-snug text-foreground">
-      {story.title}
-    </div>
-  </Link>
-);
+import { getThemeVisual } from "@/lib/themeEmoji";
+
+const StoryRowCard = ({ story, to }: { story: Story; to: string }) => {
+  const visual = getThemeVisual(story.theme);
+  return (
+    <Link
+      to={to}
+      state={{ from: "/happy-place" }}
+      className="flex w-44 flex-shrink-0 flex-col gap-2 rounded-2xl border border-border bg-card p-3 shadow-soft transition-colors hover:border-primary/40"
+    >
+      <div
+        className="flex h-20 items-center justify-center rounded-xl text-4xl"
+        style={{ backgroundColor: visual.bg }}
+      >
+        {visual.emoji}
+      </div>
+      {story.theme && <TagChip label={story.theme} />}
+      <div className="line-clamp-2 text-xs font-bold leading-snug text-foreground">
+        {story.title}
+      </div>
+    </Link>
+  );
+};
 
 const EmptyCard = () => (
   <div className="flex h-32 w-44 flex-shrink-0 items-center justify-center rounded-2xl border border-dashed border-border bg-card/60 text-center text-[11px] font-semibold text-muted-foreground">
