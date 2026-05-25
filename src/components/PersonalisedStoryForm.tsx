@@ -181,7 +181,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           family_members: data.family_members ?? "",
           sibling_age: (data as any).sibling_age != null ? String((data as any).sibling_age) : "",
           address_terms: parseAddressTerms(data.family_address_terms ?? ""),
-          theme: (data as any).last_theme ?? "",
+          theme: "",
           occasion: (data as any).last_occasion ?? "",
         });
       } catch (e) {
