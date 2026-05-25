@@ -129,7 +129,7 @@ const Dashboard = () => {
     return [...featured, ...others].slice(0, 2);
   }, [allStories]);
 
-  const { week, tip } = getWeeklyTip();
+
 
   return (
     <PhoneShell>
