@@ -26,6 +26,8 @@ export const MiniPlayer = () => {
   if (location.pathname.startsWith("/player/")) return null;
   // Hide on Home — the dashboard already surfaces the ongoing story prominently
   if (location.pathname === "/") return null;
+  // Hide on Magic Hub — the page renders its own promoted player strip
+  if (location.pathname === "/magic-hub") return null;
 
   return (
     <Link

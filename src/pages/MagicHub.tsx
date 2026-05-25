@@ -1,35 +1,61 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Headphones, Moon, BookOpen } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, Headphones, Moon, BookOpen } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { ProfileAvatarButton } from "@/components/ProfileAvatarButton";
+import { MiniPlayer } from "@/components/MiniPlayer";
+import { fetchStoriesForProfile } from "@/lib/stories";
 
 const MagicHub = () => {
   const nav = useNavigate();
+  const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
+
+  const { data: stories = [] } = useQuery({
+    queryKey: ["stories-for-profile", profileId],
+    queryFn: () => (profileId ? fetchStoriesForProfile(profileId) : Promise.resolve([])),
+    enabled: !!profileId,
+  });
+
+  const hasGenerated = useMemo(() => stories.some((s) => s.is_generated), [stories]);
+
+  const lastId = typeof window !== "undefined" ? localStorage.getItem("lulutales_last_story") : null;
+  const lastCompleted = typeof window !== "undefined" && localStorage.getItem("lulutales_last_story_completed") === "1";
+  const showPlayer = !!lastId && !lastCompleted;
 
   const cards = [
     {
+      sectionLabel: "Listen",
       title: "Generate audio story",
       desc: "A bespoke tale, narrated for your child",
-      icon: Headphones,
+      formatHint: "🎧 Narrated audio · ~5 min",
+      emoji: "🎙",
+      iconBg: "bg-tag-warm-bg text-tag-warm-fg",
       tag: "BETA",
-      tagClass: "bg-tag-mint-bg text-tag-mint-fg border-tag-mint-border",
+      tagClass: "bg-tag-warm-bg text-tag-warm-fg border-tag-warm-border",
       onClick: () => nav("/magic-hub/audio"),
       disabled: false,
     },
     {
+      sectionLabel: "Read",
       title: "Generate bedtime story",
       desc: "Calm, gentle stories for sleep time",
-      icon: Moon,
+      formatHint: "📖 Read-aloud text · ~3 min",
+      emoji: "🌙",
+      iconBg: "bg-tag-mint-bg text-tag-mint-fg",
       tag: "BETA",
       tagClass: "bg-tag-mint-bg text-tag-mint-fg border-tag-mint-border",
       onClick: () => nav("/magic-hub/bedtime"),
       disabled: false,
     },
     {
+      sectionLabel: "Coming soon",
       title: "Personalised story book",
       desc: "Printed keepsake delivered to your door",
-      icon: BookOpen,
+      formatHint: "",
+      emoji: "",
+      iconBg: "bg-muted text-muted-foreground",
       tag: "COMING SOON",
       tagClass: "bg-muted text-muted-foreground border-border",
       onClick: () => {},
@@ -45,33 +71,60 @@ const MagicHub = () => {
         </button>
         <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">Create</div>
         <h1 className="text-2xl font-extrabold text-foreground">Magic Hub</h1>
+        {!hasGenerated && (
+          <p className="mt-1 text-xs text-muted-foreground">✨ Tap below to create your first story</p>
+        )}
       </header>
 
-      <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-3">
-        {cards.map(({ title, desc, icon: Icon, tag, tagClass, onClick, disabled }) => (
-          <button
-            key={title}
-            onClick={onClick}
-            disabled={disabled}
-            className={`flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-left shadow-soft transition-colors ${
-              disabled ? "opacity-60" : "hover:border-primary"
-            }`}
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-card text-primary-deep">
-              <Icon className="h-6 w-6" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <div className="text-sm font-extrabold text-foreground">{title}</div>
-                <span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${tagClass}`}>
-                  {tag}
-                </span>
+      <main className="flex-1 overflow-y-auto px-5 pb-6">
+        <div className="space-y-3">
+          {cards.map(({ sectionLabel, title, desc, formatHint, emoji, iconBg, tag, tagClass, onClick, disabled }) => (
+            <div key={title}>
+              <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {sectionLabel}
               </div>
-              <div className="mt-0.5 text-xs text-muted-foreground">{desc}</div>
+              <button
+                onClick={onClick}
+                disabled={disabled}
+                className={`flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-left shadow-soft transition-colors ${
+                  disabled ? "opacity-50" : "hover:border-primary"
+                }`}
+              >
+                <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl ${iconBg} text-2xl`}>
+                  {emoji ? emoji : <Lock className="h-6 w-6" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm font-extrabold text-foreground">{title}</div>
+                    <span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${tagClass}`}>
+                      {tag}
+                    </span>
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground">{desc}</div>
+                  {formatHint && (
+                    <div className="mt-1 text-[10px] text-muted-foreground">{formatHint}</div>
+                  )}
+                  {disabled && (
+                    <div className="mt-1 text-[10px] text-muted-foreground">Notify me</div>
+                  )}
+                </div>
+                {!disabled ? (
+                  <ChevronRight className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                ) : (
+                  <Lock className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                )}
+              </button>
             </div>
-            {!disabled && <ChevronRight className="h-5 w-5 text-muted-foreground" />}
-          </button>
-        ))}
+          ))}
+        </div>
+
+        {showPlayer && (
+          <div className="mt-3 bg-gradient-primary p-[2px] rounded-2xl shadow-glow">
+            <div className="rounded-[calc(1rem-2px)] overflow-hidden bg-card">
+              <MiniPlayer />
+            </div>
+          </div>
+        )}
       </main>
 
       <BottomNav />
