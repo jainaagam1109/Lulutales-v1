@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, Play, Pause } from "lucide-react";
 import { fetchStory, fetchEpisodes } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
+import { supabase } from "@/integrations/supabase/client";
 
 const fmt = (s: number) => {
   if (!isFinite(s)) return "0:00";
@@ -25,6 +26,7 @@ const Player = () => {
   const nav = useNavigate();
   const audioRef = useRef<HTMLAudioElement>(null);
   const shouldAutoplayRef = useRef(false);
+  const hasRecordedRef = useRef(false);
   const { data: story } = useQuery({ queryKey: ["story", id], queryFn: () => fetchStory(id) });
   const { data: episodes, isLoading: epLoading } = useQuery({
     queryKey: ["episodes", id],

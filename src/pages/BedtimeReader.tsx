@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, Sun, Moon } from "lucide-react";
 import { fetchStory } from "@/lib/stories";
 import { parseBedtimeStory } from "@/lib/parseBedtimeStory";
+import { supabase } from "@/integrations/supabase/client";
 
 const SIZES = [16, 18, 20];
 
