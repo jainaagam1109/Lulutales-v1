@@ -22,13 +22,17 @@ const BedtimeReader = () => {
     const profileId = localStorage.getItem("lulutales_profile_id");
     if (!profileId) return;
     hasRecordedRef.current = true;
-    supabase.from("story_analytics").insert({
-      profile_id: profileId,
-      story_id: story.id,
-      episode_id: null,
-      event_type: "play",
-      position_seconds: 0,
-    }).then(() => {}).catch(() => {});
+    void (async () => {
+      try {
+        await supabase.from("story_analytics").insert({
+          profile_id: profileId,
+          story_id: story.id,
+          episode_id: null,
+          event_type: "play",
+          position_seconds: 0,
+        });
+      } catch {}
+    })();
   }, [story?.id]);
 
   const fontSize = SIZES[sizeIdx];
