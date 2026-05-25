@@ -69,7 +69,7 @@ const MagicHub = () => {
         <button onClick={() => nav(-1)} className="mb-3 flex items-center gap-1 text-xs text-primary-deep">
           <ChevronLeft className="h-4 w-4" /> Back
         </button>
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">Create</div>
+        
         <h1 className="text-2xl font-extrabold text-foreground">Magic Hub</h1>
         {!hasGenerated && (
           <p className="mt-1 text-xs text-muted-foreground">✨ Tap below to create your first story</p>
