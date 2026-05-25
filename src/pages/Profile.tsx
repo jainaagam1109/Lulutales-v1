@@ -5,7 +5,6 @@ import {
   ChevronRight,
   BarChart3,
   Users,
-  Shield,
   Share2,
   Mail,
   LogOut,
@@ -114,14 +113,22 @@ const Profile = () => {
   const [kids, setKids] = useState<Kid[]>([]);
   const activeId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
   const [showKids, setShowKids] = useState(false);
-  const [sessionMins, setSessionMins] = useState<number>(() =>
-    parseInt(localStorage.getItem("lulutales_session_minutes") ?? "30", 10)
-  );
   const [editingKidId, setEditingKidId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Kid>>({});
+  const [editingParent, setEditingParent] = useState(false);
+  const [parentForm, setParentForm] = useState({
+    name: (user?.user_metadata?.full_name as string) ?? user?.email?.split("@")[0] ?? "",
+    email: user?.email ?? "",
+    phone: (user?.user_metadata?.phone as string) ?? "",
+  });
 
   useEffect(() => {
     if (!user) return;
+    setParentForm({
+      name: (user.user_metadata?.full_name as string) ?? user.email?.split("@")[0] ?? "",
+      email: user.email ?? "",
+      phone: (user.user_metadata?.phone as string) ?? "",
+    });
     supabase
       .from("child_profiles")
       .select(
@@ -132,9 +139,23 @@ const Profile = () => {
       .then(({ data }) => setKids(data ?? []));
   }, [user]);
 
-  useEffect(() => {
-    localStorage.setItem("lulutales_session_minutes", String(sessionMins));
-  }, [sessionMins]);
+  const saveParent = async () => {
+    const name = parentForm.name.trim();
+    const email = parentForm.email.trim();
+    if (!name) return toast.error("Name is required");
+    if (!email) return toast.error("Email is required");
+    const payload: { email?: string; data?: Record<string, unknown> } = {
+      data: { full_name: name, phone: parentForm.phone.trim() || null },
+    };
+    if (email && email !== user?.email) payload.email = email;
+    const { error } = await supabase.auth.updateUser(payload);
+    if (error) return toast.error(error.message);
+    setEditingParent(false);
+    toast.success(
+      email !== user?.email ? "Saved. Check your new email to confirm the change." : "Profile updated"
+    );
+  };
+
 
   const switchTo = (k: Kid) => {
     localStorage.setItem("lulutales_profile_id", k.id);
@@ -201,15 +222,14 @@ const Profile = () => {
 
   const handleShare = async () => {
     const url = window.location.origin;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "StoryLoom", url });
-      } catch {}
-    } else {
+    try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied");
+    } catch {
+      toast.error("Could not copy link");
     }
   };
+
 
   const parentName = user?.email?.split("@")[0] ?? "Parent";
 
@@ -226,34 +246,69 @@ const Profile = () => {
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-card text-2xl ring-2 ring-card">
             👩
           </div>
-          <div>
-            <div className="text-lg font-extrabold capitalize text-foreground">{parentName}</div>
-            <div className="text-xs text-muted-foreground">
-              Parent account · {kids.length} child {kids.length === 1 ? "profile" : "profiles"}
+          <div className="flex-1 min-w-0">
+            <div className="text-lg font-extrabold capitalize text-foreground truncate">{parentForm.name || parentName}</div>
+            <div className="text-xs text-muted-foreground truncate">
+              {user?.email} · {kids.length} child {kids.length === 1 ? "profile" : "profiles"}
             </div>
           </div>
+          {!editingParent && (
+            <button
+              onClick={() => setEditingParent(true)}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-primary-deep hover:bg-primary/10"
+              aria-label="Edit parent account"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
 
-        <section className="rounded-2xl border border-border bg-card p-4 shadow-soft">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">Session settings</div>
-          <div className="mt-2 flex items-center justify-between gap-3">
+        {editingParent && (
+          <section className="rounded-2xl border border-border bg-card p-4 shadow-soft space-y-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">Edit parent account</div>
             <div>
-              <div className="text-sm font-bold text-foreground">Session time limit</div>
-              <div className="text-[11px] text-muted-foreground">App auto-pauses after this many minutes</div>
-            </div>
-            <div className="flex items-center gap-1">
-              <input
-                type="number"
-                min={5}
-                max={240}
-                value={sessionMins}
-                onChange={(e) => setSessionMins(parseInt(e.target.value, 10) || 0)}
-                className="w-16 rounded-xl border border-border bg-card px-2 py-1.5 text-center text-base font-extrabold text-foreground focus:border-primary focus:outline-none"
+              <Label>Name</Label>
+              <TextInput
+                value={parentForm.name}
+                onChange={(e) => setParentForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="Your name"
               />
-              <span className="text-xs text-muted-foreground">min</span>
             </div>
-          </div>
-        </section>
+            <div>
+              <Label>Email</Label>
+              <TextInput
+                type="email"
+                value={parentForm.email}
+                onChange={(e) => setParentForm((f) => ({ ...f, email: e.target.value }))}
+                placeholder="you@example.com"
+              />
+            </div>
+            <div>
+              <Label>Contact number</Label>
+              <TextInput
+                type="tel"
+                value={parentForm.phone}
+                onChange={(e) => setParentForm((f) => ({ ...f, phone: e.target.value }))}
+                placeholder="+91 ..."
+              />
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={saveParent}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-gradient-primary py-2.5 text-xs font-bold text-primary-foreground shadow-glow"
+              >
+                <Check className="h-3.5 w-3.5" /> Save
+              </button>
+              <button
+                onClick={() => setEditingParent(false)}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-border bg-card py-2.5 text-xs font-bold text-muted-foreground"
+              >
+                <X className="h-3.5 w-3.5" /> Cancel
+              </button>
+            </div>
+          </section>
+        )}
+
 
         <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
           <Row icon={BarChart3} label="View Insights" onClick={() => nav("/insights")} />
@@ -421,9 +476,9 @@ const Profile = () => {
               </button>
             </div>
           )}
-          <Row icon={Shield} label="Permissions" onClick={() => toast("Coming soon")} />
-          <Row icon={Share2} label="Share app" onClick={handleShare} />
-          <Row icon={Mail} label="Contact us" sub="hello@storyloom.app" onClick={() => (window.location.href = "mailto:hello@storyloom.app")} />
+          <Row icon={Share2} label="Share app" sub="Copies link to clipboard" onClick={handleShare} />
+          <Row icon={Mail} label="Contact us" sub="jainaagam1109@gmail.com" onClick={() => (window.location.href = "mailto:jainaagam1109@gmail.com")} />
+
           <Row icon={LogOut} label="Log out" onClick={handleSignOut} danger />
         </section>
       </main>
