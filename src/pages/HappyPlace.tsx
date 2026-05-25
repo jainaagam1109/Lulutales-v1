@@ -108,7 +108,6 @@ const HappyPlace = () => {
         <div className="flex items-center gap-3">
           <ProfileAvatarButton />
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-primary-deep">For {childName}</div>
             <h1 className="text-2xl font-extrabold text-foreground">{childName}'s Happy Place</h1>
           </div>
         </div>
@@ -127,18 +126,19 @@ const HappyPlace = () => {
       <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-6">
         <section>
           <SectionHeader title={`Curated for ${childName}`} />
-          <Row stories={personalised} visual="sparkle" linkFor={(s) => `/story/${s.id}`} />
+          <Row stories={personalised} linkFor={(s) => `/story/${s.id}`} />
         </section>
 
         <section>
           <SectionHeader title="Bedtime Stories" />
-          <Row stories={bedtime} visual="moon" linkFor={(s) => `/bedtime/${s.id}`} />
+          <Row stories={bedtime} linkFor={(s) => `/bedtime/${s.id}`} />
         </section>
 
         <section>
           <SectionHeader title="Story Room" />
-          <Row stories={storyRoom} visual="headphones" linkFor={(s) => `/story/${s.id}`} />
+          <Row stories={storyRoom} linkFor={(s) => `/story/${s.id}`} />
         </section>
+
       </main>
 
       <BottomNav />
