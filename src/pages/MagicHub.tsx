@@ -29,7 +29,7 @@ const MagicHub = () => {
       sectionLabel: "Listen",
       title: "Generate audio story",
       desc: "A bespoke tale, narrated for your child",
-      formatHint: "🎧 Narrated audio · ~5 min",
+      formatHint: "🎧 Narrated audio · ~5-15 min",
       emoji: "🎙",
       iconBg: "bg-tag-warm-bg text-tag-warm-fg",
       tag: "BETA",
@@ -41,8 +41,8 @@ const MagicHub = () => {
       sectionLabel: "Read",
       title: "Generate bedtime story",
       desc: "Calm, gentle stories for sleep time",
-      formatHint: "📖 Read-aloud text · ~3 min",
-      emoji: "🌙",
+      formatHint: "📖 Read-aloud text · ~3-10 min",
+      emoji: "📖",
       iconBg: "bg-tag-mint-bg text-tag-mint-fg",
       tag: "BETA",
       tagClass: "bg-tag-mint-bg text-tag-mint-fg border-tag-mint-border",
@@ -69,7 +69,7 @@ const MagicHub = () => {
         <button onClick={() => nav(-1)} className="mb-3 flex items-center gap-1 text-xs text-primary-deep">
           <ChevronLeft className="h-4 w-4" /> Back
         </button>
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">Create</div>
+        
         <h1 className="text-2xl font-extrabold text-foreground">Magic Hub</h1>
         {!hasGenerated && (
           <p className="mt-1 text-xs text-muted-foreground">✨ Tap below to create your first story</p>
