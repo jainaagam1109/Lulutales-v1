@@ -123,7 +123,7 @@ const HappyPlace = () => {
           <ProfileAvatarButton />
           <div>
             <div className="text-[10px] uppercase tracking-wider text-primary-deep">For {childName}</div>
-            <h1 className="text-2xl font-extrabold text-foreground">My Happy Place</h1>
+            <h1 className="text-2xl font-extrabold text-foreground">{childName}'s Happy Place</h1>
           </div>
         </div>
 
