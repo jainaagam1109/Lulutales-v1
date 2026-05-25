@@ -39,7 +39,7 @@ const StoryRowCard = ({
 );
 
 const EmptyCard = () => (
-  <div className="ml-5 flex h-32 w-44 flex-shrink-0 items-center justify-center rounded-2xl border border-dashed border-border bg-card/60 text-center text-[11px] font-semibold text-muted-foreground">
+  <div className="flex h-32 w-44 flex-shrink-0 items-center justify-center rounded-2xl border border-dashed border-border bg-card/60 text-center text-[11px] font-semibold text-muted-foreground">
     Coming soon
   </div>
 );
@@ -75,8 +75,16 @@ const HappyPlace = () => {
   });
 
   const [query, setQuery] = useState("");
-  const matches = (s: { title: string }) =>
-    !query || s.title.toLowerCase().includes(query.toLowerCase());
+  const matches = (s: Story) => {
+    if (!query) return true;
+    const q = query.toLowerCase();
+    return (
+      (s.title ?? "").toLowerCase().includes(q) ||
+      (s.theme ?? "").toLowerCase().includes(q) ||
+      (s.description ?? "").toLowerCase().includes(q) ||
+      ((s as any).story_text ?? "").toLowerCase().includes(q)
+    );
+  };
 
   const isFailed = (s: Story) =>
     !s.title ||
@@ -115,7 +123,7 @@ const HappyPlace = () => {
           <ProfileAvatarButton />
           <div>
             <div className="text-[10px] uppercase tracking-wider text-primary-deep">For {childName}</div>
-            <h1 className="text-2xl font-extrabold text-foreground">My Happy Place</h1>
+            <h1 className="text-2xl font-extrabold text-foreground">{childName}'s Happy Place</h1>
           </div>
         </div>
 
@@ -130,7 +138,7 @@ const HappyPlace = () => {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto pb-6 space-y-6">
+      <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-6">
         <section>
           <SectionHeader title={`Curated for ${childName}`} />
           <Row stories={personalised} visual="sparkle" linkFor={(s) => `/story/${s.id}`} />
