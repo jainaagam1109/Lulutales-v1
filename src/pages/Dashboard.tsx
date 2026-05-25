@@ -116,26 +116,18 @@ const Dashboard = () => {
     };
   }, [profileId, stories.length]);
 
-  // Story-room picks: global stories matched to child age + themes already enjoyed
+  // Story-room picks: only pre-recorded stories from the story room.
+  // Priority: featured (latest recommended) first, then latest other stories.
   const recommended = useMemo(() => {
-    const bucket = ageBucket(profile?.age);
-    const ownIds = new Set(generatedStories.map((s) => s.id));
-    const completedThemes = new Set(
-      (profileId ? getCompletions(profileId) : []).map((c) => (c.theme ?? "").toLowerCase()).filter(Boolean)
-    );
-    const pool = allStories.filter((s) => !ownIds.has(s.id));
-    const scored = pool
-      .map((s) => {
-        let score = 0;
-        if (bucket && s.age_group && s.age_group.includes(bucket)) score += 2;
-        if (s.theme && completedThemes.has(s.theme.toLowerCase())) score += 2;
-        if (s.is_featured) score += 1;
-        return { s, score };
-      })
-      .sort((a, b) => b.score - a.score)
-      .map((x) => x.s);
-    return scored.slice(0, 4);
-  }, [allStories, generatedStories, profile?.age, profileId, stories.length]);
+    const pool = allStories.filter((s) => s.story_type === "pre_recorded");
+    const featured = pool
+      .filter((s) => s.is_featured)
+      .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+    const others = pool
+      .filter((s) => !s.is_featured)
+      .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+    return [...featured, ...others].slice(0, 2);
+  }, [allStories]);
 
   const { week, tip } = getWeeklyTip();
 
