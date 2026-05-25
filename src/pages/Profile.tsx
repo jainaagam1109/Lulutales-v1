@@ -114,14 +114,22 @@ const Profile = () => {
   const [kids, setKids] = useState<Kid[]>([]);
   const activeId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
   const [showKids, setShowKids] = useState(false);
-  const [sessionMins, setSessionMins] = useState<number>(() =>
-    parseInt(localStorage.getItem("lulutales_session_minutes") ?? "30", 10)
-  );
   const [editingKidId, setEditingKidId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Kid>>({});
+  const [editingParent, setEditingParent] = useState(false);
+  const [parentForm, setParentForm] = useState({
+    name: (user?.user_metadata?.full_name as string) ?? user?.email?.split("@")[0] ?? "",
+    email: user?.email ?? "",
+    phone: (user?.user_metadata?.phone as string) ?? "",
+  });
 
   useEffect(() => {
     if (!user) return;
+    setParentForm({
+      name: (user.user_metadata?.full_name as string) ?? user.email?.split("@")[0] ?? "",
+      email: user.email ?? "",
+      phone: (user.user_metadata?.phone as string) ?? "",
+    });
     supabase
       .from("child_profiles")
       .select(
@@ -132,9 +140,23 @@ const Profile = () => {
       .then(({ data }) => setKids(data ?? []));
   }, [user]);
 
-  useEffect(() => {
-    localStorage.setItem("lulutales_session_minutes", String(sessionMins));
-  }, [sessionMins]);
+  const saveParent = async () => {
+    const name = parentForm.name.trim();
+    const email = parentForm.email.trim();
+    if (!name) return toast.error("Name is required");
+    if (!email) return toast.error("Email is required");
+    const payload: { email?: string; data?: Record<string, unknown> } = {
+      data: { full_name: name, phone: parentForm.phone.trim() || null },
+    };
+    if (email && email !== user?.email) payload.email = email;
+    const { error } = await supabase.auth.updateUser(payload);
+    if (error) return toast.error(error.message);
+    setEditingParent(false);
+    toast.success(
+      email !== user?.email ? "Saved. Check your new email to confirm the change." : "Profile updated"
+    );
+  };
+
 
   const switchTo = (k: Kid) => {
     localStorage.setItem("lulutales_profile_id", k.id);
