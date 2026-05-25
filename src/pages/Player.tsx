@@ -125,6 +125,20 @@ const Player = () => {
   }, [countdown, epNum, id, nav]);
 
 
+  useEffect(() => {
+    if (!playing || hasRecordedRef.current) return;
+    const profileId = localStorage.getItem("lulutales_profile_id");
+    if (!profileId || !story?.id) return;
+    hasRecordedRef.current = true;
+    supabase.from("story_analytics").insert({
+      profile_id: profileId,
+      story_id: story.id,
+      episode_id: current?.id ?? null,
+      event_type: "play",
+      position_seconds: 0,
+    }).then(() => {}).catch(() => {});
+  }, [playing, story?.id, current?.id]);
+
   const toggle = () => {
     const a = audioRef.current;
     if (!a) return;

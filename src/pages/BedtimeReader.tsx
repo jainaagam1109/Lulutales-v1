@@ -15,6 +15,21 @@ const BedtimeReader = () => {
 
   const [sizeIdx, setSizeIdx] = useState(1);
   const [dark, setDark] = useState(false);
+  const hasRecordedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasRecordedRef.current || !story?.id) return;
+    const profileId = localStorage.getItem("lulutales_profile_id");
+    if (!profileId) return;
+    hasRecordedRef.current = true;
+    supabase.from("story_analytics").insert({
+      profile_id: profileId,
+      story_id: story.id,
+      episode_id: null,
+      event_type: "play",
+      position_seconds: 0,
+    }).then(() => {}).catch(() => {});
+  }, [story?.id]);
 
   const fontSize = SIZES[sizeIdx];
   const { prose } = parseBedtimeStory(story?.story_text);
