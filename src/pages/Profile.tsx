@@ -5,7 +5,6 @@ import {
   ChevronRight,
   BarChart3,
   Users,
-  Shield,
   Share2,
   Mail,
   LogOut,
@@ -14,6 +13,7 @@ import {
   Info,
   Check,
   X,
+  UserCog,
 } from "lucide-react";
 import { toast } from "sonner";
 import { PhoneShell } from "@/components/PhoneShell";
