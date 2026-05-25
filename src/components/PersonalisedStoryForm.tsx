@@ -131,6 +131,18 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
   const [submitting, setSubmitting] = useState(false);
   const [showIdentityConfirm, setShowIdentityConfirm] = useState(false);
   const originalProfile = useRef<{ name: string; age: string; gender: string } | null>(null);
+  const [themeChoice, setThemeChoice] = useState<string>("");
+  const [customTheme, setCustomTheme] = useState<string>("");
+  const themeOptions = useMemo(() => getThemeOptions(form.age), [form.age]);
+  const prevAgeRef = useRef<string>("");
+  useEffect(() => {
+    if (prevAgeRef.current && prevAgeRef.current !== form.age) {
+      setThemeChoice("");
+      setCustomTheme("");
+      setForm((f) => ({ ...f, theme: "" }));
+    }
+    prevAgeRef.current = form.age;
+  }, [form.age]);
 
   useEffect(() => {
     if (!profileId) {
