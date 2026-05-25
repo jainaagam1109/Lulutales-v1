@@ -223,15 +223,14 @@ const Profile = () => {
 
   const handleShare = async () => {
     const url = window.location.origin;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "StoryLoom", url });
-      } catch {}
-    } else {
+    try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied");
+    } catch {
+      toast.error("Could not copy link");
     }
   };
+
 
   const parentName = user?.email?.split("@")[0] ?? "Parent";
 
