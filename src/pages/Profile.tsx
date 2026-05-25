@@ -247,34 +247,69 @@ const Profile = () => {
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-card text-2xl ring-2 ring-card">
             👩
           </div>
-          <div>
-            <div className="text-lg font-extrabold capitalize text-foreground">{parentName}</div>
-            <div className="text-xs text-muted-foreground">
-              Parent account · {kids.length} child {kids.length === 1 ? "profile" : "profiles"}
+          <div className="flex-1 min-w-0">
+            <div className="text-lg font-extrabold capitalize text-foreground truncate">{parentForm.name || parentName}</div>
+            <div className="text-xs text-muted-foreground truncate">
+              {user?.email} · {kids.length} child {kids.length === 1 ? "profile" : "profiles"}
             </div>
           </div>
+          {!editingParent && (
+            <button
+              onClick={() => setEditingParent(true)}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-primary-deep hover:bg-primary/10"
+              aria-label="Edit parent account"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
 
-        <section className="rounded-2xl border border-border bg-card p-4 shadow-soft">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">Session settings</div>
-          <div className="mt-2 flex items-center justify-between gap-3">
+        {editingParent && (
+          <section className="rounded-2xl border border-border bg-card p-4 shadow-soft space-y-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">Edit parent account</div>
             <div>
-              <div className="text-sm font-bold text-foreground">Session time limit</div>
-              <div className="text-[11px] text-muted-foreground">App auto-pauses after this many minutes</div>
-            </div>
-            <div className="flex items-center gap-1">
-              <input
-                type="number"
-                min={5}
-                max={240}
-                value={sessionMins}
-                onChange={(e) => setSessionMins(parseInt(e.target.value, 10) || 0)}
-                className="w-16 rounded-xl border border-border bg-card px-2 py-1.5 text-center text-base font-extrabold text-foreground focus:border-primary focus:outline-none"
+              <Label>Name</Label>
+              <TextInput
+                value={parentForm.name}
+                onChange={(e) => setParentForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="Your name"
               />
-              <span className="text-xs text-muted-foreground">min</span>
             </div>
-          </div>
-        </section>
+            <div>
+              <Label>Email</Label>
+              <TextInput
+                type="email"
+                value={parentForm.email}
+                onChange={(e) => setParentForm((f) => ({ ...f, email: e.target.value }))}
+                placeholder="you@example.com"
+              />
+            </div>
+            <div>
+              <Label>Contact number</Label>
+              <TextInput
+                type="tel"
+                value={parentForm.phone}
+                onChange={(e) => setParentForm((f) => ({ ...f, phone: e.target.value }))}
+                placeholder="+91 ..."
+              />
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={saveParent}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-gradient-primary py-2.5 text-xs font-bold text-primary-foreground shadow-glow"
+              >
+                <Check className="h-3.5 w-3.5" /> Save
+              </button>
+              <button
+                onClick={() => setEditingParent(false)}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-border bg-card py-2.5 text-xs font-bold text-muted-foreground"
+              >
+                <X className="h-3.5 w-3.5" /> Cancel
+              </button>
+            </div>
+          </section>
+        )}
+
 
         <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
           <Row icon={BarChart3} label="View Insights" onClick={() => nav("/insights")} />
