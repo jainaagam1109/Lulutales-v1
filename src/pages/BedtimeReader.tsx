@@ -20,18 +20,23 @@ const BedtimeReader = () => {
   useEffect(() => {
     if (hasRecordedRef.current || !story?.id) return;
     const profileId = localStorage.getItem("lulutales_profile_id");
-    if (!profileId) return;
+    if (!profileId) {
+      console.warn("[analytics] bedtime skipped: no profileId in localStorage");
+      return;
+    }
     hasRecordedRef.current = true;
     void (async () => {
-      try {
-        await supabase.from("story_analytics").insert({
-          profile_id: profileId,
-          story_id: story.id,
-          episode_id: null,
-          event_type: "play",
-          position_seconds: 0,
-        });
-      } catch {}
+      const { data: userData } = await supabase.auth.getUser();
+      console.log("[analytics] bedtime attempt", { profileId, storyId: story.id, authUid: userData?.user?.id ?? null });
+      const { error } = await supabase.from("story_analytics").insert({
+        profile_id: profileId,
+        story_id: story.id,
+        episode_id: null,
+        event_type: "play",
+        position_seconds: 0,
+      });
+      if (error) console.warn("[analytics] bedtime insert failed", error);
+      else console.log("[analytics] bedtime insert ok");
     })();
   }, [story?.id]);
 
