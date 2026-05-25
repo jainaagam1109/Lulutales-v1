@@ -29,6 +29,7 @@ import {
 } from "@/components/StoryFormFields";
 import { createPersonalisedStory } from "@/lib/stories";
 import { supabase } from "@/integrations/myproject/client";
+import { getThemeOptions, CUSTOM_THEME_VALUE } from "@/lib/themeOptions";
 
 type Props = {
   storyType: "personalised_audio" | "bedtime_text";
