@@ -1,20 +1,39 @@
 import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Play, Sparkles, BarChart3, ChevronRight, Loader2 } from "lucide-react";
+import { Play, Wand2, ChevronRight, Loader2, BarChart3, Flame, Palette, BookOpen } from "lucide-react";
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { ProfileAvatarButton } from "@/components/ProfileAvatarButton";
-import { fetchStoriesForProfile } from "@/lib/stories";
+import { StoryCard } from "@/components/StoryCard";
+import { fetchStoriesForProfile, fetchStories } from "@/lib/stories";
 import { supabase } from "@/integrations/myproject/client";
 import {
   recordVisit,
   getVisits,
   getCompletions,
   computeStreak,
-  last7Days,
   computeBadges,
 } from "@/lib/progress";
+import { getWeeklyTip } from "@/lib/weeklyTips";
+
+type Pronouns = { object: string; possessive: string };
+
+const pronounsFor = (gender?: string | null): Pronouns => {
+  const g = (gender ?? "").toLowerCase();
+  if (g === "male" || g === "boy" || g === "m") return { object: "him", possessive: "his" };
+  if (g === "female" || g === "girl" || g === "f") return { object: "her", possessive: "her" };
+  return { object: "them", possessive: "their" };
+};
+
+const ageBucket = (age?: number | null): string | null => {
+  if (!age || !isFinite(age)) return null;
+  if (age <= 3) return "2-3";
+  if (age <= 5) return "4-5";
+  if (age <= 7) return "6-7";
+  if (age <= 9) return "8-9";
+  return "10+";
+};
 
 const Dashboard = () => {
   const nav = useNavigate();
@@ -25,10 +44,31 @@ const Dashboard = () => {
     if (profileId) recordVisit(profileId);
   }, [profileId]);
 
+  const { data: profile } = useQuery({
+    queryKey: ["child-profile", profileId],
+    queryFn: async () => {
+      if (!profileId) return null;
+      const { data } = await supabase
+        .from("child_profiles")
+        .select("name, age, gender")
+        .eq("id", profileId)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!profileId,
+  });
+
+  const pronouns = pronounsFor(profile?.gender);
+
   const { data: stories = [] } = useQuery({
     queryKey: ["stories-for-profile", profileId],
     queryFn: () => (profileId ? fetchStoriesForProfile(profileId) : Promise.resolve([])),
     enabled: !!profileId,
+  });
+
+  const { data: allStories = [] } = useQuery({
+    queryKey: ["stories"],
+    queryFn: fetchStories,
   });
 
   const { data: pendingStories = [] } = useQuery({
@@ -61,30 +101,56 @@ const Dashboard = () => {
   const ongoing = ongoingFromLast ?? generatedStories[0];
   const ongoingProgress = ongoing && ongoingFromLast ? lastProgress : 0;
 
-  const { visits, completions, streak, week, badges } = useMemo(() => {
+  const { streak, badges, themesExplored, storiesListened } = useMemo(() => {
     if (!profileId) {
-      return { visits: [], completions: [], streak: 0, week: last7Days([]), badges: [] };
+      return { streak: 0, badges: [], themesExplored: 0, storiesListened: 0 };
     }
     const v = getVisits(profileId);
     const c = getCompletions(profileId);
+    const themes = new Set(c.map((x) => (x.theme ?? "").toLowerCase()).filter(Boolean));
     return {
-      visits: v,
-      completions: c,
       streak: computeStreak(v),
-      week: last7Days(v),
       badges: computeBadges(v, c),
+      themesExplored: themes.size,
+      storiesListened: c.length,
     };
   }, [profileId, stories.length]);
 
+  // Story-room picks: global stories matched to child age + themes already enjoyed
+  const recommended = useMemo(() => {
+    const bucket = ageBucket(profile?.age);
+    const ownIds = new Set(generatedStories.map((s) => s.id));
+    const completedThemes = new Set(
+      (profileId ? getCompletions(profileId) : []).map((c) => (c.theme ?? "").toLowerCase()).filter(Boolean)
+    );
+    const pool = allStories.filter((s) => !ownIds.has(s.id));
+    const scored = pool
+      .map((s) => {
+        let score = 0;
+        if (bucket && s.age_group && s.age_group.includes(bucket)) score += 2;
+        if (s.theme && completedThemes.has(s.theme.toLowerCase())) score += 2;
+        if (s.is_featured) score += 1;
+        return { s, score };
+      })
+      .sort((a, b) => b.score - a.score)
+      .map((x) => x.s);
+    return scored.slice(0, 4);
+  }, [allStories, generatedStories, profile?.age, profileId, stories.length]);
+
+  const { week, tip } = getWeeklyTip();
 
   return (
     <PhoneShell>
-      <header className="flex items-center gap-3 px-5 pt-6 pb-4">
-        <ProfileAvatarButton />
-        <div className="flex-1">
-          <div className="text-xs text-muted-foreground">Good evening,</div>
-          <h1 className="text-2xl font-extrabold text-foreground">{childName}</h1>
+      <header className="flex items-start gap-3 px-5 pt-6 pb-4">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl font-extrabold text-foreground truncate">
+            {childName}'s world 🌟
+          </h1>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Building {pronouns.object}, one story at a time
+          </p>
         </div>
+        <ProfileAvatarButton />
       </header>
 
       <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-5">
@@ -100,9 +166,11 @@ const Dashboard = () => {
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </button>
         )}
+
+        {/* Continue listening */}
         <section>
           <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Ongoing story
+            Continue listening
           </h2>
           {ongoing ? (
             <div className="rounded-2xl border border-border bg-card p-4 shadow-soft">
@@ -112,7 +180,9 @@ const Dashboard = () => {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-bold text-foreground">{ongoing.title}</div>
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{ongoing.theme}</div>
+                  {ongoing.theme && (
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{ongoing.theme}</div>
+                  )}
                 </div>
                 <button
                   onClick={() => nav(`/player/${ongoing.id}`)}
@@ -140,72 +210,129 @@ const Dashboard = () => {
           )}
         </section>
 
-        <section>
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {streak > 0 ? `${streak}-day streak` : "7-day streak"}
-            </h2>
+        {/* Curate CTA — the only dark element */}
+        <button
+          onClick={() => nav("/magic-hub")}
+          className="block w-full rounded-2xl bg-[hsl(222_47%_15%)] p-5 text-left shadow-glow"
+        >
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-white/10 text-white">
+              <Wand2 className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-extrabold text-white">
+                What's on {childName}'s mind lately?
+              </div>
+              <div className="mt-1 text-xs leading-relaxed text-white/70">
+                Share a little, and we'll craft a story just for {pronouns.object}
+              </div>
+            </div>
+            <ChevronRight className="h-5 w-5 flex-shrink-0 text-white/60" />
           </div>
-          <div className="flex items-center justify-between">
-            {week.map((d) => (
-              <div
-                key={d.date}
-                className={`h-7 w-7 rounded-full border ${
-                  d.on ? "border-primary bg-gradient-primary" : "border-border bg-card"
-                }`}
-              />
+        </button>
+
+        {/* Insights + badges combined */}
+        <section className="rounded-2xl border border-border bg-card p-4 shadow-soft">
+          <div className="grid grid-cols-3 gap-2">
+            <div className="flex flex-col items-center rounded-xl bg-secondary/50 p-3 text-center">
+              <Flame className="h-4 w-4 text-primary-deep" />
+              <div className="mt-1 text-lg font-extrabold text-foreground">{streak}</div>
+              <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Day streak</div>
+            </div>
+            <div className="flex flex-col items-center rounded-xl bg-secondary/50 p-3 text-center">
+              <Palette className="h-4 w-4 text-primary-deep" />
+              <div className="mt-1 text-lg font-extrabold text-foreground">{themesExplored}</div>
+              <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Themes</div>
+            </div>
+            <div className="flex flex-col items-center rounded-xl bg-secondary/50 p-3 text-center">
+              <BookOpen className="h-4 w-4 text-primary-deep" />
+              <div className="mt-1 text-lg font-extrabold text-foreground">{storiesListened}</div>
+              <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Stories</div>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Badges earned
+            </div>
+            {badges.length === 0 ? (
+              <p className="text-xs text-muted-foreground">
+                Finish a story or build a streak to start earning badges ✨
+              </p>
+            ) : (
+              <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide">
+                {badges.map((b) => (
+                  <div
+                    key={b.id}
+                    className="flex flex-shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-bold text-foreground"
+                  >
+                    <span className="text-sm">{b.emoji}</span>
+                    {b.label}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={() => nav("/insights")}
+            className="mt-4 flex w-full items-center gap-2 border-t border-border pt-3 text-left"
+          >
+            <BarChart3 className="h-4 w-4 text-primary-deep" />
+            <div className="flex-1 text-xs font-bold text-foreground">See full insights</div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </section>
+
+        {/* Our promise to you */}
+        <section className="rounded-2xl border border-border border-l-4 border-l-primary bg-card p-4 shadow-soft">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">
+            Our promise to you
+          </div>
+          <p className="mt-1.5 text-sm leading-relaxed text-foreground">
+            Every story here quietly builds a life skill in {childName} — through joy, not lectures.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {["Expert approved", "Screen-light", "Personalised"].map((t) => (
+              <span
+                key={t}
+                className="inline-flex items-center rounded-full bg-secondary px-2.5 py-1 text-[10px] font-semibold text-foreground"
+              >
+                ✦ {t}
+              </span>
             ))}
           </div>
         </section>
 
-        <section>
-          <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Badges earned
-          </h2>
-          {badges.length === 0 ? (
-            <p className="text-xs text-muted-foreground">
-              Finish a story or build a streak to start earning badges ✨
-            </p>
-          ) : (
-            <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 scrollbar-hide">
-              {badges.map((b) => (
-                <div
-                  key={b.id}
-                  className="flex flex-shrink-0 items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-xs font-bold text-foreground shadow-soft"
-                >
-                  <span className="text-base">{b.emoji}</span>
-                  {b.label}
-                </div>
+        {/* Stories from the story room */}
+        {recommended.length > 0 && (
+          <section>
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Stories {childName} might love
+              </h2>
+              <button
+                onClick={() => nav("/library")}
+                className="text-[11px] font-bold text-primary-deep"
+              >
+                Story room →
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {recommended.map((s) => (
+                <StoryCard key={s.id} story={s} />
               ))}
             </div>
-          )}
-        </section>
+          </section>
+        )}
 
-
-        <button
-          onClick={() => nav("/magic-hub")}
-          className="block w-full rounded-2xl bg-gradient-primary p-[2px] text-left shadow-glow"
-        >
-          <div className="flex items-center gap-3 rounded-[14px] bg-card p-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-primary text-2xl text-primary-foreground">
-              <Sparkles className="h-6 w-6" />
-            </div>
-            <div className="flex-1">
-              <div className="text-sm font-extrabold text-foreground">Generate a story ✨</div>
-              <div className="text-xs text-muted-foreground">Create a personalised tale</div>
-            </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+        {/* Weekly tip */}
+        <section className="rounded-2xl border border-tag-warm-border bg-tag-warm-bg p-4">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-tag-warm-fg">
+            Did you know · Week {week}
           </div>
-        </button>
-
-        <button
-          onClick={() => nav("/insights")}
-          className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-left shadow-soft"
-        >
-          <BarChart3 className="h-5 w-5 text-primary-deep" />
-          <div className="flex-1 text-sm font-bold text-foreground">View Insights</div>
-          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-        </button>
+          <p className="mt-1.5 text-sm leading-relaxed text-tag-warm-fg">{tip}</p>
+        </section>
       </main>
 
       <BottomNav />
