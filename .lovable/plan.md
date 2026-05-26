@@ -1,24 +1,28 @@
-## Why the table is empty
+## Root cause
+The app is signed in against a different backend project than the one `story_analytics` writes to.
 
-The inserts in `Player.tsx` and `BedtimeReader.tsx` are wrapped in `try { ... } catch {}`, so any failure is silently swallowed. Two failure modes are likely:
+- `Auth.tsx`, `useAuth.tsx`, and `RequireAuth.tsx` use `@/integrations/myproject/client`
+- `Player.tsx` and `BedtimeReader.tsx` use `@/integrations/supabase/client`
+- The auth logs already show invalid JWT / unrecognized key errors, which is exactly what happens when a token from one project is sent to another.
 
-1. **RLS rejection.** `story_analytics` INSERT policy is `owns_profile(profile_id)`, which requires an authenticated session whose `auth.uid()` owns the `child_profiles` row matching the `lulutales_profile_id` from localStorage. If there is no Supabase session at insert time (you're sitting on `/auth`), or the localStorage profile id doesn't belong to the current user, the insert is denied.
-2. **Skipped early return.** If `localStorage.getItem("lulutales_profile_id")` is null, or `story.id` / `playing` isn't ready, the effect returns before inserting.
+So the insert isn’t landing because the analytics request is reaching the database with a session token from the wrong project, and the database rejects it before/at RLS.
 
 ## Plan
+1. Standardize the app on a single backend client
+   - Replace the `@/integrations/myproject/client` imports in the auth/session layer with `@/integrations/supabase/client`
+   - Keep `Player.tsx` and `BedtimeReader.tsx` unchanged unless needed for import consistency
 
-### 1. Make the failure visible (temporary diagnostics)
-In both `src/pages/Player.tsx` and `src/pages/BedtimeReader.tsx`, replace the empty `catch {}` with a `console.warn("[analytics] insert failed", error)` that also logs when the early-return branch is hit (missing profileId / story.id / no session). Also log the current `auth.getUser()` result alongside the attempted profile_id.
+2. Remove the stale custom client from the auth path
+   - Ensure `Auth.tsx`, `useAuth.tsx`, and `RequireAuth.tsx` all read/write the same session storage and token source
+   - This makes login, profile validation, and analytics all use the same authenticated session
 
-This will tell us in one play whether it's an RLS denial, a missing profile id, or a missing session.
+3. Validate the fixed flow
+   - Sign in
+   - Load a bedtime reader page and an audio player page
+   - Confirm `story_analytics` receives rows
 
-### 2. Fix based on what we see
-- **If RLS denial with a valid session**: the `lulutales_profile_id` in localStorage doesn't match a `child_profiles` row owned by the user. Fix the profile-selection flow so it only stores ids that belong to `auth.uid()`, and clear stale ids on logout/login.
-- **If no session**: the analytics call must run only when authenticated, OR we gate playback behind auth. Confirm which behavior you want. (Allowing anonymous analytics would require an RLS change and a separate identity strategy — not recommended.)
-- **If missing profile id**: ensure the profile is set before navigating to Player/BedtimeReader, or fall back to the first owned profile.
-
-### 3. Verify
-After the fix, play one audio episode and open one bedtime story, then re-run `select count(*) from story_analytics` to confirm rows land.
-
-## Question for you
-Should playback (and therefore analytics) require a logged-in session in all cases? Answering this tells me whether step 2 is "fix the profile id flow" or "also relax the auth gate".
+## Technical notes
+- No UI changes
+- No schema changes
+- No analytics logic changes required
+- This is a client mismatch bug, not a table-structure bug
