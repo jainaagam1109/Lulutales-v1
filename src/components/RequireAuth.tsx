@@ -5,11 +5,15 @@ import { supabase } from "@/integrations/myproject/client";
 
 type Props = { children: ReactNode };
 
+// Module-level flag: validate the stored profile id at most once per app load.
+let profileValidatedForUserId: string | null = null;
+
 /**
  * Gates routes:
  * - No session -> /auth
  * - Signed in but no kid profiles -> /onboarding
- * - Signed in with kids but no active profile selected -> /select-profile (if 2+) or auto-pick (if 1)
+ * - Signed in with kids -> ensure localStorage profile id belongs to this user;
+ *   if missing/invalid, auto-pick the first profile and sync name/age.
  */
 export const RequireAuth = ({ children }: Props) => {
   const { session, loading } = useAuth();
@@ -24,16 +28,14 @@ export const RequireAuth = ({ children }: Props) => {
       setChecking(false);
       return;
     }
-    // Allow these routes to bypass kid-profile check
     const bypass = ["/onboarding", "/select-profile"].includes(location.pathname);
     if (bypass) {
       setRedirectTo(null);
       setChecking(false);
       return;
     }
-    const activeId = localStorage.getItem("lulutales_profile_id");
-    const cacheKey = `lulutales_profile_checked_${session.user.id}`;
-    if (activeId && sessionStorage.getItem(cacheKey)) {
+    // Already validated this session.user in this app load — trust localStorage.
+    if (profileValidatedForUserId === session.user.id) {
       setRedirectTo(null);
       setChecking(false);
       return;
@@ -41,32 +43,33 @@ export const RequireAuth = ({ children }: Props) => {
     (async () => {
       const { data, error } = await supabase
         .from("child_profiles")
-        .select("id, name")
-        .eq("user_id", session.user.id);
+        .select("id, name, age")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: true });
       if (error) {
         setRedirectTo("/auth");
         setChecking(false);
         return;
       }
       const kids = data ?? [];
-      let validActive = false;
       if (kids.length === 0) {
+        localStorage.removeItem("lulutales_profile_id");
+        localStorage.removeItem("lulutales_child_name");
+        localStorage.removeItem("lulutales_child_age");
         setRedirectTo("/onboarding");
-      } else if (!activeId || !kids.find((k) => k.id === activeId)) {
-        if (kids.length === 1) {
-          localStorage.setItem("lulutales_profile_id", kids[0].id);
-          localStorage.setItem("lulutales_child_name", kids[0].name);
-          setRedirectTo(null);
-          validActive = true;
-        } else {
-          localStorage.removeItem("lulutales_profile_id");
-          setRedirectTo("/select-profile");
-        }
-      } else {
-        setRedirectTo(null);
-        validActive = true;
+        setChecking(false);
+        return;
       }
-      if (validActive) sessionStorage.setItem(cacheKey, "1");
+      const activeId = localStorage.getItem("lulutales_profile_id");
+      const match = activeId ? kids.find((k) => k.id === activeId) : null;
+      if (!match) {
+        const first = kids[0];
+        localStorage.setItem("lulutales_profile_id", first.id);
+        localStorage.setItem("lulutales_child_name", first.name);
+        localStorage.setItem("lulutales_child_age", String(first.age));
+      }
+      profileValidatedForUserId = session.user.id;
+      setRedirectTo(null);
       setChecking(false);
     })();
   }, [session, loading, location.pathname]);
