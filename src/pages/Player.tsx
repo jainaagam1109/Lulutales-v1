@@ -128,23 +128,18 @@ const Player = () => {
   useEffect(() => {
     if (!playing || hasRecordedRef.current) return;
     const profileId = localStorage.getItem("lulutales_profile_id");
-    if (!profileId || !story?.id) {
-      console.warn("[analytics] player skipped", { profileId, storyId: story?.id });
-      return;
-    }
+    if (!profileId || !story?.id) return;
     hasRecordedRef.current = true;
     void (async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      console.log("[analytics] player attempt", { profileId, storyId: story.id, episodeId: current?.id ?? null, authUid: userData?.user?.id ?? null });
-      const { error } = await supabase.from("story_analytics").insert({
-        profile_id: profileId,
-        story_id: story.id,
-        episode_id: current?.id ?? null,
-        event_type: "play",
-        position_seconds: 0,
-      });
-      if (error) console.warn("[analytics] player insert failed", error);
-      else console.log("[analytics] player insert ok");
+      try {
+        await supabase.from("story_analytics").insert({
+          profile_id: profileId,
+          story_id: story.id,
+          episode_id: current?.id ?? null,
+          event_type: "play",
+          position_seconds: 0,
+        });
+      } catch {}
     })();
   }, [playing, story?.id, current?.id]);
 
