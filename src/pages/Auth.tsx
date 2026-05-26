@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneShell } from "@/components/PhoneShell";
 import { useAuth } from "@/hooks/useAuth";
+import { lovable } from "@/integrations/lovable";
 
 const schema = z.object({
   email: z.string().trim().email("Enter a valid email"),
@@ -40,16 +41,15 @@ const Auth = () => {
 
   const google = async () => {
     setBusy(true);
-    const result = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin },
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
     });
     if (result.error) {
       setBusy(false);
       toast.error(result.error.message ?? "Google sign-in failed");
       return;
     }
-    // Browser will redirect on success.
+    if (result.redirected) return;
     setBusy(false);
   };
 
