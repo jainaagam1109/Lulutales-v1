@@ -7,7 +7,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { ProfileAvatarButton } from "@/components/ProfileAvatarButton";
 import { StoryCard } from "@/components/StoryCard";
 import { fetchStoriesForProfile, fetchStories } from "@/lib/stories";
-import { supabase } from "@/integrations/myproject/client";
+import { supabase } from "@/integrations/supabase/client";
 import {
   recordVisit,
   getVisits,

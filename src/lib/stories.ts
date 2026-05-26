@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/myproject/client";
+import { supabase } from "@/integrations/supabase/client";
 import type { Tables, Json } from "@/integrations/supabase/types";
 
 export type Story = Tables<"stories">;

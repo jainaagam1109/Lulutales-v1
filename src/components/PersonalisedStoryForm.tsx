@@ -28,7 +28,7 @@ import {
   ValidationState,
 } from "@/components/StoryFormFields";
 import { createPersonalisedStory } from "@/lib/stories";
-import { supabase } from "@/integrations/myproject/client";
+import { supabase } from "@/integrations/supabase/client";
 import { getThemeOptions, CUSTOM_THEME_VALUE } from "@/lib/themeOptions";
 
 type Props = {

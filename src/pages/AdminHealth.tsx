@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { PhoneShell } from "@/components/PhoneShell";
-import { supabase } from "@/integrations/myproject/client";
+import { supabase } from "@/integrations/supabase/client";
 
 type StoryRow = {
   id: string;
