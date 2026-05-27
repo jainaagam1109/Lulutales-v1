@@ -124,50 +124,6 @@ const Player = () => {
     return () => clearTimeout(t);
   }, [countdown, epNum, id, nav]);
 
-
-  useEffect(() => {
-    if (!playing || hasRecordedRef.current || !story?.id) return;
-    hasRecordedRef.current = true;
-    void (async () => {
-      try {
-        let profileId = localStorage.getItem("lulutales_profile_id");
-        if (!profileId) {
-          const { data: auth } = await supabase.auth.getUser();
-          const uid = auth.user?.id;
-          if (!uid) {
-            console.warn("[analytics:player] no auth user");
-            hasRecordedRef.current = false;
-            return;
-          }
-          const { data: kids } = await supabase
-            .from("child_profiles")
-            .select("id")
-            .eq("user_id", uid)
-            .order("created_at", { ascending: true })
-            .limit(1);
-          profileId = kids?.[0]?.id ?? null;
-          if (profileId) localStorage.setItem("lulutales_profile_id", profileId);
-        }
-        if (!profileId) {
-          console.warn("[analytics:player] no profile id available");
-          hasRecordedRef.current = false;
-          return;
-        }
-        const { error } = await supabase.from("story_analytics").insert({
-          profile_id: profileId,
-          story_id: story.id,
-          episode_id: current?.id ?? null,
-          event_type: "play",
-          position_seconds: 0,
-        });
-        if (error) console.warn("[analytics:player] insert error", error);
-        else console.log("[analytics:player] inserted", story.id);
-      } catch (e) {
-        console.warn("[analytics:player] threw", e);
-      }
-    })();
-  }, [playing, story?.id, current?.id]);
-
   const toggle = () => {
     const a = audioRef.current;
     if (!a) return;
