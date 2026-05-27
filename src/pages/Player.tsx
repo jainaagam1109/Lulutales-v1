@@ -26,7 +26,6 @@ const Player = () => {
   const nav = useNavigate();
   const audioRef = useRef<HTMLAudioElement>(null);
   const shouldAutoplayRef = useRef(false);
-  const hasRecordedRef = useRef(false);
   const { data: story } = useQuery({ queryKey: ["story", id], queryFn: () => fetchStory(id) });
   const { data: episodes, isLoading: epLoading } = useQuery({
     queryKey: ["episodes", id],
@@ -136,6 +135,16 @@ const Player = () => {
       if (story?.id) {
         localStorage.setItem("lulutales_last_story", story.id);
         localStorage.removeItem("lulutales_last_story_completed");
+      }
+      const profileId = localStorage.getItem("lulutales_profile_id");
+      if (profileId && story?.id) {
+        supabase.from("story_analytics").insert({
+          profile_id: profileId,
+          story_id: story.id,
+          episode_id: current?.id ?? null,
+          event_type: "play",
+          position_seconds: Math.floor(t),
+        });
       }
     }
   };
