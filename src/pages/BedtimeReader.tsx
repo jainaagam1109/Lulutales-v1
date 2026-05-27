@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, Sun, Moon } from "lucide-react";
@@ -15,49 +15,17 @@ const BedtimeReader = () => {
 
   const [sizeIdx, setSizeIdx] = useState(1);
   const [dark, setDark] = useState(false);
-  const hasRecordedRef = useRef(false);
-
   useEffect(() => {
-    if (hasRecordedRef.current || !story?.id) return;
-    hasRecordedRef.current = true;
-    void (async () => {
-      try {
-        let profileId = localStorage.getItem("lulutales_profile_id");
-        if (!profileId) {
-          const { data: auth } = await supabase.auth.getUser();
-          const uid = auth.user?.id;
-          if (!uid) {
-            console.warn("[analytics:bedtime] no auth user");
-            hasRecordedRef.current = false;
-            return;
-          }
-          const { data: kids } = await supabase
-            .from("child_profiles")
-            .select("id")
-            .eq("user_id", uid)
-            .order("created_at", { ascending: true })
-            .limit(1);
-          profileId = kids?.[0]?.id ?? null;
-          if (profileId) localStorage.setItem("lulutales_profile_id", profileId);
-        }
-        if (!profileId) {
-          console.warn("[analytics:bedtime] no profile id available");
-          hasRecordedRef.current = false;
-          return;
-        }
-        const { error } = await supabase.from("story_analytics").insert({
-          profile_id: profileId,
-          story_id: story.id,
-          episode_id: null,
-          event_type: "play",
-          position_seconds: 0,
-        });
-        if (error) console.warn("[analytics:bedtime] insert error", error);
-        else console.log("[analytics:bedtime] inserted", story.id);
-      } catch (e) {
-        console.warn("[analytics:bedtime] threw", e);
-      }
-    })();
+    if (!story?.id) return;
+    const profileId = localStorage.getItem("lulutales_profile_id");
+    if (!profileId) return;
+    supabase.from("story_analytics").insert({
+      profile_id: profileId,
+      story_id: story.id,
+      episode_id: null,
+      event_type: "play",
+      position_seconds: 0,
+    });
   }, [story?.id]);
 
   const fontSize = SIZES[sizeIdx];
