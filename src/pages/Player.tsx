@@ -136,8 +136,30 @@ const Player = () => {
         localStorage.setItem("lulutales_last_story", story.id);
         localStorage.removeItem("lulutales_last_story_completed");
       }
-      const profileId = localStorage.getItem("lulutales_profile_id");
-      if (profileId && story?.id) {
+      void (async () => {
+        if (!story?.id) return;
+        const lastPlayKey = `lulutales_last_play_${story.id}`;
+        const lastPlay = localStorage.getItem(lastPlayKey);
+        if (lastPlay && Date.now() - parseInt(lastPlay) < 30 * 60 * 1000) return;
+
+        let profileId = localStorage.getItem("lulutales_profile_id");
+        if (!profileId) {
+          const { data: auth } = await supabase.auth.getUser();
+          const uid = auth.user?.id;
+          if (!uid) return;
+          const { data: kids } = await supabase
+            .from("child_profiles")
+            .select("id")
+            .eq("user_id", uid)
+            .order("created_at", { ascending: true })
+            .limit(1);
+          profileId = kids?.[0]?.id ?? null;
+          if (!profileId) return;
+          localStorage.setItem("lulutales_profile_id", profileId);
+        }
+
+        localStorage.setItem(lastPlayKey, String(Date.now()));
+
         supabase.from("story_analytics").insert({
           profile_id: profileId,
           story_id: story.id,
@@ -145,7 +167,7 @@ const Player = () => {
           event_type: "play",
           position_seconds: Math.floor(t),
         });
-      }
+      })();
     }
   };
 
