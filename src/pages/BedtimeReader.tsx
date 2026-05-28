@@ -48,7 +48,7 @@ const BedtimeReader = () => {
           event_type: "play",
           source: "bedtime",
           position_seconds: 0,
-        }).then(() => {});
+        } as any).then(() => {});
       })();
     }, 30 * 1000);
 
