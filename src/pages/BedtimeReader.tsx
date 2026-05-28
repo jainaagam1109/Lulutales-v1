@@ -18,37 +18,41 @@ const BedtimeReader = () => {
   useEffect(() => {
     if (!story?.id) return;
 
-    void (async () => {
-      const lastPlayKey = `lulutales_last_play_${story.id}`;
-      const lastPlay = localStorage.getItem(lastPlayKey);
-      if (lastPlay && Date.now() - parseInt(lastPlay) < 30 * 60 * 1000) return;
+    const timer = setTimeout(() => {
+      const dedupKey = `lulutales_heard_${story.id}`;
+      const last = localStorage.getItem(dedupKey);
+      if (last && Date.now() - parseInt(last) < 30 * 60 * 1000) return;
+      localStorage.setItem(dedupKey, String(Date.now()));
 
-      let profileId = localStorage.getItem("lulutales_profile_id");
-      if (!profileId) {
-        const { data: auth } = await supabase.auth.getUser();
-        const uid = auth.user?.id;
-        if (!uid) return;
-        const { data: kids } = await supabase
-          .from("child_profiles")
-          .select("id")
-          .eq("user_id", uid)
-          .order("created_at", { ascending: true })
-          .limit(1);
-        profileId = kids?.[0]?.id ?? null;
-        if (!profileId) return;
-        localStorage.setItem("lulutales_profile_id", profileId);
-      }
+      void (async () => {
+        let profileId = localStorage.getItem("lulutales_profile_id");
+        if (!profileId) {
+          const { data: auth } = await supabase.auth.getUser();
+          const uid = auth.user?.id;
+          if (!uid) return;
+          const { data: kids } = await supabase
+            .from("child_profiles")
+            .select("id")
+            .eq("user_id", uid)
+            .order("created_at", { ascending: true })
+            .limit(1);
+          profileId = kids?.[0]?.id ?? null;
+          if (!profileId) return;
+          localStorage.setItem("lulutales_profile_id", profileId);
+        }
 
-      localStorage.setItem(lastPlayKey, String(Date.now()));
+        void supabase.from("story_analytics").insert({
+          profile_id: profileId,
+          story_id: story.id,
+          episode_id: null,
+          event_type: "play",
+          source: "bedtime",
+          position_seconds: 0,
+        }).then(() => {});
+      })();
+    }, 30 * 1000);
 
-      supabase.from("story_analytics").insert({
-        profile_id: profileId,
-        story_id: story.id,
-        episode_id: null,
-        event_type: "play",
-        position_seconds: 0,
-      });
-    })();
+    return () => clearTimeout(timer);
   }, [story?.id]);
 
   const fontSize = SIZES[sizeIdx];
