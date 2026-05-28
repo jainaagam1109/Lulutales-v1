@@ -123,25 +123,21 @@ const Player = () => {
     return () => clearTimeout(t);
   }, [countdown, epNum, id, nav]);
 
-  const toggle = () => {
+  useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
-    if (playing) {
-      a.pause();
-      setPlaying(false);
-    } else {
-      a.play();
-      setPlaying(true);
-      if (story?.id) {
-        localStorage.setItem("lulutales_last_story", story.id);
-        localStorage.removeItem("lulutales_last_story_completed");
-      }
-      void (async () => {
-        if (!story?.id) return;
-        const lastPlayKey = `lulutales_last_play_${story.id}`;
-        const lastPlay = localStorage.getItem(lastPlayKey);
-        if (lastPlay && Date.now() - parseInt(lastPlay) < 30 * 60 * 1000) return;
 
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const logHeard = () => {
+      if (!story?.id || !current?.id) return;
+
+      const dedupKey = `lulutales_heard_${current.id}`;
+      const last = localStorage.getItem(dedupKey);
+      if (last && Date.now() - parseInt(last) < 30 * 60 * 1000) return;
+      localStorage.setItem(dedupKey, String(Date.now()));
+
+      void (async () => {
         let profileId = localStorage.getItem("lulutales_profile_id");
         if (!profileId) {
           const { data: auth } = await supabase.auth.getUser();
@@ -158,16 +154,55 @@ const Player = () => {
           localStorage.setItem("lulutales_profile_id", profileId);
         }
 
-        localStorage.setItem(lastPlayKey, String(Date.now()));
-
-        supabase.from("story_analytics").insert({
+        void supabase.from("story_analytics").insert({
           profile_id: profileId,
           story_id: story.id,
-          episode_id: current?.id ?? null,
+          episode_id: current.id,
           event_type: "play",
-          position_seconds: Math.floor(t),
-        });
+          source: "audio",
+          position_seconds: Math.floor(a.currentTime),
+        } as any).then(() => {});
       })();
+    };
+
+    const onPlay = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(logHeard, 30 * 1000);
+    };
+    const onPause = () => {
+      if (timer) { clearTimeout(timer); timer = null; }
+    };
+    const onEnded = () => {
+      if (timer) { clearTimeout(timer); timer = null; }
+      logHeard();
+    };
+
+    a.addEventListener("play", onPlay);
+    a.addEventListener("pause", onPause);
+    a.addEventListener("ended", onEnded);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      a.removeEventListener("play", onPlay);
+      a.removeEventListener("pause", onPause);
+      a.removeEventListener("ended", onEnded);
+    };
+  }, [story?.id, current?.id]);
+
+
+  const toggle = () => {
+    const a = audioRef.current;
+    if (!a) return;
+    if (playing) {
+      a.pause();
+      setPlaying(false);
+    } else {
+      a.play();
+      setPlaying(true);
+      if (story?.id) {
+        localStorage.setItem("lulutales_last_story", story.id);
+        localStorage.removeItem("lulutales_last_story_completed");
+      }
     }
   };
 
