@@ -128,64 +128,85 @@ const Player = () => {
     if (!a) return;
 
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let heardFlag = false;
+    let completedFlag = false;
+    let maxPosition = 0;
+    let logging = false;
 
-    const logHeard = () => {
-      if (!story?.id || !current?.id) return;
+    const tryLog = async (eventType: "play" | "complete") => {
+      if (logging) return;
+      logging = true;
 
-      const dedupKey = `lulutales_heard_${current.id}`;
-      const last = localStorage.getItem(dedupKey);
-      if (last && Date.now() - parseInt(last) < 30 * 60 * 1000) return;
-      localStorage.setItem(dedupKey, String(Date.now()));
+      if (!story?.id || !current?.id) { logging = false; return; }
 
-      void (async () => {
-        let profileId = localStorage.getItem("lulutales_profile_id");
-        if (!profileId) {
-          const { data: auth } = await supabase.auth.getUser();
-          const uid = auth.user?.id;
-          if (!uid) return;
-          const { data: kids } = await supabase
-            .from("child_profiles")
-            .select("id")
-            .eq("user_id", uid)
-            .order("created_at", { ascending: true })
-            .limit(1);
-          profileId = kids?.[0]?.id ?? null;
-          if (!profileId) return;
-          localStorage.setItem("lulutales_profile_id", profileId);
-        }
+      const sessionKey = `lulutales_session_${current.id}`;
+      const last = localStorage.getItem(sessionKey);
+      if (last && Date.now() - parseInt(last) < 30 * 60 * 1000) { logging = false; return; }
+      localStorage.setItem(sessionKey, String(Date.now()));
 
-        void supabase.from("story_analytics").insert({
-          profile_id: profileId,
-          story_id: story.id,
-          episode_id: current.id,
-          event_type: "play",
-          source: "audio",
-          position_seconds: Math.floor(a.currentTime),
-        } as any).then(() => {});
-      })();
+      let profileId = localStorage.getItem("lulutales_profile_id");
+      if (!profileId) {
+        const { data: auth } = await supabase.auth.getUser();
+        const uid = auth.user?.id;
+        if (!uid) { logging = false; return; }
+        const { data: kids } = await supabase
+          .from("child_profiles")
+          .select("id")
+          .eq("user_id", uid)
+          .order("created_at", { ascending: true })
+          .limit(1);
+        profileId = kids?.[0]?.id ?? null;
+        if (!profileId) { logging = false; return; }
+        localStorage.setItem("lulutales_profile_id", profileId);
+      }
+
+      const durationSeconds =
+        eventType === "complete"
+          ? Math.floor(a.duration || maxPosition)
+          : Math.floor(maxPosition);
+
+      void supabase.from("story_analytics").insert({
+        profile_id: profileId,
+        story_id: story.id,
+        episode_id: current.id,
+        event_type: eventType,
+        source: "audio",
+        position_seconds: Math.floor(a.currentTime),
+        duration_seconds: durationSeconds,
+      } as any).then(() => {});
     };
 
     const onPlay = () => {
       if (timer) clearTimeout(timer);
-      timer = setTimeout(logHeard, 30 * 1000);
+      timer = setTimeout(() => { heardFlag = true; }, 30 * 1000);
     };
     const onPause = () => {
       if (timer) { clearTimeout(timer); timer = null; }
     };
+    const onTime = () => {
+      if (a.currentTime > maxPosition) maxPosition = a.currentTime;
+    };
     const onEnded = () => {
       if (timer) { clearTimeout(timer); timer = null; }
-      logHeard();
+      completedFlag = true;
+      void tryLog("complete");
     };
 
     a.addEventListener("play", onPlay);
     a.addEventListener("pause", onPause);
+    a.addEventListener("timeupdate", onTime);
     a.addEventListener("ended", onEnded);
 
     return () => {
       if (timer) clearTimeout(timer);
       a.removeEventListener("play", onPlay);
       a.removeEventListener("pause", onPause);
+      a.removeEventListener("timeupdate", onTime);
       a.removeEventListener("ended", onEnded);
+
+      if (heardFlag && !completedFlag) {
+        void tryLog("play");
+      }
     };
   }, [story?.id, current?.id]);
 

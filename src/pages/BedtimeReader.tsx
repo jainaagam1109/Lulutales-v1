@@ -18,13 +18,23 @@ const BedtimeReader = () => {
   useEffect(() => {
     if (!story?.id) return;
 
-    const timer = setTimeout(() => {
-      const dedupKey = `lulutales_heard_${story.id}`;
-      const last = localStorage.getItem(dedupKey);
-      if (last && Date.now() - parseInt(last) < 30 * 60 * 1000) return;
-      localStorage.setItem(dedupKey, String(Date.now()));
+    const mountTime = Date.now();
+    let heardFlag = false;
+    let logged = false;
+
+    const timer = setTimeout(() => { heardFlag = true; }, 30 * 1000);
+
+    return () => {
+      clearTimeout(timer);
+      if (!heardFlag || logged) return;
+      logged = true;
 
       void (async () => {
+        const sessionKey = `lulutales_session_${story.id}`;
+        const last = localStorage.getItem(sessionKey);
+        if (last && Date.now() - parseInt(last) < 30 * 60 * 1000) return;
+        localStorage.setItem(sessionKey, String(Date.now()));
+
         let profileId = localStorage.getItem("lulutales_profile_id");
         if (!profileId) {
           const { data: auth } = await supabase.auth.getUser();
@@ -41,18 +51,19 @@ const BedtimeReader = () => {
           localStorage.setItem("lulutales_profile_id", profileId);
         }
 
+        const durationSeconds = Math.floor((Date.now() - mountTime) / 1000);
+
         void supabase.from("story_analytics").insert({
           profile_id: profileId,
           story_id: story.id,
           episode_id: null,
-          event_type: "play",
+          event_type: "complete",
           source: "bedtime",
           position_seconds: 0,
+          duration_seconds: durationSeconds,
         } as any).then(() => {});
       })();
-    }, 30 * 1000);
-
-    return () => clearTimeout(timer);
+    };
   }, [story?.id]);
 
   const fontSize = SIZES[sizeIdx];
