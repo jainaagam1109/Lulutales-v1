@@ -8,13 +8,14 @@ import { ProfileAvatarButton } from "@/components/ProfileAvatarButton";
 import { StoryCard } from "@/components/StoryCard";
 import { fetchStoriesForProfile, fetchStories } from "@/lib/stories";
 import { supabase } from "@/integrations/supabase/client";
+import { recordVisit } from "@/lib/progress";
 import {
-  recordVisit,
-  getVisits,
-  getCompletions,
-  computeStreak,
-  computeBadges,
-} from "@/lib/progress";
+  fetchStreak,
+  fetchStoriesCompleted,
+  fetchCompletedThemes,
+  fetchBestStreak,
+  computeBadgesFromDb,
+} from "@/lib/analytics";
 
 
 type Pronouns = { object: string; possessive: string };
@@ -101,20 +102,36 @@ const Dashboard = () => {
   const ongoing = ongoingFromLast ?? generatedStories[0];
   const ongoingProgress = ongoing && ongoingFromLast ? lastProgress : 0;
 
-  const { streak, badges, themesExplored, storiesListened } = useMemo(() => {
-    if (!profileId) {
-      return { streak: 0, badges: [], themesExplored: 0, storiesListened: 0 };
-    }
-    const v = getVisits(profileId);
-    const c = getCompletions(profileId);
-    const themes = new Set(c.map((x) => (x.theme ?? "").toLowerCase()).filter(Boolean));
-    return {
-      streak: computeStreak(v),
-      badges: computeBadges(v, c),
-      themesExplored: themes.size,
-      storiesListened: c.length,
-    };
-  }, [profileId, stories.length]);
+  const { data: streak = 0 } = useQuery({
+    queryKey: ["analytics-streak", profileId],
+    queryFn: () => fetchStreak(profileId!),
+    enabled: !!profileId,
+  });
+
+  const { data: storiesListened = 0 } = useQuery({
+    queryKey: ["analytics-stories-completed", profileId],
+    queryFn: () => fetchStoriesCompleted(profileId!),
+    enabled: !!profileId,
+  });
+
+  const { data: completedThemes = [] } = useQuery({
+    queryKey: ["analytics-completed-themes", profileId],
+    queryFn: () => fetchCompletedThemes(profileId!),
+    enabled: !!profileId,
+  });
+
+  const { data: bestStreak = 0 } = useQuery({
+    queryKey: ["analytics-best-streak", profileId],
+    queryFn: () => fetchBestStreak(profileId!),
+    enabled: !!profileId,
+  });
+
+  const themesExplored = completedThemes.length;
+
+  const badges = useMemo(
+    () => computeBadgesFromDb(storiesListened, completedThemes, bestStreak),
+    [storiesListened, completedThemes, bestStreak]
+  );
 
   // Story-room picks: only pre-recorded stories from the story room.
   // Priority: featured (latest recommended) first, then latest other stories.
