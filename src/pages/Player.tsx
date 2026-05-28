@@ -123,6 +123,73 @@ const Player = () => {
     return () => clearTimeout(t);
   }, [countdown, epNum, id, nav]);
 
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const logHeard = () => {
+      if (!story?.id || !current?.id) return;
+
+      const dedupKey = `lulutales_heard_${current.id}`;
+      const last = localStorage.getItem(dedupKey);
+      if (last && Date.now() - parseInt(last) < 30 * 60 * 1000) return;
+      localStorage.setItem(dedupKey, String(Date.now()));
+
+      void (async () => {
+        let profileId = localStorage.getItem("lulutales_profile_id");
+        if (!profileId) {
+          const { data: auth } = await supabase.auth.getUser();
+          const uid = auth.user?.id;
+          if (!uid) return;
+          const { data: kids } = await supabase
+            .from("child_profiles")
+            .select("id")
+            .eq("user_id", uid)
+            .order("created_at", { ascending: true })
+            .limit(1);
+          profileId = kids?.[0]?.id ?? null;
+          if (!profileId) return;
+          localStorage.setItem("lulutales_profile_id", profileId);
+        }
+
+        void supabase.from("story_analytics").insert({
+          profile_id: profileId,
+          story_id: story.id,
+          episode_id: current.id,
+          event_type: "play",
+          source: "audio",
+          position_seconds: Math.floor(a.currentTime),
+        } as any).then(() => {});
+      })();
+    };
+
+    const onPlay = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(logHeard, 30 * 1000);
+    };
+    const onPause = () => {
+      if (timer) { clearTimeout(timer); timer = null; }
+    };
+    const onEnded = () => {
+      if (timer) { clearTimeout(timer); timer = null; }
+      logHeard();
+    };
+
+    a.addEventListener("play", onPlay);
+    a.addEventListener("pause", onPause);
+    a.addEventListener("ended", onEnded);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      a.removeEventListener("play", onPlay);
+      a.removeEventListener("pause", onPause);
+      a.removeEventListener("ended", onEnded);
+    };
+  }, [story?.id, current?.id]);
+
+
   const toggle = () => {
     const a = audioRef.current;
     if (!a) return;
