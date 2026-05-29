@@ -42,19 +42,21 @@ export const fetchStoriesCompleted = async (profileId: string): Promise<number> 
 
 // All-time distinct themes across completed stories (returns lowercased theme strings)
 export const fetchCompletedThemes = async (profileId: string): Promise<string[]> => {
-  const { data } = await supabase
+  const { data: events } = await supabase
     .from("story_analytics")
-    .select("story_id, stories(theme)")
+    .select("story_id")
     .eq("profile_id", profileId)
     .eq("event_type", "complete");
-  if (!data) return [];
-  const seen = new Set<string>();
+  if (!events || events.length === 0) return [];
+  const storyIds = Array.from(new Set(events.map((r) => r.story_id)));
+  const { data: stories } = await supabase
+    .from("stories")
+    .select("theme")
+    .in("id", storyIds);
+  if (!stories) return [];
   const themes = new Set<string>();
-  for (const row of data as any[]) {
-    if (seen.has(row.story_id)) continue;
-    seen.add(row.story_id);
-    const theme = row.stories?.theme;
-    if (theme) themes.add(String(theme).toLowerCase());
+  for (const s of stories) {
+    if (s.theme) themes.add(String(s.theme).toLowerCase());
   }
   return Array.from(themes);
 };
