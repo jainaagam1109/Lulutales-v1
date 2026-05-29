@@ -168,8 +168,8 @@ const Insights = () => {
         </section>
       </main>
 
-      <FloatingMiniPlayer />
       <BottomNav />
+
     </PhoneShell>
   );
 };
