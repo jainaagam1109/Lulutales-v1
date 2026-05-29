@@ -4,7 +4,7 @@ import { ChevronLeft, Clock, BookOpen, Flame } from "lucide-react";
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { ProfileAvatarButton } from "@/components/ProfileAvatarButton";
-import { FloatingMiniPlayer } from "@/components/FloatingMiniPlayer";
+
 import {
   fetchStreak,
   fetchStoriesCompleted,
