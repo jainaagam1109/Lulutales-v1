@@ -135,3 +135,107 @@ export const computeBadgesFromDb = (
   }
   return badges;
 };
+
+import { HABIT_BUCKET_LABELS, THEMES_BY_AGE, type HabitBucket } from "./themeMap";
+
+// Total time spent across all events (play + complete), in seconds.
+export const fetchScreenTimeSeconds = async (profileId: string): Promise<number> => {
+  const { data } = await supabase
+    .from("story_analytics")
+    .select("duration_seconds")
+    .eq("profile_id", profileId)
+    .in("event_type", ["play", "complete"]);
+  if (!data) return 0;
+  return data.reduce((sum, r: any) => sum + (r.duration_seconds || 0), 0);
+};
+
+// Per-bucket aggregation for the "What she's growing in" section.
+// Returns the top 3 buckets by distinct-story count (drops zero-count buckets).
+// Ties broken by most-recent activity in the bucket.
+export type HabitBar = {
+  bucket: HabitBucket;
+  label: string;
+  storyCount: number;
+  recentTheme: string;
+  pct: number; // relative to the top bucket = 100
+};
+
+export const fetchHabitBars = async (profileId: string): Promise<HabitBar[]> => {
+  const { data: events } = await supabase
+    .from("story_analytics")
+    .select("story_id, created_at")
+    .eq("profile_id", profileId)
+    .eq("event_type", "complete")
+    .order("created_at", { ascending: false });
+  if (!events || events.length === 0) return [];
+
+  const uniqueStoryIds = Array.from(new Set(events.map((e: any) => e.story_id)));
+  const { data: stories } = await supabase
+    .from("stories")
+    .select("id, theme")
+    .in("id", uniqueStoryIds);
+  if (!stories) return [];
+
+  const themeByStoryId = new Map<string, string>();
+  for (const s of stories as any[]) {
+    if (s.theme) themeByStoryId.set(s.id, String(s.theme).toLowerCase());
+  }
+
+  const themeToBucket = new Map<string, HabitBucket>();
+  for (const options of Object.values(THEMES_BY_AGE)) {
+    for (const opt of options) {
+      themeToBucket.set(opt.value.toLowerCase(), opt.habit);
+    }
+  }
+
+  type BucketAgg = {
+    storyIds: Set<string>;
+    recentTheme: string;
+    recentAt: number;
+  };
+  const agg = new Map<HabitBucket, BucketAgg>();
+
+  for (const ev of events as any[]) {
+    const theme = themeByStoryId.get(ev.story_id);
+    if (!theme) continue;
+    const bucket = themeToBucket.get(theme);
+    if (!bucket) continue;
+
+    let cur = agg.get(bucket);
+    const at = new Date(ev.created_at).getTime();
+    if (!cur) {
+      cur = { storyIds: new Set(), recentTheme: theme, recentAt: at };
+      agg.set(bucket, cur);
+    } else if (at > cur.recentAt) {
+      cur.recentAt = at;
+      cur.recentTheme = theme;
+    }
+    cur.storyIds.add(ev.story_id);
+  }
+
+  const ranked = Array.from(agg.entries())
+    .map(([bucket, a]) => ({
+      bucket,
+      label: HABIT_BUCKET_LABELS[bucket],
+      storyCount: a.storyIds.size,
+      recentTheme: a.recentTheme,
+      recentAt: a.recentAt,
+    }))
+    .filter((r) => r.storyCount > 0)
+    .sort((x, y) => {
+      if (y.storyCount !== x.storyCount) return y.storyCount - x.storyCount;
+      return y.recentAt - x.recentAt;
+    })
+    .slice(0, 3);
+
+  if (ranked.length === 0) return [];
+
+  const top = ranked[0].storyCount;
+  return ranked.map((r) => ({
+    bucket: r.bucket,
+    label: r.label,
+    storyCount: r.storyCount,
+    recentTheme: r.recentTheme,
+    pct: Math.round((r.storyCount / top) * 100),
+  }));
+};
