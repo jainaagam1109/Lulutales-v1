@@ -202,6 +202,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           address_terms: parseAddressTerms(data.family_address_terms ?? ""),
           theme: "",
           occasion: (data as any).last_occasion ?? "",
+          language: "english",
         });
       } catch (e) {
         console.error("[PersonalisedStoryForm] prefill failed", e);
