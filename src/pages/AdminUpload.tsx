@@ -144,7 +144,8 @@ const AdminUpload = () => {
       toast.success("Story uploaded!");
       reset();
     } catch (err: any) {
-      toast.error(err?.message ?? "Upload failed");
+      console.error("[AdminUpload] upload failed", err);
+      toast.error("Upload failed — please try again.");
     } finally {
       setBusy(false);
     }
