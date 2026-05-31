@@ -145,7 +145,7 @@ const Onboarding = () => {
           <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-3xl bg-secondary text-3xl">
             🎙️
           </div>
-          <h1 className="text-2xl font-extrabold text-foreground">Lulutales</h1>
+          <h1 className="text-2xl font-extrabold text-foreground">LuluTales</h1>
           <p className="mt-1 text-sm text-muted-foreground">Audio stories for curious kids</p>
         </div>
 

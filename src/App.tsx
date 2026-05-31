@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { RequireAuth } from "@/components/RequireAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import SelectProfile from "./pages/SelectProfile";
 import Onboarding from "./pages/Onboarding";
 import StoryDetail from "./pages/StoryDetail";
@@ -38,6 +39,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
             <Route path="/select-profile" element={<RequireAuth><SelectProfile /></RequireAuth>} />
             <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
