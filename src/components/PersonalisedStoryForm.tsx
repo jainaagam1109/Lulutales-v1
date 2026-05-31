@@ -90,6 +90,7 @@ type FormState = {
   address_terms: AddressTerm[];
   theme: string;
   occasion: string;
+  language: "english" | "hindi";
 };
 
 const emptyForm: FormState = {
@@ -108,6 +109,12 @@ const emptyForm: FormState = {
   address_terms: [],
   theme: "",
   occasion: "",
+  language: "english",
+};
+
+const isHindiEligible = (ageStr: string) => {
+  const n = parseInt(ageStr, 10);
+  return !isNaN(n) && n >= 2 && n <= 6;
 };
 
 const matchToOption = (raw: string, options: { value: string }[]): { choice: string; custom: string } => {
@@ -143,6 +150,14 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
     }
     prevAgeRef.current = form.age;
   }, [form.age]);
+
+  useEffect(() => {
+    if (!isHindiEligible(form.age) && form.language === "hindi") {
+      setForm((f) => ({ ...f, language: "english" }));
+    }
+  }, [form.age, form.language]);
+
+
 
   useEffect(() => {
     if (!profileId) {
@@ -195,6 +210,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           address_terms: parseAddressTerms(data.family_address_terms ?? ""),
           theme: "",
           occasion: (data as any).last_occasion ?? "",
+          language: "english",
         });
       } catch (e) {
         console.error("[PersonalisedStoryForm] prefill failed", e);
@@ -276,6 +292,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           sibling_age: form.sibling_age.trim() || null,
           theme: form.theme.trim(),
           occasion: form.occasion.trim() || null,
+          language: isHindiEligible(form.age) ? form.language : "english",
         },
       });
 
@@ -411,6 +428,37 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                   options={GENDERS}
                   placeholder="Select gender"
                 />
+              </div>
+              <div>
+                <FieldLabel tooltip="Choose the language the story will be written in.">Language</FieldLabel>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => set("language", "english")}
+                    className={`flex-1 rounded-xl border px-3 py-2.5 text-sm font-bold transition-colors ${
+                      form.language === "english"
+                        ? "border-primary bg-gradient-primary text-primary-foreground"
+                        : "border-border bg-card text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    English
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!isHindiEligible(form.age)}
+                    onClick={() => set("language", "hindi")}
+                    className={`flex-1 rounded-xl border px-3 py-2.5 text-sm font-bold transition-colors ${
+                      form.language === "hindi"
+                        ? "border-primary bg-gradient-primary text-primary-foreground"
+                        : "border-border bg-card text-muted-foreground hover:border-primary/40"
+                    } disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border`}
+                  >
+                    Hindi
+                  </button>
+                </div>
+                {!isHindiEligible(form.age) && (
+                  <p className="mt-1 text-[11px] text-muted-foreground">Hindi is available for ages 2–6.</p>
+                )}
               </div>
             </Section>
 
