@@ -90,6 +90,7 @@ type FormState = {
   address_terms: AddressTerm[];
   theme: string;
   occasion: string;
+  language: "english" | "hindi";
 };
 
 const emptyForm: FormState = {
@@ -108,6 +109,12 @@ const emptyForm: FormState = {
   address_terms: [],
   theme: "",
   occasion: "",
+  language: "english",
+};
+
+const isHindiEligible = (ageStr: string) => {
+  const n = parseInt(ageStr, 10);
+  return !isNaN(n) && n >= 2 && n <= 6;
 };
 
 const matchToOption = (raw: string, options: { value: string }[]): { choice: string; custom: string } => {
