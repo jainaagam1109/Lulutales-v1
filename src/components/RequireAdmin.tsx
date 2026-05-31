@@ -4,10 +4,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 export const RequireAdmin = ({ children }: { children: ReactNode }) => {
-  const { loading } = useAuth();
-  const isAdmin = useIsAdmin();
+  const { loading: authLoading } = useAuth();
+  const { isAdmin, loading: adminLoading } = useIsAdmin();
 
-  if (loading) {
+  if (authLoading || adminLoading) {
     return (
       <div className="flex h-screen items-center justify-center text-sm text-muted-foreground">
         Loading…
