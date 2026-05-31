@@ -6,16 +6,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { PhoneShell } from "@/components/PhoneShell";
 import { useAuth } from "@/hooks/useAuth";
 
-
 const schema = z.object({
   email: z.string().trim().email("Enter a valid email"),
   password: z.string().min(6, "Min 6 characters").max(72),
 });
+const emailOnlySchema = z.object({
+  email: z.string().trim().email("Enter a valid email"),
+});
+
+type Mode = "signin" | "signup" | "forgot";
 
 const Auth = () => {
   const nav = useNavigate();
   const { session, loading } = useAuth();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -25,6 +29,20 @@ const Auth = () => {
   }, [session, loading, nav]);
 
   const submit = async () => {
+    if (mode === "forgot") {
+      const parsed = emailOnlySchema.safeParse({ email });
+      if (!parsed.success) return toast.error(parsed.error.errors[0].message);
+      setBusy(true);
+      const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      setBusy(false);
+      if (error) return toast.error(error.message);
+      toast.success("Check your email for a reset link.");
+      setMode("signin");
+      return;
+    }
+
     const parsed = schema.safeParse({ email, password });
     if (!parsed.success) return toast.error(parsed.error.errors[0].message);
     setBusy(true);
@@ -36,7 +54,9 @@ const Auth = () => {
     } as any);
     setBusy(false);
     if (error) return toast.error(error.message);
-    // session change will trigger redirect
+    if (mode === "signup") {
+      toast.success("Account created. Check your email to confirm your account before logging in.");
+    }
   };
 
   const google = async () => {
@@ -51,6 +71,15 @@ const Auth = () => {
     }
   };
 
+  const submitLabel =
+    mode === "signin" ? "Login" : mode === "signup" ? "Create account" : "Send reset link";
+  const subtitle =
+    mode === "signin"
+      ? "Welcome back"
+      : mode === "signup"
+      ? "Create your account"
+      : "Reset your password";
+
   return (
     <PhoneShell>
       <div className="flex-1 px-6 pb-10 pt-12">
@@ -58,25 +87,25 @@ const Auth = () => {
           <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-3xl bg-secondary text-3xl">
             🎙️
           </div>
-          <h1 className="text-2xl font-extrabold text-foreground">Lulutales</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "signin" ? "Welcome back" : "Create your account"}
-          </p>
+          <h1 className="text-2xl font-extrabold text-foreground">LuluTales</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
         </div>
 
-        <div className="mb-5 flex rounded-full border border-border bg-card p-1">
-          {(["signin", "signup"] as const).map((m) => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              className={`flex-1 rounded-full py-2 text-xs font-bold transition-colors ${
-                mode === m ? "bg-gradient-primary text-primary-foreground" : "text-muted-foreground"
-              }`}
-            >
-              {m === "signin" ? "Sign in" : "Sign up"}
-            </button>
-          ))}
-        </div>
+        {mode !== "forgot" && (
+          <div className="mb-5 flex rounded-full border border-border bg-card p-1">
+            {(["signin", "signup"] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setMode(m)}
+                className={`flex-1 rounded-full py-2 text-xs font-bold transition-colors ${
+                  mode === m ? "bg-gradient-primary text-primary-foreground" : "text-muted-foreground"
+                }`}
+              >
+                {m === "signin" ? "Login" : "Sign up"}
+              </button>
+            ))}
+          </div>
+        )}
 
         <label className="mb-3 block">
           <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -90,40 +119,71 @@ const Auth = () => {
             placeholder="you@example.com"
           />
         </label>
-        <label className="mb-5 block">
-          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Password
-          </span>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
-            placeholder="••••••••"
-          />
-        </label>
+
+        {mode !== "forgot" && (
+          <label className="mb-2 block">
+            <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Password
+            </span>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
+              placeholder="••••••••"
+            />
+          </label>
+        )}
+
+        {mode === "signin" && (
+          <div className="mb-4 text-right">
+            <button
+              type="button"
+              onClick={() => setMode("forgot")}
+              className="text-xs font-semibold text-primary hover:underline"
+            >
+              Forgot password?
+            </button>
+          </div>
+        )}
+
+        {mode === "forgot" && (
+          <div className="mb-4 text-right">
+            <button
+              type="button"
+              onClick={() => setMode("signin")}
+              className="text-xs font-semibold text-primary hover:underline"
+            >
+              Back to login
+            </button>
+          </div>
+        )}
 
         <button
           onClick={submit}
           disabled={busy}
           className="mb-3 w-full rounded-full bg-gradient-primary py-3.5 text-sm font-bold text-primary-foreground shadow-glow disabled:opacity-50"
         >
-          {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+          {busy ? "Please wait…" : submitLabel}
         </button>
 
-        <div className="my-4 flex items-center gap-3">
-          <div className="h-px flex-1 bg-border" />
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">or</span>
-          <div className="h-px flex-1 bg-border" />
-        </div>
+        {mode !== "forgot" && (
+          <>
+            <div className="my-4 flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">or</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
 
-        <button
-          onClick={google}
-          disabled={busy}
-          className="w-full rounded-full border border-border bg-card py-3.5 text-sm font-bold text-foreground disabled:opacity-50"
-        >
-          Continue with Google
-        </button>
+            <button
+              onClick={google}
+              disabled={busy}
+              className="w-full rounded-full border border-border bg-card py-3.5 text-sm font-bold text-foreground disabled:opacity-50"
+            >
+              Continue with Google
+            </button>
+          </>
+        )}
       </div>
     </PhoneShell>
   );
