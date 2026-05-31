@@ -152,6 +152,14 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
   }, [form.age]);
 
   useEffect(() => {
+    if (!isHindiEligible(form.age) && form.language === "hindi") {
+      setForm((f) => ({ ...f, language: "english" }));
+    }
+  }, [form.age, form.language]);
+
+
+
+  useEffect(() => {
     if (!profileId) {
       setLoading(false);
       return;
