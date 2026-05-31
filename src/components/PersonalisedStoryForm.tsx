@@ -309,7 +309,8 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
       toast.success("Story request saved! We'll generate it shortly.");
       nav(`/generating/${created.id}`);
     } catch (e: any) {
-      toast.error(e?.message ?? "Could not save story");
+      console.error("[PersonalisedStoryForm] save failed", e);
+      toast.error("Could not save story — please try again.");
     } finally {
       setSubmitting(false);
     }
