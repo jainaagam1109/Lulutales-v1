@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { RequireAuth } from "@/components/RequireAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import SelectProfile from "./pages/SelectProfile";
 import Onboarding from "./pages/Onboarding";
 import StoryDetail from "./pages/StoryDetail";
