@@ -1,6 +1,31 @@
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
-const ADMIN_EMAIL = "aagam_jain2022@pgp.isb.edu";
+export const useIsAdmin = () => {
+  const { user, loading } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
 
-export const useIsAdmin = () =>
-  useAuth().user?.email?.toLowerCase() === ADMIN_EMAIL;
+  useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!cancelled) setIsAdmin(!!data);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, loading]);
+
+  return isAdmin;
+};
