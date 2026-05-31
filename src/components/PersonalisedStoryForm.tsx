@@ -292,6 +292,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           sibling_age: form.sibling_age.trim() || null,
           theme: form.theme.trim(),
           occasion: form.occasion.trim() || null,
+          language: isHindiEligible(form.age) ? form.language : "english",
         },
       });
 
