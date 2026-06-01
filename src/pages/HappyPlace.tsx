@@ -8,6 +8,8 @@ import { BottomNav } from "@/components/BottomNav";
 import { SectionHeader } from "@/components/SectionHeader";
 import { ProfileAvatarButton } from "@/components/ProfileAvatarButton";
 import { TagChip } from "@/components/TagChip";
+import { StoryCard } from "@/components/StoryCard";
+import { getStoryStatus } from "@/lib/storyStatus";
 
 import { getThemeVisual } from "@/lib/themeEmoji";
 
@@ -41,16 +43,16 @@ const EmptyCard = () => (
 
 const Row = ({
   stories,
-  linkFor,
 }: {
   stories: Story[];
-  linkFor: (s: Story) => string;
 }) => {
   if (stories.length === 0) return <EmptyCard />;
   return (
     <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
       {stories.map((s) => (
-        <StoryRowCard key={s.id} story={s} to={linkFor(s)} />
+        <div key={s.id} className="w-44 flex-shrink-0">
+          <StoryCard story={s} />
+        </div>
       ))}
     </div>
   );
@@ -86,22 +88,27 @@ const HappyPlace = () => {
     s.title.trim().toLowerCase() === "story" ||
     s.title.trim() === "[Story title]";
 
+  // Include in-progress / failed stories so users see status; only hide stories
+  // we shouldn't display at all (titleless garbage).
+  const visible = (s: Story) => {
+    const status = getStoryStatus(s);
+    if (status === "ready") return !isFailed(s);
+    return true;
+  };
+
   const personalised = useMemo(
     () => profileStories
-      .filter((s) => s.is_generated === true && s.story_type === "personalised_audio" && !isFailed(s))
+      .filter((s) => s.story_type === "personalised_audio" && visible(s))
       .filter(matches),
     [profileStories, query]
   );
   const bedtime = useMemo(
     () => profileStories
-      .filter(
-        (s) =>
-          s.is_generated === true &&
-          s.story_type === "bedtime_text" &&
-          !isFailed(s) &&
-          !!s.story_text &&
-          s.story_text.trim().length > 0
-      )
+      .filter((s) => {
+        if (s.story_type !== "bedtime_text" || !visible(s)) return false;
+        if (getStoryStatus(s) !== "ready") return true;
+        return !!s.story_text && s.story_text.trim().length > 0;
+      })
       .filter(matches),
     [profileStories, query]
   );
@@ -134,17 +141,18 @@ const HappyPlace = () => {
       <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-6">
         <section>
           <SectionHeader title={`Curated for ${childName}`} />
-          <Row stories={personalised} linkFor={(s) => `/story/${s.id}`} />
+          <Row stories={personalised} />
         </section>
 
         <section>
           <SectionHeader title="Bedtime Stories" />
-          <Row stories={bedtime} linkFor={(s) => `/bedtime/${s.id}`} />
+          <Row stories={bedtime} />
         </section>
 
         <section>
           <SectionHeader title="Story Room" />
-          <Row stories={storyRoom} linkFor={(s) => `/story/${s.id}`} />
+          <Row stories={storyRoom} />
+
         </section>
 
       </main>

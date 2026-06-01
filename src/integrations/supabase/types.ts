@@ -142,12 +142,14 @@ export type Database = {
           child_profile_id: string | null
           created_at: string
           description: string | null
+          generation_attempts: number
           generation_params: Json | null
           id: string
           is_featured: boolean
           is_generated: boolean
           owner_profile_id: string | null
           parent_summary: string | null
+          scoring_status: string | null
           story_text: string | null
           story_type: string | null
           theme: string | null
@@ -159,12 +161,14 @@ export type Database = {
           child_profile_id?: string | null
           created_at?: string
           description?: string | null
+          generation_attempts?: number
           generation_params?: Json | null
           id?: string
           is_featured?: boolean
           is_generated?: boolean
           owner_profile_id?: string | null
           parent_summary?: string | null
+          scoring_status?: string | null
           story_text?: string | null
           story_type?: string | null
           theme?: string | null
@@ -176,12 +180,14 @@ export type Database = {
           child_profile_id?: string | null
           created_at?: string
           description?: string | null
+          generation_attempts?: number
           generation_params?: Json | null
           id?: string
           is_featured?: boolean
           is_generated?: boolean
           owner_profile_id?: string | null
           parent_summary?: string | null
+          scoring_status?: string | null
           story_text?: string | null
           story_type?: string | null
           theme?: string | null

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ArrowRight } from "lucide-react";
@@ -29,6 +30,12 @@ const BedtimePreview = () => {
     queryKey: ["story", id],
     queryFn: () => fetchStory(id),
   });
+
+  useEffect(() => {
+    if (!story) return;
+    if (story.is_generated) return;
+    nav(`/generating/${story.id}`, { replace: true });
+  }, [story, nav]);
 
   const parsed = parseBedtimeStory(story?.story_text);
   const displayTitle = parsed.title ?? story?.title ?? "Bedtime story";

@@ -1,10 +1,17 @@
 import { Link, useLocation } from "react-router-dom";
 import type { Story } from "@/lib/stories";
+import { getStoryStatus } from "@/lib/storyStatus";
 import { TagChip } from "./TagChip";
+import { StoryStatusCard } from "./StoryStatusCard";
 
 export const StoryCard = ({ story, variant = "grid" }: { story: Story; variant?: "grid" | "row" }) => {
-  const to = story.story_type === "bedtime_text" ? `/bedtime/${story.id}` : `/story/${story.id}`;
   const location = useLocation();
+  const status = getStoryStatus(story);
+  if (status !== "ready") {
+    return <StoryStatusCard story={story} variant={variant} />;
+  }
+
+  const to = story.story_type === "bedtime_text" ? `/bedtime/${story.id}` : `/story/${story.id}`;
   const state = { from: location.pathname };
 
 
