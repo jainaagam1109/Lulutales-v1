@@ -23,6 +23,13 @@ export const RequireAuth = ({ children }: Props) => {
 
   useEffect(() => {
     if (loading) return;
+    // If this is a password recovery callback, don't redirect anywhere —
+    // AuthProvider will route the user to /reset-password.
+    if (typeof window !== "undefined" && window.location.hash.includes("type=recovery")) {
+      setRedirectTo(null);
+      setChecking(false);
+      return;
+    }
     if (!session) {
       setRedirectTo("/auth");
       setChecking(false);
