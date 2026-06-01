@@ -146,20 +146,34 @@ const Auth = () => {
           />
         </label>
 
-        {mode !== "forgot" && (
-          <label className="mb-2 block">
-            <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Password
-            </span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
-              placeholder="••••••••"
-            />
-          </label>
-        )}
+        {mode !== "forgot" && (() => {
+          const tooShort = mode === "signup" && password.length > 0 && password.length < 6;
+          return (
+            <label className="mb-2 block">
+              <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Password
+              </span>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={`w-full rounded-xl border bg-card px-4 py-3 text-sm outline-none focus:border-primary ${
+                  tooShort ? "border-destructive" : "border-border"
+                }`}
+                placeholder="••••••••"
+              />
+              {mode === "signup" && (
+                <span
+                  className={`mt-1.5 block text-[11px] ${
+                    tooShort ? "text-destructive" : "text-muted-foreground"
+                  }`}
+                >
+                  Use at least 6 characters.
+                </span>
+              )}
+            </label>
+          );
+        })()}
 
         {mode === "signin" && (
           <div className="mb-4 text-right">
