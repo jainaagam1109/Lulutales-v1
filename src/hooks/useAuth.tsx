@@ -16,9 +16,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
       setLoading(false);
+      if (
+        event === "PASSWORD_RECOVERY" &&
+        window.location.pathname !== "/reset-password"
+      ) {
+        window.location.replace("/reset-password" + window.location.hash);
+      }
     });
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
