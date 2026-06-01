@@ -141,17 +141,18 @@ const HappyPlace = () => {
       <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-6">
         <section>
           <SectionHeader title={`Curated for ${childName}`} />
-          <Row stories={personalised} linkFor={(s) => `/story/${s.id}`} />
+          <Row stories={personalised} />
         </section>
 
         <section>
           <SectionHeader title="Bedtime Stories" />
-          <Row stories={bedtime} linkFor={(s) => `/bedtime/${s.id}`} />
+          <Row stories={bedtime} />
         </section>
 
         <section>
           <SectionHeader title="Story Room" />
-          <Row stories={storyRoom} linkFor={(s) => `/story/${s.id}`} />
+          <Row stories={storyRoom} />
+
         </section>
 
       </main>
