@@ -38,7 +38,7 @@ const Auth = () => {
       });
       setBusy(false);
       if (error) return toast.error(error.message);
-      toast.success("Check your email for a reset link.");
+      toast.success("If an account exists for that email, we've sent a reset link.");
       setMode("signin");
       return;
     }
