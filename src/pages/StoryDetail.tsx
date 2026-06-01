@@ -5,6 +5,8 @@ import { ChevronLeft, Play, Bookmark, BookmarkCheck, Mic, BookOpen } from "lucid
 import { fetchEpisodes, fetchStory, fetchStoryTags, isSaved, toggleSaved } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
 import { TagChip } from "@/components/TagChip";
+import { StoryStatusCard } from "@/components/StoryStatusCard";
+import { getStoryStatus } from "@/lib/storyStatus";
 import { toast } from "sonner";
 
 
