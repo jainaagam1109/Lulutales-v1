@@ -32,7 +32,7 @@ export const StoryStatusCard = ({ story, variant = "grid" }: Props) => {
   const goToCreate = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    nav(story.story_type === "bedtime_text" ? "/create/bedtime" : "/create/audio");
+    nav(story.story_type === "bedtime_text" ? "/magic-hub/bedtime" : "/magic-hub/audio");
   };
   const goToProfile = (e: React.MouseEvent) => {
     e.preventDefault();
