@@ -1,51 +1,89 @@
-## What's happening
+## Overall direction
 
-Two things combined to drop you on `/onboarding`:
+The plan is solid — it cleanly separates "ready", "in progress", "soft failure" and "hard failure (language/age)" without leaking pipeline details into the UI. Two things to flag before we build:
 
-1. **Supabase redirected to the Site URL, not `/reset-password`.** Supabase only honors `redirectTo` if the exact URL is on the project's **Additional Redirect URLs** allowlist. If it isn't, it silently falls back to the Site URL (`/`). The session gets created (recovery links auto-sign-in), `RequireAuth` sees a logged-in user with no `child_profiles`, and sends you to `/onboarding`. The recovery tokens in the URL hash are discarded along the way.
+1. **The columns don't exist yet.** I checked the live `stories` table — there is no `scoring_status` or `generation_attempts`. We need a migration. (You mentioned they were there; they aren't in this project.)
+2. **Hindi-age gating already exists** in `PersonalisedStoryForm.tsx` (`isHindiEligible`, disables Hindi button + helper text "Hindi is available for ages 2–6"). We keep it; no change.
 
-2. **The email going to a "new" address.** Supabase has email-enumeration protection on by default. For an unknown email, `resetPasswordForEmail` either sends nothing or sends a signup-style magic link — clicking that link signs the user in as a brand-new account, which again lands on onboarding. That's not really a bug, but it explains why a "new" email got a working link at all.
+## What to build
 
-## Fix
+### 1. Schema migration
 
-### A. Make the recovery redirect actually land on `/reset-password`
+Add to `public.stories`:
+- `scoring_status text` — nullable. Allowed values used by UI: `null`, `'failed_retrying'`, `'STALE'`, `'failed_language_age'`. (No DB CHECK constraint — pipeline owns the vocabulary; UI treats unknown values as in-progress.)
+- `generation_attempts integer not null default 0`.
+- Index: `create index on public.stories (is_generated, scoring_status)` to keep list queries fast.
 
-Two-part fix so this works regardless of where Supabase drops the user:
+RLS update: existing UPDATE policy on `stories` already allows the owning user to update their own row, so the "Try again" reset is covered. No policy change needed.
 
-1. **Add the redirect URL to the allowlist** (one-time config in Lovable Cloud → Auth → URL Configuration → Additional Redirect URLs):
-   - `https://lulutales.lovable.app/reset-password`
-   - `https://id-preview--8d6d4351-3899-492b-b428-d18a9dc018ed.lovable.app/reset-password`
-   - `http://localhost:*/reset-password` (for dev)
+### 2. Shared status helper
 
-2. **Defensive global handler in `AuthProvider`** (`src/hooks/useAuth.tsx`): listen for the `PASSWORD_RECOVERY` event and force-navigate to `/reset-password` no matter what page Supabase dropped the user on. This way, even if the allowlist is misconfigured or the user lands at `/` first, recovery always wins.
+New `src/lib/storyStatus.ts`:
 
-   ```ts
-   supabase.auth.onAuthStateChange((event) => {
-     if (event === "PASSWORD_RECOVERY" && window.location.pathname !== "/reset-password") {
-       window.location.replace("/reset-password" + window.location.hash);
-     }
-   });
-   ```
+```ts
+export type StoryStatus = "ready" | "preparing" | "stale" | "lang_age_failed";
+export const getStoryStatus = (s: Pick<Story,"is_generated"|"scoring_status"|"generation_attempts">): StoryStatus => {
+  if (s.is_generated) return "ready";
+  if (s.scoring_status === "STALE") return "stale";
+  if (s.scoring_status === "failed_language_age") return "lang_age_failed";
+  // null or 'failed_retrying' with attempts < 5 => preparing; otherwise treat as stale fallback
+  if ((s.scoring_status === null || s.scoring_status === "failed_retrying") && (s.generation_attempts ?? 0) < 5) return "preparing";
+  return "stale";
+};
+```
 
-3. **Guard `RequireAuth`** so it never redirects while the URL hash contains `type=recovery` — prevents the race where onboarding redirect fires before `PASSWORD_RECOVERY` is processed.
+### 3. List screens (Home, Library, HappyPlace, MagicHub)
 
-### B. Don't send reset emails to unregistered addresses (UX clarity)
+Update `StoryCard` to take status into account:
+- `ready` → current behavior (link to detail / player).
+- `preparing` → render a non-link card with a small spinner and "Preparing your story…". Tap goes to `/generating/:id` (already exists).
+- `stale` → render a card with warning tone + "We couldn't create this story. Tap to try again." and a small "Try again" button. Clicking calls `retryStory(id)` (see §5).
+- `lang_age_failed` → render a card with "Hindi stories are available for ages 2–6 only" plus two small actions: "Change language" and "Change child's age". Both route to the appropriate edit screen (language → re-open the creation form for that story prefilled; age → `/profile` for that child). No retry button.
 
-Currently any email gets a vague "check your email" toast. Two options — pick one:
+`HappyPlace` already filters out non-generated personalised stories via `isFailed`; replace that ad-hoc filter with `getStoryStatus` so failed ones still appear (in `stale`/`lang_age_failed` form) instead of disappearing.
 
-- **B1 (recommended, matches Supabase's enumeration-safe default):** Keep the generic success toast but reword it: *"If an account exists for that email, we've sent a reset link."* No backend change. Users with no account simply won't get a usable reset link.
-- **B2:** Add a pre-check via a tiny edge function that looks up `auth.users` by email and returns a clear "no account found — sign up instead" message. More helpful but leaks account existence (enumeration risk).
+### 4. Story detail + player guards
 
-## Files touched (if approved)
+- `StoryDetail`: if status !== `ready`, hide the Play/Read button and episode list; show the same status card from §3 in their place. Summary and metadata still render.
+- `Player`, `BedtimeReader`, `BedtimePreview`: on load, if `is_generated === false`, redirect to `/generating/:id` (or `/` if status is `stale`/`lang_age_failed`). This enforces "never render story content unless is_generated = true".
 
-- `src/hooks/useAuth.tsx` — add PASSWORD_RECOVERY redirect
-- `src/components/RequireAuth.tsx` — skip redirects when URL hash has `type=recovery`
-- `src/pages/Auth.tsx` — reword forgot-password success toast (if B1)
-- One-time manual: add redirect URLs to Cloud → Auth allowlist
+### 5. Retry action
 
-No DB migrations, no new routes.
+Add `retryStory(id)` to `src/lib/stories.ts`:
 
-## Questions before I build
+```ts
+await supabase.from("stories")
+  .update({ generation_attempts: 0, scoring_status: null })
+  .eq("id", id);
+```
 
-1. Confirm **B1** (generic message, safest) vs **B2** (explicit "no account" check, leaks existence)?
-2. Want me to add the redirect URLs to the allowlist for you via the auth config tool, or will you add them in Cloud → Auth settings?
+Then invalidate `["stories"]`, `["story", id]`, `["library"]` queries and toast "Retrying…".
+
+### 6. Generating page
+
+`Generating.tsx` currently flips to "stalled" purely on age > 10 min. Update it to also surface `stale` / `lang_age_failed` immediately when those statuses appear, with the same copy + actions as the list cards.
+
+### 7. Creation form
+
+No code change needed for the Hindi/age rule — `PersonalisedStoryForm` already disables Hindi when `!isHindiEligible(age)` and shows the helper text. We keep it; the backend is the safety net.
+
+## Technical notes
+
+- `types.ts` is auto-regenerated after the migration; do not hand-edit.
+- All new copy uses semantic tokens (`text-muted-foreground`, `bg-card`, `border-destructive/40`, etc.) — no raw colors.
+- Query cache: list queries currently key on `["stories"]` / `["library"]` and don't filter by status, so adding the columns won't break them; we just read two extra fields.
+- We treat unknown `scoring_status` values as `preparing` to stay forward-compatible with pipeline changes.
+
+## Files touched
+
+- `supabase/migrations/<new>.sql` — add columns + index.
+- `src/lib/storyStatus.ts` — new.
+- `src/lib/stories.ts` — add `retryStory`.
+- `src/components/StoryCard.tsx`, `src/components/StoryCardSkeleton.tsx` — status-aware rendering.
+- `src/pages/StoryDetail.tsx`, `src/pages/Player.tsx`, `src/pages/BedtimeReader.tsx`, `src/pages/BedtimePreview.tsx` — guard on `is_generated`.
+- `src/pages/Generating.tsx` — react to `stale` / `lang_age_failed`.
+- `src/pages/HappyPlace.tsx`, `src/pages/Home.tsx`, `src/pages/Library.tsx`, `src/pages/MagicHub.tsx` — render through status-aware card.
+
+## Open question
+
+For the "Change language" action on `lang_age_failed`, do you want it to (a) reopen the creation form prefilled with the original story params (requires we stored them in `generation_params`), or (b) just delete the failed row and send the user back to a fresh creation form? I'll default to (a) if `generation_params` is populated, else (b).
