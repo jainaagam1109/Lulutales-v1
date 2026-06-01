@@ -31,6 +31,12 @@ const BedtimePreview = () => {
     queryFn: () => fetchStory(id),
   });
 
+  useEffect(() => {
+    if (!story) return;
+    if (story.is_generated) return;
+    nav(`/generating/${story.id}`, { replace: true });
+  }, [story, nav]);
+
   const parsed = parseBedtimeStory(story?.story_text);
   const displayTitle = parsed.title ?? story?.title ?? "Bedtime story";
   const emoji = story?.thumbnail ?? themeEmoji(story?.theme);
