@@ -88,22 +88,27 @@ const HappyPlace = () => {
     s.title.trim().toLowerCase() === "story" ||
     s.title.trim() === "[Story title]";
 
+  // Include in-progress / failed stories so users see status; only hide stories
+  // we shouldn't display at all (titleless garbage).
+  const visible = (s: Story) => {
+    const status = getStoryStatus(s);
+    if (status === "ready") return !isFailed(s);
+    return true;
+  };
+
   const personalised = useMemo(
     () => profileStories
-      .filter((s) => s.is_generated === true && s.story_type === "personalised_audio" && !isFailed(s))
+      .filter((s) => s.story_type === "personalised_audio" && visible(s))
       .filter(matches),
     [profileStories, query]
   );
   const bedtime = useMemo(
     () => profileStories
-      .filter(
-        (s) =>
-          s.is_generated === true &&
-          s.story_type === "bedtime_text" &&
-          !isFailed(s) &&
-          !!s.story_text &&
-          s.story_text.trim().length > 0
-      )
+      .filter((s) => {
+        if (s.story_type !== "bedtime_text" || !visible(s)) return false;
+        if (getStoryStatus(s) !== "ready") return true;
+        return !!s.story_text && s.story_text.trim().length > 0;
+      })
       .filter(matches),
     [profileStories, query]
   );
