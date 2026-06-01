@@ -46,17 +46,43 @@ const Auth = () => {
     const parsed = schema.safeParse({ email, password });
     if (!parsed.success) return toast.error(parsed.error.errors[0].message);
     setBusy(true);
-    const fn = mode === "signin" ? supabase.auth.signInWithPassword : supabase.auth.signUp;
-    const { error } = await fn({
+
+    if (mode === "signin") {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: parsed.data.email,
+        password: parsed.data.password,
+      });
+      setBusy(false);
+      if (error) {
+        if (error.message === "Invalid login credentials") {
+          setPassword("");
+          return toast("New here? Sign up below — or try your password again.");
+        }
+        return toast.error(error.message);
+      }
+      return;
+    }
+
+    // signup
+    const { data, error } = await supabase.auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
-      ...(mode === "signup" ? { options: { emailRedirectTo: window.location.origin } } : {}),
-    } as any);
+      options: { emailRedirectTo: window.location.origin },
+    });
     setBusy(false);
-    if (error) return toast.error(error.message);
-    if (mode === "signup") {
-      toast.success("Account created. Check your email to confirm your account before logging in.");
+
+    const alreadyExists =
+      (error && /already registered|already exists|user already/i.test(error.message)) ||
+      (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0);
+
+    if (alreadyExists) {
+      toast("Welcome back to LuluTales! Please login 👋");
+      setMode("signin");
+      setPassword("");
+      return;
     }
+    if (error) return toast.error(error.message);
+    toast.success("Account created. Check your email to confirm your account before logging in.");
   };
 
   const google = async () => {
@@ -120,20 +146,34 @@ const Auth = () => {
           />
         </label>
 
-        {mode !== "forgot" && (
-          <label className="mb-2 block">
-            <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Password
-            </span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
-              placeholder="••••••••"
-            />
-          </label>
-        )}
+        {mode !== "forgot" && (() => {
+          const tooShort = mode === "signup" && password.length > 0 && password.length < 6;
+          return (
+            <label className="mb-2 block">
+              <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Password
+              </span>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={`w-full rounded-xl border bg-card px-4 py-3 text-sm outline-none focus:border-primary ${
+                  tooShort ? "border-destructive" : "border-border"
+                }`}
+                placeholder="••••••••"
+              />
+              {mode === "signup" && (
+                <span
+                  className={`mt-1.5 block text-[11px] ${
+                    tooShort ? "text-destructive" : "text-muted-foreground"
+                  }`}
+                >
+                  Use at least 6 characters.
+                </span>
+              )}
+            </label>
+          );
+        })()}
 
         {mode === "signin" && (
           <div className="mb-4 text-right">
