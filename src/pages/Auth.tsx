@@ -41,7 +41,6 @@ const Auth = () => {
       toast.success("If an account exists for that email, we've sent a reset link.");
       setMode("signin");
       return;
-      return;
     }
 
     const parsed = schema.safeParse({ email, password });
