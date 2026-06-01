@@ -44,6 +44,14 @@ const Player = () => {
   const [dur, setDur] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
 
+  // Never render audio for stories that aren't ready — send users to the right place.
+  useEffect(() => {
+    if (!story) return;
+    if (story.is_generated) return;
+    nav(`/generating/${story.id}`, { replace: true });
+  }, [story, nav]);
+
+
 
   // Reset playback when episode (audioUrl) changes; auto-play after 3s
   useEffect(() => {
