@@ -15,6 +15,12 @@ const BedtimeReader = () => {
 
   const [sizeIdx, setSizeIdx] = useState(1);
   const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    if (!story) return;
+    if (story.is_generated) return;
+    nav(`/generating/${story.id}`, { replace: true });
+  }, [story, nav]);
   useEffect(() => {
     if (!story?.id) return;
 
