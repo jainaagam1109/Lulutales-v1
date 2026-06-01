@@ -43,16 +43,16 @@ const EmptyCard = () => (
 
 const Row = ({
   stories,
-  linkFor,
 }: {
   stories: Story[];
-  linkFor: (s: Story) => string;
 }) => {
   if (stories.length === 0) return <EmptyCard />;
   return (
     <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
       {stories.map((s) => (
-        <StoryRowCard key={s.id} story={s} to={linkFor(s)} />
+        <div key={s.id} className="w-44 flex-shrink-0">
+          <StoryCard story={s} />
+        </div>
       ))}
     </div>
   );
