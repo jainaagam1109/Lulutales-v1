@@ -28,6 +28,7 @@ import {
   ValidationState,
 } from "@/components/StoryFormFields";
 import { createPersonalisedStory } from "@/lib/stories";
+import { getThemeVisual } from "@/lib/themeEmoji";
 import { supabase } from "@/integrations/supabase/client";
 import { getThemeOptions, CUSTOM_THEME_VALUE } from "@/lib/themeOptions";
 
@@ -278,7 +279,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         story_type: storyType,
         age_group: form.age || null,
         child_profile_id: profileId,
-        thumbnail: "✨",
+        thumbnail: getThemeVisual(form.theme.trim()).emoji,
         generation_params: {
           name: form.name.trim(),
           age: form.age.trim(),
