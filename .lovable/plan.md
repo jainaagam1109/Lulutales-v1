@@ -1,134 +1,31 @@
-# Apply theme-based thumbnails (new + backfill)
+## Goal
 
-## Code change
+Force every personalised/bedtime story's `thumbnail` to match the theme → emoji map exactly. Pre-recorded admin stories are left untouched.
 
-`src/components/PersonalisedStoryForm.tsx`
+## Why a SQL file (not a migration)
 
-- Import: `import { getThemeVisual } from "@/lib/themeEmoji";`
-- Replace `thumbnail: "✨",` (line ~281) with:
-  ```ts
-  thumbnail: getThemeVisual(form.theme.trim()).emoji,
-  ```
+The app's `src/integrations/supabase/client.ts` is hardcoded to your own Supabase project (`lidbfkytoajumnhwlcry`). Lovable's migration/insert tools only have access to the original Lovable Cloud project (`uvxzygypxccibioctkxy`), so anything I run here will not touch the database the live app reads from. The deliverable is a SQL file you paste into your own project's SQL editor.
 
-Every newly created personalised/bedtime story will now save the themed emoji. `StoryCard`, `StoryDetail`, `Player`, `Dashboard`, `BedtimePreview` all already read `story.thumbnail`, so they will display correctly with no further changes.
+## What will change
 
-## Backfill existing rows
+1. Create `scripts/backfill-theme-thumbnails.sql` containing a single `UPDATE public.stories` that:
+   - Sets `thumbnail` using a `CASE lower(btrim(theme))` block covering all 108 themes from `src/lib/themeEmoji.ts`.
+   - Falls back to `📖` when the theme doesn't match any known label.
+   - Scoped with `WHERE story_type IN ('personalised_audio', 'bedtime_text')` so admin-uploaded `pre_recorded` stories keep their existing thumbnails.
+   - Overwrites every matched row's thumbnail, including ones that currently hold a wrong emoji (e.g. "Being honest" → 🦁 becomes 🪞).
 
-Run a one-time SQL update on `public.stories` mapping `theme` → emoji using the same table from `src/lib/themeEmoji.ts`. Only touch rows where `thumbnail IS NULL` or `thumbnail = '✨'` so admin-uploaded stories with intentional thumbnails are not overwritten.
+2. No code changes. `PersonalisedStoryForm.tsx` already writes `getThemeVisual(form.theme.trim()).emoji` on insert, so future stories are already correct.
 
-```sql
-UPDATE public.stories SET thumbnail = CASE lower(btrim(theme))
-  WHEN 'saying goodnight' THEN '🌙'
-  WHEN 'sharing toys' THEN '🧸'
-  WHEN 'eating vegetables' THEN '🥦'
-  WHEN 'feeling scared' THEN '🫶'
-  WHEN 'bath time fun' THEN '🛁'
-  WHEN 'hugging mamma' THEN '🤗'
-  WHEN 'my first friend' THEN '🤝'
-  WHEN 'finding colours' THEN '🌈'
-  WHEN 'baby animals' THEN '🐣'
-  WHEN 'oops, i spilled!' THEN '💧'
-  WHEN 'one more bite' THEN '🍓'
-  WHEN 'sleepy train' THEN '🚂'
-  WHEN 'taking turns' THEN '🔄'
-  WHEN 'fruits are yummy' THEN '🍉'
-  WHEN 'bedtime monsters' THEN '👾'
-  WHEN 'i feel angry' THEN '😤'
-  WHEN 'new baby sibling' THEN '👶'
-  WHEN 'why is the sky blue?' THEN '☁️'
-  WHEN 'being brave' THEN '⚡'
-  WHEN 'i can do it myself' THEN '💪'
-  WHEN 'saying sorry' THEN '🙏'
-  WHEN 'papa comes home' THEN '🏡'
-  WHEN 'rain and puddles' THEN '🌧️'
-  WHEN 'quiet time' THEN '🤫'
-  WHEN 'first day of school' THEN '🎒'
-  WHEN 'making a new friend' THEN '🤝'
-  WHEN 'healthy lunchbox' THEN '🥗'
-  WHEN 'bedtime and stars' THEN '⭐'
-  WHEN 'feeling left out' THEN '🫂'
-  WHEN 'bugs and butterflies' THEN '🦋'
-  WHEN 'grandma''s house' THEN '🏡'
-  WHEN 'being honest' THEN '🪞'
-  WHEN 'i fell down' THEN '🌱'
-  WHEN 'mixing colours' THEN '🎨'
-  WHEN 'missing mamma' THEN '💛'
-  WHEN 'try one more time' THEN '🏅'
-  WHEN 'friendship' THEN '🤝'
-  WHEN 'courage' THEN '⚡'
-  WHEN 'healthy eating' THEN '🥗'
-  WHEN 'sleep routine' THEN '🌙'
-  WHEN 'sharing' THEN '🎁'
-  WHEN 'kindness' THEN '💛'
-  WHEN 'curiosity' THEN '🔭'
-  WHEN 'family love' THEN '🏡'
-  WHEN 'understanding feelings' THEN '🫶'
-  WHEN 'trying new things' THEN '🌱'
-  WHEN 'nature and seasons' THEN '🍃'
-  WHEN 'helping at home' THEN '🧹'
-  WHEN 'standing up for others' THEN '🦁'
-  WHEN 'losing gracefully' THEN '🏆'
-  WHEN 'eating a rainbow' THEN '🌈'
-  WHEN 'dreams and nightmares' THEN '💭'
-  WHEN 'when friends fight' THEN '🤝'
-  WHEN 'how things work' THEN '⚙️'
-  WHEN 'being responsible' THEN '✅'
-  WHEN 'different families' THEN '👨‍👩‍👧'
-  WHEN 'the new kid' THEN '🎒'
-  WHEN 'apologising properly' THEN '🙏'
-  WHEN 'plants and growing' THEN '🌿'
-  WHEN 'weekend with nana' THEN '👵'
-  WHEN 'fairness and justice' THEN '⚖️'
-  WHEN 'trying when it''s hard' THEN '🏅'
-  WHEN 'where food comes from' THEN '🌾'
-  WHEN 'worry at bedtime' THEN '🌙'
-  WHEN 'jealousy' THEN '💚'
-  WHEN 'science experiments' THEN '🔬'
-  WHEN 'moving to a new place' THEN '📦'
-  WHEN 'grandparent stories' THEN '👴'
-  WHEN 'keeping a secret vs telling' THEN '🤐'
-  WHEN 'when i feel lonely' THEN '🫂'
-  WHEN 'night sky and planets' THEN '🪐'
-  WHEN 'pet care' THEN '🐾'
-  WHEN 'peer pressure' THEN '🧭'
-  WHEN 'lying and its consequences' THEN '🪞'
-  WHEN 'body and food choices' THEN '🥗'
-  WHEN 'screen time at night' THEN '📵'
-  WHEN 'bullying' THEN '🦁'
-  WHEN 'how the world was made' THEN '🌍'
-  WHEN 'failure and trying again' THEN '🌱'
-  WHEN 'working parents' THEN '💼'
-  WHEN 'inclusion' THEN '🫂'
-  WHEN 'mixed-up feelings' THEN '🌀'
-  WHEN 'ancient civilisations' THEN '🏛️'
-  WHEN 'traditions and culture' THEN '🪔'
-  WHEN 'standing up to a friend' THEN '🦁'
-  WHEN 'waste and environment' THEN '♻️'
-  WHEN 'sleep and performance' THEN '🌙'
-  WHEN 'online kindness' THEN '💛'
-  WHEN 'grief and loss' THEN '🕊️'
-  WHEN 'inventions and discoveries' THEN '💡'
-  WHEN 'identity and belonging' THEN '🫂'
-  WHEN 'gender and stereotypes' THEN '🌈'
-  WHEN 'anger management' THEN '🌊'
-  WHEN 'climate and responsibility' THEN '🌍'
-  WHEN 'distant family' THEN '✉️'
-  WHEN 'when adults are wrong' THEN '⚖️'
-  WHEN 'ambition vs friendship' THEN '🤝'
-  WHEN 'nutrition and growing' THEN '🥗'
-  WHEN 'stress and rest' THEN '🌿'
-  WHEN 'moral dilemmas' THEN '⚖️'
-  WHEN 'social media pressure' THEN '📱'
-  WHEN 'how money works' THEN '🪙'
-  WHEN 'blended families' THEN '🏡'
-  WHEN 'environmental activism' THEN '🌍'
-  WHEN 'comparing yourself to others' THEN '🪞'
-  WHEN 'cultural heritage' THEN '🪔'
-  WHEN 'loyalty and honesty' THEN '🤝'
-  WHEN 'becoming yourself' THEN '🌱'
-  ELSE '📖'
-END
-WHERE thumbnail IS NULL OR thumbnail = '✨';
-```
+## How you run it
 
-Switch to build mode to apply both the code edit and the data update.
+1. Open your Supabase project → SQL editor.
+2. Paste the contents of `scripts/backfill-theme-thumbnails.sql`.
+3. Run it. The output will report the number of rows updated.
+
+## Out of scope
+
+- Admin `pre_recorded` stories (intentionally untouched).
+- Any change to `episodes`, `story_tags`, or other tables.
+- Any change to the app code or RLS.
+
+Switch to build mode to create the SQL file.
