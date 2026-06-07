@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { fetchStory } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
+import { PageHeader } from "@/components/PageHeader";
 import { TagChip } from "@/components/TagChip";
 import { parseBedtimeStory } from "@/lib/parseBedtimeStory";
 
@@ -43,17 +44,11 @@ const BedtimePreview = () => {
 
   return (
     <PhoneShell>
-      <div className="px-5 pt-4 pb-3">
-        <button
-          onClick={() => nav(backTo)}
-          className="mb-3 flex items-center gap-1 text-xs text-primary-deep"
-        >
-          <ChevronLeft className="h-4 w-4" /> Back
-        </button>
+      <PageHeader backTo={backTo}>
         <div className="flex h-44 items-center justify-center rounded-3xl bg-gradient-card text-7xl shadow-soft">
           {emoji}
         </div>
-      </div>
+      </PageHeader>
 
       <div className="flex flex-1 flex-col overflow-y-auto px-5 pb-6">
         {story?.theme && <TagChip label={story.theme} />}

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Play, Bookmark, BookmarkCheck, Mic, BookOpen } from "lucide-react";
+import { Play, Bookmark, BookmarkCheck, Mic, BookOpen } from "lucide-react";
 import { fetchEpisodes, fetchStory, fetchStoryTags, isSaved, toggleSaved } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
+import { PageHeader } from "@/components/PageHeader";
 import { TagChip } from "@/components/TagChip";
 import { StoryStatusCard } from "@/components/StoryStatusCard";
 import { getStoryStatus } from "@/lib/storyStatus";
@@ -43,14 +44,11 @@ const StoryDetail = () => {
 
   return (
     <PhoneShell>
-      <div className="px-5 pt-4 pb-3">
-        <button onClick={() => nav(backTo)} className="mb-3 flex items-center gap-1 text-xs text-primary-deep">
-          <ChevronLeft className="h-4 w-4" /> Back
-        </button>
+      <PageHeader backTo={backTo}>
         <div className="flex h-40 items-center justify-center rounded-3xl bg-gradient-card text-7xl shadow-soft">
           {story.thumbnail ?? "📖"}
         </div>
-      </div>
+      </PageHeader>
 
       <div className="flex-1 overflow-y-auto px-5 pb-6">
         {story.theme && <TagChip label={story.theme} />}

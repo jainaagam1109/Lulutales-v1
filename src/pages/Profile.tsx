@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ChevronLeft,
   ChevronRight,
   BarChart3,
   Users,
@@ -14,6 +13,7 @@ import {
   Check,
   X,
 } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { toast } from "sonner";
 import { PhoneShell } from "@/components/PhoneShell";
 import { FloatingMiniPlayer } from "@/components/FloatingMiniPlayer";
@@ -235,11 +235,7 @@ const Profile = () => {
 
   return (
     <PhoneShell>
-      <header className="px-5 pt-4 pb-3">
-        <button onClick={() => nav(-1)} className="mb-3 flex items-center gap-1 text-xs text-primary-deep">
-          <ChevronLeft className="h-4 w-4" /> Back
-        </button>
-      </header>
+      <PageHeader showProfile={false} />
 
       <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-5">
         <div className="flex items-center gap-3">

@@ -7,6 +7,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { StoryCard } from "@/components/StoryCard";
 import { StoryCardSkeleton } from "@/components/StoryCardSkeleton";
 import { SectionHeader } from "@/components/SectionHeader";
+import { PageHeader } from "@/components/PageHeader";
 
 const Home = () => {
   const childName = localStorage.getItem("lulutales_child_name") ?? "friend";
@@ -33,10 +34,11 @@ const Home = () => {
 
   return (
     <PhoneShell>
-      <header className="px-5 pt-6 pb-4">
-        <div className="text-xs text-muted-foreground">Hi {childName} 👋</div>
-        <h1 className="text-2xl font-extrabold text-foreground">Story time</h1>
-
+      <PageHeader
+        showBack={false}
+        eyebrow={`Hi ${childName} 👋`}
+        title="Story time"
+      >
         <div className="mt-4 flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 shadow-soft">
           <Search className="h-4 w-4 text-muted-foreground" />
           <input
@@ -74,7 +76,7 @@ const Home = () => {
             ))}
           </div>
         )}
-      </header>
+      </PageHeader>
 
       <main className="flex-1 overflow-y-auto pb-6">
         {isLoading && (

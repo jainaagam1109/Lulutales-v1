@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneShell } from "@/components/PhoneShell";
 import { toast } from "sonner";
-import { Upload, X, ChevronLeft } from "lucide-react";
+import { Upload, X } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 
 const THUMBNAILS = ["📖", "🦁", "🌙", "🌳", "🐙", "🐰", "⭐", "🌈", "🎵", "🏔️", "🌊", "🦋", "🔥", "🎨", "🚀", "🌸"];
 
@@ -153,12 +154,9 @@ const AdminUpload = () => {
 
   return (
     <PhoneShell>
-      <div className="flex-1 overflow-y-auto px-5 pt-8 pb-10">
-        <button onClick={() => nav("/admin")} className="mb-3 flex items-center gap-1 text-xs text-primary-deep">
-          <ChevronLeft className="h-4 w-4" /> Back
-        </button>
-        <h1 className="text-2xl font-extrabold text-foreground">Admin · Upload story</h1>
-        <p className="mb-6 mt-1 text-xs text-muted-foreground">Internal page</p>
+      <PageHeader backTo="/admin" title="Admin · Upload story" subtitle="Internal page" />
+      <div className="flex-1 overflow-y-auto px-5 pb-10">
+
 
         <form onSubmit={submit} className="space-y-5">
           {/* Section 1: Story details */}

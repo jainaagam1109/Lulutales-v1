@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Clock, BookOpen, Flame } from "lucide-react";
+import { Clock, BookOpen, Flame } from "lucide-react";
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
-import { ProfileAvatarButton } from "@/components/ProfileAvatarButton";
+import { PageHeader } from "@/components/PageHeader";
 
 import {
   fetchStreak,
@@ -70,20 +70,7 @@ const Insights = () => {
 
   return (
     <PhoneShell>
-      <header className="px-5 pt-4 pb-2">
-        <div className="mb-3 flex items-center justify-between">
-          <ProfileAvatarButton />
-          <button
-            onClick={() => nav(-1)}
-            className="flex items-center gap-1 text-xs text-primary-deep"
-          >
-            <ChevronLeft className="h-4 w-4" /> Back
-          </button>
-        </div>
-        <h1 className="text-2xl font-extrabold text-foreground">
-          What {childName} learned
-        </h1>
-      </header>
+      <PageHeader title={`What ${childName} learned`} />
 
       <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-5">
         <section className="grid grid-cols-3 gap-3">

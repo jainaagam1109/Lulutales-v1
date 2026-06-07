@@ -6,7 +6,7 @@ import { fetchStories, fetchStoriesForProfile, type Story } from "@/lib/stories"
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { SectionHeader } from "@/components/SectionHeader";
-import { ProfileAvatarButton } from "@/components/ProfileAvatarButton";
+import { PageHeader } from "@/components/PageHeader";
 import { TagChip } from "@/components/TagChip";
 import { StoryCard } from "@/components/StoryCard";
 import { getStoryStatus } from "@/lib/storyStatus";
@@ -119,14 +119,7 @@ const HappyPlace = () => {
 
   return (
     <PhoneShell>
-      <header className="px-5 pt-4 pb-3">
-        <div className="flex items-center gap-3">
-          <ProfileAvatarButton />
-          <div>
-            <h1 className="text-2xl font-extrabold text-foreground">{childName}'s Happy Place</h1>
-          </div>
-        </div>
-
+      <PageHeader showBack={false} title={`${childName}'s Happy Place`}>
         <div className="mt-4 flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 shadow-soft">
           <Search className="h-4 w-4 text-muted-foreground" />
           <input
@@ -136,7 +129,7 @@ const HappyPlace = () => {
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
         </div>
-      </header>
+      </PageHeader>
 
       <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-6">
         <section>
