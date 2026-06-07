@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+
 import { useQuery } from "@tanstack/react-query";
 import { Clock, BookOpen, Flame } from "lucide-react";
 import { PhoneShell } from "@/components/PhoneShell";
@@ -25,7 +25,7 @@ const fmtMinutes = (seconds: number): string => {
 };
 
 const Insights = () => {
-  const nav = useNavigate();
+  
   const childName = localStorage.getItem("lulutales_child_name") ?? "your child";
   const profileId =
     typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
