@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Lock, Headphones, Moon, BookOpen } from "lucide-react";
+import { ChevronRight, Lock, Headphones, Moon, BookOpen } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
-import { ProfileAvatarButton } from "@/components/ProfileAvatarButton";
+import { PageHeader } from "@/components/PageHeader";
 import { MiniPlayer } from "@/components/MiniPlayer";
 import { fetchStoriesForProfile } from "@/lib/stories";
 
@@ -65,16 +65,10 @@ const MagicHub = () => {
 
   return (
     <PhoneShell>
-      <header className="px-5 pt-4 pb-2">
-        <button onClick={() => nav(-1)} className="mb-3 flex items-center gap-1 text-xs text-primary-deep">
-          <ChevronLeft className="h-4 w-4" /> Back
-        </button>
-        
-        <h1 className="text-2xl font-extrabold text-foreground">Magic Hub</h1>
-        {!hasGenerated && (
-          <p className="mt-1 text-xs text-muted-foreground">✨ Tap below to create your first story</p>
-        )}
-      </header>
+      <PageHeader
+        title="Magic Hub"
+        subtitle={!hasGenerated ? "✨ Tap below to create your first story" : undefined}
+      />
 
       <main className="flex-1 overflow-y-auto px-5 pb-6">
         <div className="space-y-3">

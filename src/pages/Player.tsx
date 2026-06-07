@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Play, Pause } from "lucide-react";
+import { Play, Pause } from "lucide-react";
 import { fetchStory, fetchEpisodes } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
+import { PageHeader } from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
 
 const fmt = (s: number) => {
@@ -250,10 +251,8 @@ const Player = () => {
   if (episodes && !epLoading && !current) {
     return (
       <PhoneShell>
-        <div className="flex-1 px-6 pt-6 pb-10">
-          <button onClick={() => nav(id ? `/story/${id}` : "/")} className="mb-6 flex items-center gap-1 text-xs text-primary-deep">
-            <ChevronLeft className="h-4 w-4" /> Back
-          </button>
+        <PageHeader backTo={id ? `/story/${id}` : "/"} />
+        <div className="flex-1 px-6 pb-10">
           <div className="mt-20 text-center">
             <div className="text-5xl">🤔</div>
             <h2 className="mt-3 text-lg font-extrabold text-foreground">Episode not found</h2>
@@ -268,10 +267,9 @@ const Player = () => {
 
   return (
     <PhoneShell>
-      <div className="flex-1 px-6 pt-6 pb-10">
-        <button onClick={() => nav(id ? `/story/${id}` : "/")} className="mb-6 flex items-center gap-1 text-xs text-primary-deep">
-          <ChevronLeft className="h-4 w-4" /> Back
-        </button>
+      <PageHeader backTo={id ? `/story/${id}` : "/"} />
+      <div className="flex-1 px-6 pb-10">
+
 
         <div className="mx-auto mb-6 flex h-64 w-64 items-center justify-center rounded-3xl bg-gradient-card text-8xl shadow-soft">
           {story?.thumbnail ?? "📖"}

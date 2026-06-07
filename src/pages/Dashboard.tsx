@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Play, Wand2, ChevronRight, Loader2, BarChart3, Flame, Palette, BookOpen } from "lucide-react";
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
-import { ProfileAvatarButton } from "@/components/ProfileAvatarButton";
+import { PageHeader } from "@/components/PageHeader";
 import { StoryCard } from "@/components/StoryCard";
 import { fetchStoriesForProfile, fetchStories } from "@/lib/stories";
 import { supabase } from "@/integrations/supabase/client";
@@ -150,17 +150,11 @@ const Dashboard = () => {
 
   return (
     <PhoneShell>
-      <header className="flex items-start gap-3 px-5 pt-6 pb-4">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-extrabold text-foreground truncate">
-            {childName}'s world 🌟
-          </h1>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Building {pronouns.object}, one story at a time
-          </p>
-        </div>
-        <ProfileAvatarButton />
-      </header>
+      <PageHeader
+        showBack={false}
+        title={`${childName}'s world 🌟`}
+        subtitle={`Building ${pronouns.object}, one story at a time`}
+      />
 
       <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-5">
         {pending && (
