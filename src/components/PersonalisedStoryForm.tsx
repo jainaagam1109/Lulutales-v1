@@ -133,6 +133,15 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
   const nav = useNavigate();
   const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
 
+  useEffect(() => {
+    if (!profileId) {
+      toast.info("Tell us about your child to create personalised stories.");
+      nav("/onboarding", { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
