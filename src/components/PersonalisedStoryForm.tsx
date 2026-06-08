@@ -404,6 +404,10 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           </div>
         )}
 
+        <p className="rounded-xl bg-secondary/40 px-3 py-2 text-[11px] text-muted-foreground">
+          Your child's details stay private to your account — never sold or shared — and are used only to personalise stories.
+        </p>
+
         {loading ? (
           <div className="rounded-2xl border border-border bg-card p-4 text-xs text-muted-foreground">
             Loading profile…
