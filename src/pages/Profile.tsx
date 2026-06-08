@@ -479,7 +479,7 @@ const Profile = () => {
         </section>
       </main>
 
-      <FloatingMiniPlayer />
+      <BottomNav />
     </PhoneShell>
   );
 };
