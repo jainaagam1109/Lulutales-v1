@@ -35,7 +35,7 @@ export const RequireAuth = ({ children }: Props) => {
       setChecking(false);
       return;
     }
-    const bypass = ["/onboarding", "/select-profile"].includes(location.pathname);
+    const bypass = ["/onboarding", "/select-profile", "/add-child"].includes(location.pathname);
     if (bypass) {
       setRedirectTo(null);
       setChecking(false);
