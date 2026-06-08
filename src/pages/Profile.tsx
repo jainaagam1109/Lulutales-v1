@@ -191,8 +191,8 @@ const Profile = () => {
       toast.error("Name is required");
       return;
     }
-    if (!updateData.age || updateData.age < 2 || updateData.age > 14) {
-      toast.error("Age must be between 2 and 14");
+    if (!updateData.age || updateData.age < 2 || updateData.age > 9) {
+      toast.error("Stories are crafted for ages 2–9.");
       return;
     }
 
@@ -370,10 +370,11 @@ const Profile = () => {
                           <TextInput
                             type="number"
                             min={2}
-                            max={14}
+                            max={9}
                             value={editForm.age ?? ""}
                             onChange={(e) => setEditForm((f) => ({ ...f, age: parseInt(e.target.value, 10) || 0 }))}
                           />
+                          <p className="mt-1 text-[11px] text-muted-foreground">Stories are crafted for ages 2–9.</p>
                         </div>
                         <div>
                           <Label>Gender</Label>
@@ -462,7 +463,7 @@ const Profile = () => {
                 );
               })}
               <button
-                onClick={() => nav("/onboarding")}
+                onClick={() => nav("/add-child")}
                 className="flex w-full items-center gap-3 rounded-2xl border border-dashed border-border p-3 text-left text-muted-foreground hover:border-primary hover:text-primary"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border">
@@ -470,6 +471,9 @@ const Profile = () => {
                 </div>
                 <div className="text-sm font-bold">Add child</div>
               </button>
+              <p className="px-1 pt-1 text-[11px] text-muted-foreground">
+                Your child's details stay private to your account — never sold or shared — and are used only to personalise stories.
+              </p>
             </div>
           )}
           <Row icon={Share2} label="Share app" sub="Copies link to clipboard" onClick={handleShare} />

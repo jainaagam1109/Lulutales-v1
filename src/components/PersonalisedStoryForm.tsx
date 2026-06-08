@@ -133,6 +133,15 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
   const nav = useNavigate();
   const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
 
+  useEffect(() => {
+    if (!profileId) {
+      toast.info("Tell us about your child to create personalised stories.");
+      nav("/onboarding", { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -344,8 +353,13 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
       toast.error("Please enter a valid name (letters only).");
       return;
     }
-    if (form.age.trim() && !isNumeric(form.age)) {
+    if (!form.age.trim() || !isNumeric(form.age)) {
       toast.error("Looks like age should be a number 😊");
+      return;
+    }
+    const ageNum = Number(form.age);
+    if (ageNum < 2 || ageNum > 9) {
+      toast.error("Stories are crafted for ages 2–9.");
       return;
     }
     if (!form.theme.trim()) {
@@ -390,6 +404,10 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           </div>
         )}
 
+        <p className="rounded-xl bg-secondary/40 px-3 py-2 text-[11px] text-muted-foreground">
+          Your child's details stay private to your account — never sold or shared — and are used only to personalise stories.
+        </p>
+
         {loading ? (
           <div className="rounded-2xl border border-border bg-card p-4 text-xs text-muted-foreground">
             Loading profile…
@@ -418,8 +436,9 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                   inputMode="numeric"
                   placeholder="e.g. 5"
                   state={ageState}
-                  errorMessage="Looks like age should be a number 😊"
+                  errorMessage="Stories are crafted for ages 2–9."
                 />
+                <p className="mt-1 text-[11px] text-muted-foreground">Stories are crafted for ages 2–9.</p>
               </div>
               <div>
                 <FieldLabel tooltip="So we use the right pronouns in the story.">Gender</FieldLabel>

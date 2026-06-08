@@ -35,7 +35,7 @@ export const RequireAuth = ({ children }: Props) => {
       setChecking(false);
       return;
     }
-    const bypass = ["/onboarding", "/select-profile"].includes(location.pathname);
+    const bypass = ["/onboarding", "/select-profile", "/add-child"].includes(location.pathname);
     if (bypass) {
       setRedirectTo(null);
       setChecking(false);
@@ -60,10 +60,13 @@ export const RequireAuth = ({ children }: Props) => {
       }
       const kids = data ?? [];
       if (kids.length === 0) {
+        // Allow profile-less users to browse the catalog. Personalised flows
+        // gate themselves separately and will redirect to /onboarding on demand.
         localStorage.removeItem("lulutales_profile_id");
         localStorage.removeItem("lulutales_child_name");
         localStorage.removeItem("lulutales_child_age");
-        setRedirectTo("/onboarding");
+        profileValidatedForUserId = session.user.id;
+        setRedirectTo(null);
         setChecking(false);
         return;
       }

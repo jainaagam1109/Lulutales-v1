@@ -24,6 +24,14 @@ const MagicHub = () => {
   const lastCompleted = typeof window !== "undefined" && localStorage.getItem("lulutales_last_story_completed") === "1";
   const showPlayer = !!lastId && !lastCompleted;
 
+  const goPersonalised = (path: string) => {
+    if (!profileId) {
+      nav("/onboarding");
+      return;
+    }
+    nav(path);
+  };
+
   const cards = [
     {
       sectionLabel: "Listen",
@@ -34,7 +42,7 @@ const MagicHub = () => {
       iconBg: "bg-tag-warm-bg text-tag-warm-fg",
       tag: "BETA",
       tagClass: "bg-tag-warm-bg text-tag-warm-fg border-tag-warm-border",
-      onClick: () => nav("/magic-hub/audio"),
+      onClick: () => goPersonalised("/magic-hub/audio"),
       disabled: false,
     },
     {
@@ -46,7 +54,7 @@ const MagicHub = () => {
       iconBg: "bg-tag-mint-bg text-tag-mint-fg",
       tag: "BETA",
       tagClass: "bg-tag-mint-bg text-tag-mint-fg border-tag-mint-border",
-      onClick: () => nav("/magic-hub/bedtime"),
+      onClick: () => goPersonalised("/magic-hub/bedtime"),
       disabled: false,
     },
     {

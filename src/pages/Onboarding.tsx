@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneShell } from "@/components/PhoneShell";
@@ -28,6 +28,8 @@ const FAMILY_SETUPS = [
   { label: "Other", value: "Other" },
 ];
 
+const AGE_MESSAGE = "Stories are crafted for ages 2–9.";
+
 const schema = z.object({
   name: z
     .string()
@@ -35,11 +37,15 @@ const schema = z.object({
     .min(1, "Please add your child's name 😊")
     .max(60)
     .regex(/^[A-Za-z\s'-]+$/, "Hmm, this should be letters only 😊"),
-  age: z.number().int().min(1).max(18),
+  age: z.number().int().min(2, AGE_MESSAGE).max(9, AGE_MESSAGE),
 });
 
 const Onboarding = () => {
   const nav = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const isAddMode =
+    location.pathname === "/add-child" || searchParams.get("mode") === "add";
   const { session, loading: authLoading } = useAuth();
   const [name, setName] = useState("");
   const [age, setAge] = useState<string>("");
@@ -56,6 +62,7 @@ const Onboarding = () => {
       nav("/auth", { replace: true });
       return;
     }
+    if (isAddMode) return; // skip the auto-redirect; always allow adding another child
     // If a profile already exists for this user, skip onboarding entirely.
     (async () => {
       const { data: existing } = await supabase
@@ -63,16 +70,16 @@ const Onboarding = () => {
         .select("id, name, age")
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      if (existing) {
-        localStorage.setItem("lulutales_profile_id", existing.id);
-        localStorage.setItem("lulutales_child_name", existing.name);
-        localStorage.setItem("lulutales_child_age", String(existing.age));
+        .limit(1);
+      const first = existing?.[0];
+      if (first) {
+        localStorage.setItem("lulutales_profile_id", first.id);
+        localStorage.setItem("lulutales_child_name", first.name);
+        localStorage.setItem("lulutales_child_age", String(first.age));
         nav("/", { replace: true });
       }
     })();
-  }, [session, authLoading, nav]);
+  }, [session, authLoading, nav, isAddMode]);
 
 
   const nameState: ValidationState = !touched.name
@@ -85,35 +92,38 @@ const Onboarding = () => {
   const ageState: ValidationState = !touched.age
     ? "untouched"
     : age.trim()
-    ? isNumeric(age)
+    ? isNumeric(age) && Number(age) >= 2 && Number(age) <= 9
       ? "valid"
       : "error"
     : "untouched";
 
   const submit = async () => {
     if (!session) return;
-    setLoading(true);
-    // Avoid duplicate profile creation if one already exists
-    const { data: existing } = await supabase
-      .from("child_profiles")
-      .select("id, name, age")
-      .eq("user_id", session.user.id)
-      .maybeSingle();
-    if (existing) {
-      localStorage.setItem("lulutales_profile_id", existing.id);
-      localStorage.setItem("lulutales_child_name", existing.name);
-      localStorage.setItem("lulutales_child_age", String(existing.age));
-      setLoading(false);
-      nav("/");
-      return;
-    }
     setTouched({ name: true, age: true });
     const ageNum = Number(age);
     const parsed = schema.safeParse({ name, age: ageNum });
     if (!parsed.success) {
-      setLoading(false);
       toast.error(parsed.error.errors[0].message);
       return;
+    }
+    setLoading(true);
+    // In normal mode, avoid duplicate profile creation if one already exists.
+    if (!isAddMode) {
+      const { data: existing } = await supabase
+        .from("child_profiles")
+        .select("id, name, age")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: true })
+        .limit(1);
+      const first = existing?.[0];
+      if (first) {
+        localStorage.setItem("lulutales_profile_id", first.id);
+        localStorage.setItem("lulutales_child_name", first.name);
+        localStorage.setItem("lulutales_child_age", String(first.age));
+        setLoading(false);
+        nav("/");
+        return;
+      }
     }
     const { data, error } = await supabase
       .from("child_profiles")
@@ -149,8 +159,13 @@ const Onboarding = () => {
           <p className="mt-1 text-sm text-muted-foreground">Audio stories for curious kids</p>
         </div>
 
-        <h2 className="mb-1 text-xl font-bold text-foreground">About your child</h2>
-        <p className="mb-6 text-sm text-muted-foreground">We'll use this to personalise stories.</p>
+        <h2 className="mb-1 text-xl font-bold text-foreground">
+          {isAddMode ? "Add a child" : "About your child"}
+        </h2>
+        <p className="mb-3 text-sm text-muted-foreground">We'll use this to personalise stories.</p>
+        <p className="mb-6 rounded-xl bg-secondary/40 px-3 py-2 text-[11px] text-muted-foreground">
+          Your child's details stay private to your account — never sold or shared — and are used only to personalise stories.
+        </p>
 
         <div className="mb-4">
           <FieldLabel tooltip="Your child's first name — used to personalise the story.">
@@ -176,8 +191,9 @@ const Onboarding = () => {
             inputMode="numeric"
             placeholder="e.g. 5"
             state={ageState}
-            errorMessage="Looks like age should be a number 😊"
+            errorMessage={AGE_MESSAGE}
           />
+          <p className="mt-1 text-[11px] text-muted-foreground">{AGE_MESSAGE}</p>
         </div>
 
         <div className="mb-4">
@@ -232,7 +248,7 @@ const Onboarding = () => {
           disabled={loading}
           className="w-full rounded-full bg-gradient-primary py-3.5 text-sm font-bold text-primary-foreground shadow-glow transition-opacity disabled:opacity-50"
         >
-          {loading ? "Saving…" : "Continue →"}
+          {loading ? "Saving…" : isAddMode ? "Add child →" : "Continue →"}
         </button>
       </div>
     </PhoneShell>
