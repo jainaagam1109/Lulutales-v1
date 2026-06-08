@@ -41,6 +41,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
+            <Route path="/add-child" element={<RequireAuth><Onboarding /></RequireAuth>} />
             <Route path="/select-profile" element={<RequireAuth><SelectProfile /></RequireAuth>} />
             <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
             <Route path="/story/:id" element={<RequireAuth><StoryDetail /></RequireAuth>} />
