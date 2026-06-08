@@ -63,7 +63,7 @@ const SelectProfile = () => {
               </button>
             ))}
             <button
-              onClick={() => nav("/onboarding")}
+              onClick={() => nav("/add-child")}
               className="flex flex-col items-center rounded-3xl border border-dashed border-border bg-card/50 p-4 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
             >
               <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full border border-border">
