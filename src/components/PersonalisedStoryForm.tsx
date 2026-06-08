@@ -440,8 +440,6 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                 />
                 <p className="mt-1 text-[11px] text-muted-foreground">Stories are crafted for ages 2–9.</p>
               </div>
-                />
-              </div>
               <div>
                 <FieldLabel tooltip="So we use the right pronouns in the story.">Gender</FieldLabel>
                 <Select
