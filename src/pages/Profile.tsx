@@ -191,8 +191,8 @@ const Profile = () => {
       toast.error("Name is required");
       return;
     }
-    if (!updateData.age || updateData.age < 2 || updateData.age > 14) {
-      toast.error("Age must be between 2 and 14");
+    if (!updateData.age || updateData.age < 2 || updateData.age > 9) {
+      toast.error("Stories are crafted for ages 2–9.");
       return;
     }
 
