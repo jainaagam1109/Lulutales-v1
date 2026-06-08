@@ -370,10 +370,11 @@ const Profile = () => {
                           <TextInput
                             type="number"
                             min={2}
-                            max={14}
+                            max={9}
                             value={editForm.age ?? ""}
                             onChange={(e) => setEditForm((f) => ({ ...f, age: parseInt(e.target.value, 10) || 0 }))}
                           />
+                          <p className="mt-1 text-[11px] text-muted-foreground">Stories are crafted for ages 2–9.</p>
                         </div>
                         <div>
                           <Label>Gender</Label>
