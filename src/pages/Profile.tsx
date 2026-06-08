@@ -16,7 +16,7 @@ import {
 import { PageHeader } from "@/components/PageHeader";
 import { toast } from "sonner";
 import { PhoneShell } from "@/components/PhoneShell";
-import { FloatingMiniPlayer } from "@/components/FloatingMiniPlayer";
+import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -479,7 +479,7 @@ const Profile = () => {
         </section>
       </main>
 
-      <FloatingMiniPlayer />
+      <BottomNav />
     </PhoneShell>
   );
 };
