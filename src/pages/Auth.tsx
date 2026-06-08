@@ -16,6 +16,91 @@ const emailOnlySchema = z.object({
 
 type Mode = "signin" | "signup" | "forgot";
 
+type EmailAccountInfo = {
+  exists: boolean;
+  has_password: boolean;
+  providers: string[];
+};
+
+/**
+ * Look up which sign-in methods an email is registered with.
+ *
+ * Relies on the Postgres RPC `auth_methods_for_email` (created in the Supabase
+ * SQL editor). If the function isn't installed, or anything goes wrong, this
+ * resolves to `null` and callers fall back to a generic-but-helpful message —
+ * so the screen works correctly either way.
+ */
+async function lookupEmailAccount(email: string): Promise<EmailAccountInfo | null> {
+  try {
+    // Cast to `any` so this compiles even before the generated Supabase types
+    // include the new RPC. (They will once types are regenerated.)
+    const { data, error } = await (supabase as any).rpc("auth_methods_for_email", {
+      p_email: email,
+    });
+    if (error || !data) return null;
+    const obj = data as { exists?: boolean; has_password?: boolean; providers?: unknown };
+    return {
+      exists: !!obj.exists,
+      has_password: !!obj.has_password,
+      providers: Array.isArray(obj.providers) ? (obj.providers as string[]) : [],
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** A Google-only account = registered with Google and no usable password set. */
+function isGoogleOnly(info: EmailAccountInfo | null): boolean {
+  return !!info && info.providers.includes("google") && !info.has_password;
+}
+
+/** Turn a raw Supabase sign-in error into a clear, user-facing message. */
+function friendlySignInError(rawMessage: string, info: EmailAccountInfo | null): string {
+  const msg = rawMessage.toLowerCase();
+
+  // Supabase returns "Invalid login credentials" for BOTH a wrong password AND
+  // an email that isn't registered (deliberate, to prevent account enumeration).
+  // We disambiguate using the account lookup so the user isn't left guessing.
+  if (msg.includes("invalid login credentials")) {
+    if (info) {
+      if (!info.exists) {
+        return 'We couldn\'t find an account with that email. Switch to "Sign up" to create one.';
+      }
+      if (isGoogleOnly(info)) {
+        return 'This account was created with Google. Tap "Continue with Google" below to sign in.';
+      }
+      if (info.providers.includes("google")) {
+        // Has a password but Google is also linked — likely a wrong password,
+        // but offer Google as an alternate route.
+        return 'Incorrect password. You can also sign in with "Continue with Google" below.';
+      }
+      return "Incorrect email or password. Please try again.";
+    }
+    // RPC not available → safe, still-helpful generic nudge.
+    return 'Incorrect email or password. If you signed up with Google, use "Continue with Google" below instead.';
+  }
+
+  if (msg.includes("email not confirmed")) {
+    return "Please confirm your email first — check your inbox for the verification link.";
+  }
+  if (msg.includes("too many requests") || msg.includes("rate limit")) {
+    return "Too many attempts. Please wait a minute and try again.";
+  }
+  return rawMessage || "Something went wrong while signing in. Please try again.";
+}
+
+/** Turn a raw Supabase sign-up error into a clear, user-facing message. */
+function friendlySignUpError(rawMessage: string): string {
+  const msg = rawMessage.toLowerCase();
+  if (msg.includes("password")) {
+    return "Password must be at least 6 characters.";
+  }
+  if (msg.includes("too many requests") || msg.includes("rate limit")) {
+    return "Too many attempts. Please wait a minute and try again.";
+  }
+  return rawMessage || "Something went wrong while creating your account. Please try again.";
+}
+
 const Auth = () => {
   const nav = useNavigate();
   const { session, loading } = useAuth();
@@ -23,10 +108,17 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  // When we detect the email belongs to a Google account, highlight that button.
+  const [suggestGoogle, setSuggestGoogle] = useState(false);
 
   useEffect(() => {
     if (!loading && session) nav("/", { replace: true });
   }, [session, loading, nav]);
+
+  // Clear the Google hint whenever the user edits the email.
+  useEffect(() => {
+    setSuggestGoogle(false);
+  }, [email]);
 
   const submit = async () => {
     if (mode === "forgot") {
@@ -46,20 +138,27 @@ const Auth = () => {
     const parsed = schema.safeParse({ email, password });
     if (!parsed.success) return toast.error(parsed.error.errors[0].message);
     setBusy(true);
+    setSuggestGoogle(false);
 
     if (mode === "signin") {
       const { error } = await supabase.auth.signInWithPassword({
         email: parsed.data.email,
         password: parsed.data.password,
       });
-      setBusy(false);
       if (error) {
-        if (error.message === "Invalid login credentials") {
-          setPassword("");
-          return toast("New here? Sign up below — or try your password again.");
-        }
-        return toast.error(error.message);
+        // Only spend a lookup on the ambiguous credentials error.
+        const info = error.message.toLowerCase().includes("invalid login credentials")
+          ? await lookupEmailAccount(parsed.data.email)
+          : null;
+        setBusy(false);
+        if (isGoogleOnly(info)) setSuggestGoogle(true);
+        // Clear the password only when retyping it wouldn't help.
+        if (info && (!info.exists || isGoogleOnly(info))) setPassword("");
+        toast.error(friendlySignInError(error.message, info));
+        return;
       }
+      setBusy(false);
+      // session change will trigger redirect
       return;
     }
 
@@ -69,19 +168,29 @@ const Auth = () => {
       password: parsed.data.password,
       options: { emailRedirectTo: window.location.origin },
     });
-    setBusy(false);
 
+    // Supabase hides "user already exists" on signup: it returns either an
+    // "already registered" error OR a user object with an empty identities array.
     const alreadyExists =
       (error && /already registered|already exists|user already/i.test(error.message)) ||
-      (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0);
+      (!!data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0);
 
     if (alreadyExists) {
-      toast("Welcome back to LuluTales! Please login 👋");
-      setMode("signin");
+      const info = await lookupEmailAccount(parsed.data.email);
+      setBusy(false);
       setPassword("");
+      if (isGoogleOnly(info)) {
+        setSuggestGoogle(true);
+        toast('You already have a Google account. Tap "Continue with Google" below.');
+      } else {
+        toast("Welcome back to LuluTales! Please login 👋");
+        setMode("signin");
+      }
       return;
     }
-    if (error) return toast.error(error.message);
+
+    setBusy(false);
+    if (error) return toast.error(friendlySignUpError(error.message));
     toast.success("Account created. Check your email to confirm your account before logging in.");
   };
 
@@ -95,16 +204,12 @@ const Auth = () => {
       setBusy(false);
       toast.error(error.message ?? "Google sign-in failed");
     }
+    // On success the browser redirects; leave busy = true.
   };
 
-  const submitLabel =
-    mode === "signin" ? "Login" : mode === "signup" ? "Create account" : "Send reset link";
+  const submitLabel = mode === "signin" ? "Login" : mode === "signup" ? "Create account" : "Send reset link";
   const subtitle =
-    mode === "signin"
-      ? "Welcome back"
-      : mode === "signup"
-      ? "Create your account"
-      : "Reset your password";
+    mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password";
 
   return (
     <PhoneShell>
@@ -146,34 +251,33 @@ const Auth = () => {
           />
         </label>
 
-        {mode !== "forgot" && (() => {
-          const tooShort = mode === "signup" && password.length > 0 && password.length < 6;
-          return (
-            <label className="mb-2 block">
-              <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Password
-              </span>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={`w-full rounded-xl border bg-card px-4 py-3 text-sm outline-none focus:border-primary ${
-                  tooShort ? "border-destructive" : "border-border"
-                }`}
-                placeholder="••••••••"
-              />
-              {mode === "signup" && (
-                <span
-                  className={`mt-1.5 block text-[11px] ${
-                    tooShort ? "text-destructive" : "text-muted-foreground"
-                  }`}
-                >
-                  Use at least 6 characters.
+        {mode !== "forgot" &&
+          (() => {
+            const tooShort = mode === "signup" && password.length > 0 && password.length < 6;
+            return (
+              <label className="mb-2 block">
+                <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Password
                 </span>
-              )}
-            </label>
-          );
-        })()}
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={`w-full rounded-xl border bg-card px-4 py-3 text-sm outline-none focus:border-primary ${
+                    tooShort ? "border-destructive" : "border-border"
+                  }`}
+                  placeholder="••••••••"
+                />
+                {mode === "signup" && (
+                  <span
+                    className={`mt-1.5 block text-[11px] ${tooShort ? "text-destructive" : "text-muted-foreground"}`}
+                  >
+                    Use at least 6 characters.
+                  </span>
+                )}
+              </label>
+            );
+          })()}
 
         {mode === "signin" && (
           <div className="mb-4 text-right">
@@ -215,10 +319,18 @@ const Auth = () => {
               <div className="h-px flex-1 bg-border" />
             </div>
 
+            {suggestGoogle && (
+              <p className="mb-2 text-center text-xs font-medium text-primary">
+                This email is registered with Google — use the button below.
+              </p>
+            )}
+
             <button
               onClick={google}
               disabled={busy}
-              className="w-full rounded-full border border-border bg-card py-3.5 text-sm font-bold text-foreground disabled:opacity-50"
+              className={`w-full rounded-full border py-3.5 text-sm font-bold text-foreground disabled:opacity-50 ${
+                suggestGoogle ? "border-primary ring-2 ring-primary/40" : "border-border bg-card"
+              }`}
             >
               Continue with Google
             </button>
