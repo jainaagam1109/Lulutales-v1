@@ -160,6 +160,9 @@ const KidsProfiles = () => {
       setBusy(true);
       const nextId = await softDeleteProfile(id);
       setConfirmDeleteId(null);
+      // Re-hydrate localStorage cache & cached queries from the newly active row
+      if (user) await loadActiveProfileForUser(user.id);
+      qc.invalidateQueries();
       toast.success("Profile removed");
       if (!nextId) {
         // No profiles left — explorer mode.
