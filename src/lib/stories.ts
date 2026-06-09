@@ -53,8 +53,22 @@ export const fetchStories = async (): Promise<Story[]> => {
     .select("*")
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return data ?? [];
+  const stories = (data ?? []) as Story[];
+  // Hide stories owned by soft-deleted child profiles.
+  const ownerIds = Array.from(
+    new Set(stories.map((s) => s.owner_profile_id).filter((v): v is string => !!v))
+  );
+  if (ownerIds.length === 0) return stories;
+  const { data: deletedRows } = await (supabase as any)
+    .from("child_profiles")
+    .select("id")
+    .in("id", ownerIds)
+    .eq("status", "deleted");
+  const deletedSet = new Set<string>((deletedRows ?? []).map((r: any) => r.id as string));
+  if (deletedSet.size === 0) return stories;
+  return stories.filter((s) => !s.owner_profile_id || !deletedSet.has(s.owner_profile_id));
 };
+
 
 export const fetchStory = async (id: string): Promise<Story | null> => {
   const { data, error } = await supabase.from("stories").select("*").eq("id", id).maybeSingle();
