@@ -105,16 +105,14 @@ const Onboarding = () => {
     if (!isAddMode) {
       const { data: existing } = await (supabase as any)
         .from("child_profiles")
-        .select("id, name, age")
+        .select("id")
         .eq("user_id", session.user.id)
         .neq("status", "deleted")
         .order("created_at", { ascending: true })
         .limit(1);
       const first = existing?.[0];
       if (first) {
-        localStorage.setItem("lulutales_profile_id", first.id);
-        localStorage.setItem("lulutales_child_name", first.name);
-        localStorage.setItem("lulutales_child_age", String(first.age));
+        await loadActiveProfileForUser(session.user.id);
         setLoading(false);
         nav("/");
         return;
