@@ -48,9 +48,9 @@ const Insights = () => {
     enabled: !!profileId,
   });
 
-  const { data: habitBars = [] } = useQuery({
-    queryKey: ["analytics-habit-bars", profileId],
-    queryFn: () => fetchHabitBars(profileId!),
+  const { data: themeCounts = [] } = useQuery({
+    queryKey: ["analytics-theme-counts", profileId],
+    queryFn: () => fetchThemeCounts(profileId!),
     enabled: !!profileId,
   });
 
