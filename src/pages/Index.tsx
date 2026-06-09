@@ -66,7 +66,7 @@ const Index = () => {
 
   const { data: profileStories = [] } = useQuery({
     queryKey: ["stories-for-profile", profileId],
-    queryFn: () => (profileId ? fetchStoriesForProfile(profileId) : Promise_resolve_empty()),
+    queryFn: () => (profileId ? fetchStoriesForProfile(profileId) : globalThis.Promise.resolve([])),
     enabled: !!profileId,
   });
 
@@ -259,13 +259,13 @@ const Index = () => {
         ) : hasStory ? (
           <>
             <Insights />
-            <Promise />
+            <PromiseSection />
             <Catalog />
             <CreateHero />
           </>
         ) : (
           <>
-            <Promise />
+            <PromiseSection />
             <CreateHero />
             <Catalog />
           </>
