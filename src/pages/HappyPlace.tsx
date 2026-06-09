@@ -153,22 +153,24 @@ const HappyPlace = () => {
       </PageHeader>
 
       <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-6">
-        <section>
-          <SectionHeader title={curatedTitle} />
-          <Row stories={personalised} />
-        </section>
+        {hasActive && (
+          <section>
+            <SectionHeader title={curatedTitle} />
+            <Row stories={personalised} />
+          </section>
+        )}
 
-        <section>
-          <SectionHeader title="Bedtime Stories" />
-          <Row stories={bedtime} />
-        </section>
+        {hasActive && (
+          <section>
+            <SectionHeader title="Bedtime Stories" />
+            <Row stories={bedtime} />
+          </section>
+        )}
 
         <section>
           <SectionHeader title="Story Room" />
-          <Row stories={storyRoom} />
-
+          <Row stories={storyRoom} emptyVariant="coming-soon" />
         </section>
-
       </main>
 
       <BottomNav />
