@@ -354,12 +354,12 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
       return;
     }
     if (!form.age.trim() || !isNumeric(form.age)) {
-      toast.error("Looks like age should be a number 😊");
+      toast.error("Please enter an age between 2 and 9 😊");
       return;
     }
     const ageNum = Number(form.age);
     if (ageNum < 2 || ageNum > 9) {
-      toast.error("Stories are crafted for ages 2–9.");
+      toast.error("Please enter an age between 2 and 9 😊");
       return;
     }
     if (!form.theme.trim()) {
