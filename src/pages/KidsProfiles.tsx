@@ -75,6 +75,7 @@ const InfoTooltip = ({ text }: { text: string }) => {
 const KidsProfiles = () => {
   const nav = useNavigate();
   const { user } = useAuth();
+  const qc = useQueryClient();
   const [kids, setKids] = useState<Kid[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Kid>>({});
