@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PhoneShell } from "@/components/PhoneShell";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { setActiveProfile } from "@/lib/activeProfile";
 import {
   FieldLabel,
   TextInput,
