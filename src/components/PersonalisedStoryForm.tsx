@@ -436,9 +436,11 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                   inputMode="numeric"
                   placeholder="e.g. 5"
                   state={ageState}
-                  errorMessage="Stories are crafted for ages 2–9."
+                  errorMessage="Please enter an age between 2 and 9 😊"
                 />
-                <p className="mt-1 text-[11px] text-muted-foreground">Stories are crafted for ages 2–9.</p>
+                {ageState !== "error" && (
+                  <p className="mt-1 text-[11px] text-muted-foreground">Stories are crafted for ages 2–9.</p>
+                )}
               </div>
               <div>
                 <FieldLabel tooltip="So we use the right pronouns in the story.">Gender</FieldLabel>
