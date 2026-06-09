@@ -80,8 +80,9 @@ const Row = ({
 const HappyPlace = () => {
   const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
   const childName = localStorage.getItem("lulutales_child_name");
-  const pageTitle = childName ? `${childName}'s Happy Place` : "Happy Place";
-  const curatedTitle = childName ? `Curated for ${childName}` : "Curated for you";
+  const hasActive = !!profileId;
+  const pageTitle = childName && hasActive ? `${childName}'s Happy Place` : "Happy Place";
+  const curatedTitle = childName && hasActive ? `Curated for ${childName}` : "Curated for you";
 
   const { data: allStories = [] } = useQuery({ queryKey: ["stories"], queryFn: fetchStories });
   const { data: profileStories = [] } = useQuery({
