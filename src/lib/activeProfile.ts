@@ -40,14 +40,6 @@ export const loadActiveProfileForUser = async (userId: string): Promise<ActivePr
   return p;
 };
 
-export const setActiveProfile = async (profileId: string) => {
-  const { data, error } = await (supabase as any).rpc("set_active_profile", { _profile_id: profileId });
-  if (error) throw error;
-  const { data: row } = await cp().select("id, name, age").eq("id", profileId).maybeSingle();
-  if (row) cacheActiveProfile({ id: row.id, name: row.name, age: row.age });
-  return data as string | null;
-};
-
 export const softDeleteProfile = async (profileId: string): Promise<string | null> => {
   const { data, error } = await (supabase as any).rpc("soft_delete_profile", { _profile_id: profileId });
   if (error) throw error;

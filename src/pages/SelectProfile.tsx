@@ -2,16 +2,18 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneShell } from "@/components/PhoneShell";
 import { useAuth } from "@/hooks/useAuth";
-import { setActiveProfile } from "@/lib/activeProfile";
+import { loadActiveProfileForUser } from "@/lib/activeProfile";
 
 type Kid = { id: string; name: string; age: number };
 
 const SelectProfile = () => {
   const nav = useNavigate();
   const { session, loading } = useAuth();
+  const qc = useQueryClient();
   const [kids, setKids] = useState<Kid[]>([]);
   const [busy, setBusy] = useState(true);
 
@@ -35,7 +37,10 @@ const SelectProfile = () => {
 
   const pick = async (kid: Kid) => {
     try {
-      await setActiveProfile(kid.id);
+      const { error } = await (supabase as any).rpc("set_active_profile", { _profile_id: kid.id });
+      if (error) throw error;
+      await loadActiveProfileForUser(session!.user.id);
+      await qc.invalidateQueries();
       nav("/", { replace: true });
     } catch (e: any) {
       toast.error(e?.message ?? "Couldn't switch profile");
