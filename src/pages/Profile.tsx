@@ -7,9 +7,7 @@ import {
   Share2,
   Mail,
   LogOut,
-  Plus,
   Pencil,
-  Info,
   Check,
   X,
 } from "lucide-react";
@@ -19,6 +17,7 @@ import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+
 
 type Kid = {
   id: string;
