@@ -13,7 +13,8 @@ import {
   serializeAddressTerms,
   type AddressTerm,
 } from "@/components/StoryFormFields";
-import { setActiveProfile, softDeleteProfile } from "@/lib/activeProfile";
+import { setActiveProfile, softDeleteProfile, loadActiveProfileForUser } from "@/lib/activeProfile";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Kid = {
   id: string;
@@ -74,6 +75,7 @@ const InfoTooltip = ({ text }: { text: string }) => {
 const KidsProfiles = () => {
   const nav = useNavigate();
   const { user } = useAuth();
+  const qc = useQueryClient();
   const [kids, setKids] = useState<Kid[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Kid>>({});
@@ -158,6 +160,9 @@ const KidsProfiles = () => {
       setBusy(true);
       const nextId = await softDeleteProfile(id);
       setConfirmDeleteId(null);
+      // Re-hydrate localStorage cache & cached queries from the newly active row
+      if (user) await loadActiveProfileForUser(user.id);
+      qc.invalidateQueries();
       toast.success("Profile removed");
       if (!nextId) {
         // No profiles left — explorer mode.

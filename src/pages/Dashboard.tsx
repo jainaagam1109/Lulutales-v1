@@ -38,7 +38,7 @@ const ageBucket = (age?: number | null): string | null => {
 
 const Dashboard = () => {
   const nav = useNavigate();
-  const childName = localStorage.getItem("lulutales_child_name") ?? "friend";
+  const childName = localStorage.getItem("lulutales_child_name") ?? "your child";
   const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
 
   useEffect(() => {

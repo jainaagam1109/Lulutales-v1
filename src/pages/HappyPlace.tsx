@@ -61,7 +61,9 @@ const Row = ({
 
 const HappyPlace = () => {
   const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
-  const childName = localStorage.getItem("lulutales_child_name") ?? "friend";
+  const childName = localStorage.getItem("lulutales_child_name");
+  const pageTitle = childName ? `${childName}'s Happy Place` : "Happy Place";
+  const curatedTitle = childName ? `Curated for ${childName}` : "Curated for you";
 
   const { data: allStories = [] } = useQuery({ queryKey: ["stories"], queryFn: fetchStories });
   const { data: profileStories = [] } = useQuery({
@@ -119,7 +121,7 @@ const HappyPlace = () => {
 
   return (
     <PhoneShell>
-      <PageHeader showBack={false} title={`${childName}'s Happy Place`}>
+      <PageHeader showBack={false} title={pageTitle}>
         <div className="mt-4 flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 shadow-soft">
           <Search className="h-4 w-4 text-muted-foreground" />
           <input
@@ -133,7 +135,7 @@ const HappyPlace = () => {
 
       <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-6">
         <section>
-          <SectionHeader title={`Curated for ${childName}`} />
+          <SectionHeader title={curatedTitle} />
           <Row stories={personalised} />
         </section>
 

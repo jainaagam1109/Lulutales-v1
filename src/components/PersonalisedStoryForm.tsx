@@ -250,7 +250,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
   const ageState: ValidationState = !touched.age
     ? "untouched"
     : form.age.trim()
-    ? isNumeric(form.age)
+    ? isNumeric(form.age) && Number(form.age) >= 2 && Number(form.age) <= 9
       ? "valid"
       : "error"
     : "untouched";
@@ -354,12 +354,12 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
       return;
     }
     if (!form.age.trim() || !isNumeric(form.age)) {
-      toast.error("Looks like age should be a number 😊");
+      toast.error("Please enter an age between 2 and 9 😊");
       return;
     }
     const ageNum = Number(form.age);
     if (ageNum < 2 || ageNum > 9) {
-      toast.error("Stories are crafted for ages 2–9.");
+      toast.error("Please enter an age between 2 and 9 😊");
       return;
     }
     if (!form.theme.trim()) {
@@ -436,9 +436,11 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                   inputMode="numeric"
                   placeholder="e.g. 5"
                   state={ageState}
-                  errorMessage="Stories are crafted for ages 2–9."
+                  errorMessage="Please enter an age between 2 and 9 😊"
                 />
-                <p className="mt-1 text-[11px] text-muted-foreground">Stories are crafted for ages 2–9.</p>
+                {ageState !== "error" && (
+                  <p className="mt-1 text-[11px] text-muted-foreground">Stories are crafted for ages 2–9.</p>
+                )}
               </div>
               <div>
                 <FieldLabel tooltip="So we use the right pronouns in the story.">Gender</FieldLabel>

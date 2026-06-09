@@ -10,7 +10,8 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { PageHeader } from "@/components/PageHeader";
 
 const Home = () => {
-  const childName = localStorage.getItem("lulutales_child_name") ?? "friend";
+  const childName = localStorage.getItem("lulutales_child_name");
+  const greeting = childName ? `Hi ${childName} 👋` : "Welcome 👋";
   const { data: stories = [], isLoading } = useQuery({ queryKey: ["stories"], queryFn: fetchStories });
   const [query, setQuery] = useState("");
   const [activeTheme, setActiveTheme] = useState<string | null>(null);
@@ -36,7 +37,7 @@ const Home = () => {
     <PhoneShell>
       <PageHeader
         showBack={false}
-        eyebrow={`Hi ${childName} 👋`}
+        eyebrow={greeting}
         title="Story time"
       >
         <div className="mt-4 flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 shadow-soft">
