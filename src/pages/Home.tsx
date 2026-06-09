@@ -37,7 +37,7 @@ const Home = () => {
     <PhoneShell>
       <PageHeader
         showBack={false}
-        eyebrow={`Hi ${childName} 👋`}
+        eyebrow={greeting}
         title="Story time"
       >
         <div className="mt-4 flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 shadow-soft">
