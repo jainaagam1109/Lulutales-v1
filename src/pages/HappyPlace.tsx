@@ -35,18 +35,36 @@ const StoryRowCard = ({ story, to }: { story: Story; to: string }) => {
   );
 };
 
-const EmptyCard = () => (
-  <div className="flex h-32 w-44 flex-shrink-0 items-center justify-center rounded-2xl border border-dashed border-border bg-card/60 text-center text-[11px] font-semibold text-muted-foreground">
-    Coming soon
-  </div>
+const CreateCtaCard = () => (
+  <Link
+    to="/magic-hub"
+    className="flex h-32 w-44 flex-shrink-0 flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-primary/40 bg-card/60 p-3 text-center transition-colors hover:border-primary"
+  >
+    <div className="text-2xl">✨</div>
+    <div className="text-[11px] font-bold leading-snug text-foreground">
+      You haven't created a story yet
+    </div>
+    <div className="text-[11px] font-semibold text-primary-deep">Create one</div>
+  </Link>
 );
 
 const Row = ({
   stories,
+  emptyVariant = "create",
 }: {
   stories: Story[];
+  emptyVariant?: "create" | "coming-soon";
 }) => {
-  if (stories.length === 0) return <EmptyCard />;
+  if (stories.length === 0) {
+    if (emptyVariant === "coming-soon") {
+      return (
+        <div className="flex h-32 w-44 flex-shrink-0 items-center justify-center rounded-2xl border border-dashed border-border bg-card/60 text-center text-[11px] font-semibold text-muted-foreground">
+          Coming soon
+        </div>
+      );
+    }
+    return <CreateCtaCard />;
+  }
   return (
     <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
       {stories.map((s) => (
