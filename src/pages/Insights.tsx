@@ -87,7 +87,7 @@ const Insights = () => {
               {fmtMinutes(screenTimeSec)}
             </div>
             <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-              Screen time saved
+              Screen time saved <span className="normal-case tracking-normal">(est.)</span>
             </div>
           </div>
           <div className="rounded-2xl border border-border bg-card p-3 shadow-soft">
@@ -100,33 +100,39 @@ const Insights = () => {
         </section>
 
         <section>
-          <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            What {childName} is growing in
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            What {childName} has been exploring
           </h2>
-          {habitBars.length === 0 ? (
+          <p className="mb-3 mt-1 text-[11px] text-muted-foreground">
+            Based on stories completed — each story builds the skill.
+          </p>
+          {themeCounts.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Once {childName} completes a few stories, their growth areas will show up here ✨
             </p>
           ) : (
             <div className="space-y-3">
-              {habitBars.map((h) => (
-                <div key={h.bucket}>
-                  <div className="mb-1 flex justify-between text-xs">
-                    <span className="font-bold text-foreground">{h.label}</span>
-                    <span className="text-muted-foreground">{h.pct}%</span>
-                  </div>
-                  <div className="mb-1 text-[11px] text-muted-foreground">
-                    {h.recentTheme} · {h.storyCount}{" "}
-                    {h.storyCount === 1 ? "story" : "stories"}
-                  </div>
-                  <div className="h-2 rounded-full bg-secondary">
-                    <div
-                      className="h-full rounded-full bg-gradient-primary"
-                      style={{ width: `${h.pct}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+              {(() => {
+                const max = themeCounts[0]?.storyCount ?? 1;
+                return themeCounts.map((t) => {
+                  const pct = Math.max(8, Math.round((t.storyCount / max) * 100));
+                  const label = t.theme.charAt(0).toUpperCase() + t.theme.slice(1);
+                  return (
+                    <div key={t.theme}>
+                      <div className="mb-1 text-xs font-bold text-foreground">{label}</div>
+                      <div className="mb-1 text-[11px] text-muted-foreground">
+                        {t.storyCount} {t.storyCount === 1 ? "story" : "stories"}
+                      </div>
+                      <div className="h-2 rounded-full bg-secondary">
+                        <div
+                          className="h-full rounded-full bg-gradient-primary"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           )}
         </section>
