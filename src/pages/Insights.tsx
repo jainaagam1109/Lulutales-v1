@@ -9,7 +9,7 @@ import {
   fetchStreak,
   fetchStoriesCompleted,
   fetchScreenTimeSeconds,
-  fetchHabitBars,
+  fetchThemeCounts,
   fetchCompletedThemes,
   fetchBestStreak,
   computeBadgesFromDb,
