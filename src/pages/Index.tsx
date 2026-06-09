@@ -277,7 +277,4 @@ const Index = () => {
   );
 };
 
-// Helper since we can't name a fn "Promise.resolve" inline above
-const Promise_resolve_empty = () => globalThis.Promise.resolve([] as never[]);
-
 export default Index;
