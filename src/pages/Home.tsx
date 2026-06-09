@@ -10,7 +10,8 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { PageHeader } from "@/components/PageHeader";
 
 const Home = () => {
-  const childName = localStorage.getItem("lulutales_child_name") ?? "friend";
+  const childName = localStorage.getItem("lulutales_child_name");
+  const greeting = childName ? `Hi ${childName} 👋` : "Welcome 👋";
   const { data: stories = [], isLoading } = useQuery({ queryKey: ["stories"], queryFn: fetchStories });
   const [query, setQuery] = useState("");
   const [activeTheme, setActiveTheme] = useState<string | null>(null);
