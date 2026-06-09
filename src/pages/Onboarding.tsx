@@ -117,9 +117,18 @@ const Onboarding = () => {
         return;
       }
     }
-    // First-time onboarding → active; add-child mode → inactive (user switches deliberately).
-    const status = isAddMode ? "inactive" : "active";
-    const last_active_at = isAddMode ? null : new Date().toISOString();
+    // Never write status='active' directly — would violate the unique active index.
+    // Strategy: check if user already has an active profile.
+    //   - If yes → insert as 'inactive'.
+    //   - If no  → insert as 'inactive' then promote via set_active_profile RPC.
+    const { data: activeRows } = await (supabase as any)
+      .from("child_profiles")
+      .select("id")
+      .eq("user_id", session.user.id)
+      .eq("status", "active")
+      .limit(1);
+    const hasActive = !!activeRows?.[0];
+    const shouldPromote = !isAddMode && !hasActive;
     const { data, error } = await (supabase as any)
       .from("child_profiles")
       .insert({
@@ -127,16 +136,23 @@ const Onboarding = () => {
         age: ageNum,
         gender: gender || null,
         user_id: session.user.id,
-        status,
-        last_active_at,
+        status: "inactive",
       })
       .select()
       .single();
-    setLoading(false);
     if (error || !data) {
+      setLoading(false);
       toast.error("Couldn't save. Try again.");
       return;
     }
+    if (shouldPromote) {
+      try {
+        await setActiveProfile(data.id);
+      } catch (e) {
+        // continue; cache below will be set from row
+      }
+    }
+    setLoading(false);
     if (!isAddMode) {
       localStorage.setItem("lulutales_profile_id", data.id);
       localStorage.setItem("lulutales_child_name", data.name);
