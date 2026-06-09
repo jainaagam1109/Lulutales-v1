@@ -14,6 +14,8 @@ import StoryDetail from "./pages/StoryDetail";
 import Player from "./pages/Player";
 import HappyPlace from "./pages/HappyPlace";
 import Profile from "./pages/Profile";
+import KidsProfiles from "./pages/KidsProfiles";
+
 import Admin from "./pages/Admin";
 import AdminUpload from "./pages/AdminUpload";
 import AdminHealth from "./pages/AdminHealth";
