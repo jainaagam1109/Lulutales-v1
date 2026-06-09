@@ -20,15 +20,8 @@ const GENDERS = [
   { label: "Prefer not to say", value: "Prefer not to say" },
 ];
 
-const FAMILY_SETUPS = [
-  { label: "Nuclear family", value: "Nuclear family" },
-  { label: "Single parent", value: "Single parent" },
-  { label: "Joint family", value: "Joint family" },
-  { label: "Lives with grandparents", value: "Lives with grandparents" },
-  { label: "Other", value: "Other" },
-];
-
-const AGE_MESSAGE = "Stories are crafted for ages 2–9.";
+const AGE_HELPER = "Stories are crafted for ages 2–9.";
+const AGE_ERROR = "Please enter an age between 2 and 9 😊";
 
 const schema = z.object({
   name: z
@@ -37,7 +30,7 @@ const schema = z.object({
     .min(1, "Please add your child's name 😊")
     .max(60)
     .regex(/^[A-Za-z\s'-]+$/, "Hmm, this should be letters only 😊"),
-  age: z.number().int().min(2, AGE_MESSAGE).max(9, AGE_MESSAGE),
+  age: z.number().int().min(2, AGE_ERROR).max(9, AGE_ERROR),
 });
 
 const Onboarding = () => {
@@ -50,9 +43,6 @@ const Onboarding = () => {
   const [name, setName] = useState("");
   const [age, setAge] = useState<string>("");
   const [gender, setGender] = useState<string>("");
-  const [family, setFamily] = useState<string>("");
-  const [familyOther, setFamilyOther] = useState<string>("");
-  const [siblingAge, setSiblingAge] = useState<string>("");
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
 
@@ -80,7 +70,6 @@ const Onboarding = () => {
       }
     })();
   }, [session, authLoading, nav, isAddMode]);
-
 
   const nameState: ValidationState = !touched.name
     ? "untouched"
@@ -131,8 +120,6 @@ const Onboarding = () => {
         name: name.trim(),
         age: ageNum,
         gender: gender || null,
-        family_type: (family === "Other" ? familyOther.trim() : family) || null,
-        sibling_age: siblingAge ? Number(siblingAge) : null,
         user_id: session.user.id,
       })
       .select()
@@ -148,6 +135,8 @@ const Onboarding = () => {
     nav("/");
   };
 
+  const headingText = isAddMode ? "Add a child" : "Tell us about your child";
+
   return (
     <PhoneShell>
       <div className="flex-1 overflow-y-auto px-6 pb-10 pt-12">
@@ -159,9 +148,7 @@ const Onboarding = () => {
           <p className="mt-1 text-sm text-muted-foreground">Audio stories for curious kids</p>
         </div>
 
-        <h2 className="mb-1 text-xl font-bold text-foreground">
-          {isAddMode ? "Add a child" : "About your child"}
-        </h2>
+        <h2 className="mb-1 text-xl font-bold text-foreground">{headingText}</h2>
         <p className="mb-3 text-sm text-muted-foreground">We'll use this to personalise stories.</p>
         <p className="mb-6 rounded-xl bg-secondary/40 px-3 py-2 text-[11px] text-muted-foreground">
           Your child's details stay private to your account — never sold or shared — and are used only to personalise stories.
@@ -191,57 +178,19 @@ const Onboarding = () => {
             inputMode="numeric"
             placeholder="e.g. 5"
             state={ageState}
-            errorMessage={AGE_MESSAGE}
+            errorMessage={AGE_ERROR}
           />
-          <p className="mt-1 text-[11px] text-muted-foreground">{AGE_MESSAGE}</p>
+          {ageState !== "error" && (
+            <p className="mt-1 text-[11px] text-muted-foreground">{AGE_HELPER}</p>
+          )}
         </div>
 
-        <div className="mb-4">
+        <div className="mb-8">
           <FieldLabel optional tooltip="So we use the right pronouns in the story.">
             Gender
           </FieldLabel>
           <Select value={gender} onChange={setGender} options={GENDERS} placeholder="Select gender" />
         </div>
-
-        <div className="mb-4">
-          <FieldLabel optional tooltip="A quick overview of who's around your child.">
-            Family setup
-          </FieldLabel>
-          <Select
-            value={family}
-            onChange={(v) => {
-              setFamily(v);
-              if (v !== "Other") setFamilyOther("");
-            }}
-            options={FAMILY_SETUPS}
-            placeholder="Select family setup"
-          />
-          {family === "Other" && (
-            <div className="mt-2">
-              <TextInput
-                value={familyOther}
-                onChange={(e) => setFamilyOther(e.target.value)}
-                placeholder="Tell us about your family setup…"
-              />
-            </div>
-          )}
-        </div>
-
-        <div className="mb-8">
-          <FieldLabel
-            optional
-            tooltip="If your child has a sibling, their age helps us write a more realistic family dynamic."
-          >
-            Sibling's age
-          </FieldLabel>
-          <TextInput
-            value={siblingAge}
-            onChange={(e) => setSiblingAge(e.target.value)}
-            inputMode="numeric"
-            placeholder="e.g. 3"
-          />
-        </div>
-
 
         <button
           onClick={submit}
