@@ -250,7 +250,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
   const ageState: ValidationState = !touched.age
     ? "untouched"
     : form.age.trim()
-    ? isNumeric(form.age)
+    ? isNumeric(form.age) && Number(form.age) >= 2 && Number(form.age) <= 9
       ? "valid"
       : "error"
     : "untouched";
