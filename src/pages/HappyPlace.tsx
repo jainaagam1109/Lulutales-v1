@@ -135,7 +135,7 @@ const HappyPlace = () => {
 
       <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-6">
         <section>
-          <SectionHeader title={`Curated for ${childName}`} />
+          <SectionHeader title={curatedTitle} />
           <Row stories={personalised} />
         </section>
 
