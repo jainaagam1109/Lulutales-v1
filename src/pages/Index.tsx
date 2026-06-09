@@ -26,7 +26,7 @@ import {
   computeBadgesFromDb,
 } from "@/lib/analytics";
 
-const Promise = () => (
+const PromiseSection = () => (
   <section className="rounded-2xl border border-border border-l-4 border-l-primary bg-card p-4 shadow-soft">
     <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">
       Our promise to you
