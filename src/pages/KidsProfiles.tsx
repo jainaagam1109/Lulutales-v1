@@ -13,7 +13,8 @@ import {
   serializeAddressTerms,
   type AddressTerm,
 } from "@/components/StoryFormFields";
-import { setActiveProfile, softDeleteProfile } from "@/lib/activeProfile";
+import { setActiveProfile, softDeleteProfile, loadActiveProfileForUser } from "@/lib/activeProfile";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Kid = {
   id: string;
