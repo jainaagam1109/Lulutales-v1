@@ -50,6 +50,8 @@ const App = () => (
             <Route path="/happy-place" element={<RequireAuth><HappyPlace /></RequireAuth>} />
             <Route path="/library" element={<Navigate to="/happy-place" replace />} />
             <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+            <Route path="/profiles" element={<RequireAuth><KidsProfiles /></RequireAuth>} />
+
             <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
             <Route path="/admin/upload" element={<RequireAdmin><AdminUpload /></RequireAdmin>} />
             <Route path="/admin/health" element={<RequireAdmin><AdminHealth /></RequireAdmin>} />
