@@ -13,7 +13,7 @@ import {
   serializeAddressTerms,
   type AddressTerm,
 } from "@/components/StoryFormFields";
-import { setActiveProfile, softDeleteProfile, loadActiveProfileForUser } from "@/lib/activeProfile";
+import { softDeleteProfile, loadActiveProfileForUser } from "@/lib/activeProfile";
 import { useQueryClient } from "@tanstack/react-query";
 
 type Kid = {
@@ -145,7 +145,12 @@ const KidsProfiles = () => {
   const makeActive = async (id: string) => {
     try {
       setBusy(true);
-      await setActiveProfile(id);
+      const { error } = await (supabase as any).rpc("set_active_profile", { _profile_id: id });
+      if (error) throw error;
+      if (user) {
+        await loadActiveProfileForUser(user.id);
+      }
+      await qc.invalidateQueries();
       toast.success("Active profile switched");
       await reload();
     } catch (e: any) {

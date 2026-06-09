@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneShell } from "@/components/PhoneShell";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { setActiveProfile } from "@/lib/activeProfile";
+import { loadActiveProfileForUser } from "@/lib/activeProfile";
 import {
   FieldLabel,
   TextInput,
@@ -38,6 +39,7 @@ const Onboarding = () => {
   const nav = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const qc = useQueryClient();
   const isAddMode =
     location.pathname === "/add-child" || searchParams.get("mode") === "add";
   const { session, loading: authLoading } = useAuth();
@@ -118,10 +120,8 @@ const Onboarding = () => {
         return;
       }
     }
-    // Never write status='active' directly — would violate the unique active index.
-    // Strategy: check if user already has an active profile.
-    //   - If yes → insert as 'inactive'.
-    //   - If no  → insert as 'inactive' then promote via set_active_profile RPC.
+    // Only the very first child insert may write status='active' directly.
+    // Every later activation must go through set_active_profile.
     const { data: activeRows } = await (supabase as any)
       .from("child_profiles")
       .select("id")
@@ -129,7 +129,6 @@ const Onboarding = () => {
       .eq("status", "active")
       .limit(1);
     const hasActive = !!activeRows?.[0];
-    const shouldPromote = !isAddMode && !hasActive;
     const { data, error } = await (supabase as any)
       .from("child_profiles")
       .insert({
@@ -137,7 +136,7 @@ const Onboarding = () => {
         age: ageNum,
         gender: gender || null,
         user_id: session.user.id,
-        status: "inactive",
+        status: hasActive ? "inactive" : "active",
       })
       .select()
       .single();
@@ -146,18 +145,12 @@ const Onboarding = () => {
       toast.error("Couldn't save. Try again.");
       return;
     }
-    if (shouldPromote) {
-      try {
-        await setActiveProfile(data.id);
-      } catch (e) {
-        // continue; cache below will be set from row
-      }
+    if (!hasActive) {
+      await loadActiveProfileForUser(session.user.id);
     }
+    await qc.invalidateQueries();
     setLoading(false);
     if (!isAddMode) {
-      localStorage.setItem("lulutales_profile_id", data.id);
-      localStorage.setItem("lulutales_child_name", data.name);
-      localStorage.setItem("lulutales_child_age", String(data.age));
       nav("/");
     } else {
       toast.success(`${data.name} added`);
