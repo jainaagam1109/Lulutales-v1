@@ -159,6 +159,57 @@ export type HabitBar = {
   recentTheme: string;
   pct: number; // relative to the top bucket = 100
 };
+// Per-theme distinct-story counts for completed stories. Returns themes
+// sorted by story count desc (ties broken by recency). Honest, no buckets.
+export type ThemeCount = {
+  theme: string;
+  storyCount: number;
+};
+
+export const fetchThemeCounts = async (profileId: string): Promise<ThemeCount[]> => {
+  const { data: events } = await supabase
+    .from("story_analytics")
+    .select("story_id, created_at")
+    .eq("profile_id", profileId)
+    .eq("event_type", "complete")
+    .order("created_at", { ascending: false });
+  if (!events || events.length === 0) return [];
+
+  const uniqueStoryIds = Array.from(new Set(events.map((e: any) => e.story_id)));
+  const { data: stories } = await supabase
+    .from("stories")
+    .select("id, theme")
+    .in("id", uniqueStoryIds);
+  if (!stories) return [];
+
+  const themeByStoryId = new Map<string, string>();
+  for (const s of stories as any[]) {
+    if (s.theme) themeByStoryId.set(s.id, String(s.theme));
+  }
+
+  type Agg = { storyIds: Set<string>; recentAt: number };
+  const agg = new Map<string, Agg>();
+  for (const ev of events as any[]) {
+    const theme = themeByStoryId.get(ev.story_id);
+    if (!theme) continue;
+    const at = new Date(ev.created_at).getTime();
+    let cur = agg.get(theme);
+    if (!cur) {
+      cur = { storyIds: new Set(), recentAt: at };
+      agg.set(theme, cur);
+    } else if (at > cur.recentAt) {
+      cur.recentAt = at;
+    }
+    cur.storyIds.add(ev.story_id);
+  }
+
+  return Array.from(agg.entries())
+    .map(([theme, a]) => ({ theme, storyCount: a.storyIds.size, recentAt: a.recentAt }))
+    .filter((r) => r.storyCount > 0)
+    .sort((x, y) => (y.storyCount - x.storyCount) || (y.recentAt - x.recentAt))
+    .map(({ theme, storyCount }) => ({ theme, storyCount }));
+};
+
 
 export const fetchHabitBars = async (profileId: string): Promise<HabitBar[]> => {
   const { data: events } = await supabase
