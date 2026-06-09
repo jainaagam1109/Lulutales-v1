@@ -25,11 +25,13 @@ export type Database = {
           gender: string | null
           home_type: string | null
           id: string
+          last_active_at: string | null
           last_occasion: string | null
           last_theme: string | null
           name: string
           personality: string | null
           sibling_age: number | null
+          status: Database["public"]["Enums"]["profile_status"]
           user_id: string
         }
         Insert: {
@@ -42,11 +44,13 @@ export type Database = {
           gender?: string | null
           home_type?: string | null
           id?: string
+          last_active_at?: string | null
           last_occasion?: string | null
           last_theme?: string | null
           name: string
           personality?: string | null
           sibling_age?: number | null
+          status?: Database["public"]["Enums"]["profile_status"]
           user_id: string
         }
         Update: {
@@ -59,11 +63,13 @@ export type Database = {
           gender?: string | null
           home_type?: string | null
           id?: string
+          last_active_at?: string | null
           last_occasion?: string | null
           last_theme?: string | null
           name?: string
           personality?: string | null
           sibling_age?: number | null
+          status?: Database["public"]["Enums"]["profile_status"]
           user_id?: string
         }
         Relationships: []
@@ -361,9 +367,12 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       owns_profile: { Args: { _profile_id: string }; Returns: boolean }
+      set_active_profile: { Args: { _profile_id: string }; Returns: string }
+      soft_delete_profile: { Args: { _profile_id: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "user"
+      profile_status: "active" | "inactive" | "deleted"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -492,6 +501,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      profile_status: ["active", "inactive", "deleted"],
     },
   },
 } as const

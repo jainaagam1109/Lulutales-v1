@@ -53,12 +53,14 @@ const Onboarding = () => {
       return;
     }
     if (isAddMode) return; // skip the auto-redirect; always allow adding another child
-    // If a profile already exists for this user, skip onboarding entirely.
+    // If a non-deleted profile already exists for this user, skip onboarding.
     (async () => {
-      const { data: existing } = await supabase
+      const { data: existing } = await (supabase as any)
         .from("child_profiles")
-        .select("id, name, age")
+        .select("id, name, age, status")
         .eq("user_id", session.user.id)
+        .neq("status", "deleted")
+        .order("status", { ascending: true })
         .order("created_at", { ascending: true })
         .limit(1);
       const first = existing?.[0];
@@ -98,10 +100,11 @@ const Onboarding = () => {
     setLoading(true);
     // In normal mode, avoid duplicate profile creation if one already exists.
     if (!isAddMode) {
-      const { data: existing } = await supabase
+      const { data: existing } = await (supabase as any)
         .from("child_profiles")
         .select("id, name, age")
         .eq("user_id", session.user.id)
+        .neq("status", "deleted")
         .order("created_at", { ascending: true })
         .limit(1);
       const first = existing?.[0];
@@ -114,13 +117,18 @@ const Onboarding = () => {
         return;
       }
     }
-    const { data, error } = await supabase
+    // First-time onboarding → active; add-child mode → inactive (user switches deliberately).
+    const status = isAddMode ? "inactive" : "active";
+    const last_active_at = isAddMode ? null : new Date().toISOString();
+    const { data, error } = await (supabase as any)
       .from("child_profiles")
       .insert({
         name: name.trim(),
         age: ageNum,
         gender: gender || null,
         user_id: session.user.id,
+        status,
+        last_active_at,
       })
       .select()
       .single();
@@ -129,11 +137,17 @@ const Onboarding = () => {
       toast.error("Couldn't save. Try again.");
       return;
     }
-    localStorage.setItem("lulutales_profile_id", data.id);
-    localStorage.setItem("lulutales_child_name", data.name);
-    localStorage.setItem("lulutales_child_age", String(data.age));
-    nav("/");
+    if (!isAddMode) {
+      localStorage.setItem("lulutales_profile_id", data.id);
+      localStorage.setItem("lulutales_child_name", data.name);
+      localStorage.setItem("lulutales_child_age", String(data.age));
+      nav("/");
+    } else {
+      toast.success(`${data.name} added`);
+      nav("/profiles");
+    }
   };
+
 
   const headingText = isAddMode ? "Add a child" : "Tell us about your child";
 

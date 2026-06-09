@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneShell } from "@/components/PhoneShell";
 import { useAuth } from "@/hooks/useAuth";
+import { setActiveProfile } from "@/lib/activeProfile";
 
 type Kid = { id: string; name: string; age: number };
 
@@ -20,22 +22,26 @@ const SelectProfile = () => {
       return;
     }
     (async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("child_profiles")
         .select("id, name, age")
         .eq("user_id", session.user.id)
+        .neq("status", "deleted")
         .order("created_at", { ascending: true });
-      setKids(data ?? []);
+      setKids((data ?? []) as Kid[]);
       setBusy(false);
     })();
   }, [session, loading, nav]);
 
-  const pick = (kid: Kid) => {
-    localStorage.setItem("lulutales_profile_id", kid.id);
-    localStorage.setItem("lulutales_child_name", kid.name);
-    localStorage.setItem("lulutales_child_age", String(kid.age));
-    nav("/", { replace: true });
+  const pick = async (kid: Kid) => {
+    try {
+      await setActiveProfile(kid.id);
+      nav("/", { replace: true });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Couldn't switch profile");
+    }
   };
+
 
   return (
     <PhoneShell>
