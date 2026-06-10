@@ -35,11 +35,14 @@ function countdownForDuration(secs: number) {
 
 
 const Player = () => {
-  const { id = "", episodeNumber = "1" } = useParams();
-  const epNum = parseInt(episodeNumber, 10) || 1;
+  const params = useParams();
+  const id = params.id ?? "";
+  const epParamRaw = params.episodeNumber;
+  const epNum = parseInt(epParamRaw ?? "1", 10) || 1;
   const nav = useNavigate();
   const audioRef = useRef<HTMLAudioElement>(null);
   const shouldAutoplayRef = useRef(false);
+  const resumeAppliedRef = useRef<string | null>(null);
   const { data: story } = useQuery({ queryKey: ["story", id], queryFn: () => fetchStory(id) });
   const { data: episodes, isLoading: epLoading } = useQuery({
     queryKey: ["episodes", id],
@@ -49,6 +52,7 @@ const Player = () => {
 
   const current = episodes?.find((e) => e.episode_number === epNum);
   const audioUrl = current?.audio_url ?? null;
+  const totalEps = episodes?.length ?? 0;
   const maxEp = episodes && episodes.length > 0 ? Math.max(...episodes.map((e) => e.episode_number)) : 1;
   const hasPrev = epNum > 1;
   const hasNext = !!episodes && epNum < maxEp;
@@ -57,6 +61,16 @@ const Player = () => {
   const [t, setT] = useState(0);
   const [dur, setDur] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
+
+  // If user opens /player/:id with no episode in the URL, redirect to the
+  // last-played episode for this (active profile, story).
+  useEffect(() => {
+    if (epParamRaw !== undefined) return;
+    if (!episodes || episodes.length === 0) return;
+    const pid = getActiveProfileId();
+    const ep = pid ? Math.min(getLastEpisode(pid, id), maxEp) : 1;
+    if (ep !== epNum) nav(`/player/${id}/${ep}`, { replace: true });
+  }, [epParamRaw, episodes, id, nav, maxEp, epNum]);
 
   // Never render audio for stories that aren't ready — send users to the right place.
   useEffect(() => {
