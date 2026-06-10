@@ -64,22 +64,22 @@ const Index = () => {
     if (profileId) recordVisit(profileId);
   }, [profileId]);
 
-  const { data: profileStories = [] } = useQuery({
+  const { data: profileStories, isLoading: storiesLoading } = useQuery({
     queryKey: ["stories-for-profile", profileId],
-    queryFn: () => (profileId ? fetchStoriesForProfile(profileId) : globalThis.Promise.resolve([])),
+    queryFn: () => fetchStoriesForProfile(profileId!),
     enabled: !!profileId,
   });
 
   const personalisedStories = useMemo(
     () =>
-      profileStories.filter(
+      (profileStories ?? []).filter(
         (s) =>
           s.is_generated &&
-          (s.story_type === "personalised_audio" || s.story_type === "bedtime_text") &&
-          s.owner_profile_id === profileId
+          (s.story_type === "personalised_audio" || s.story_type === "bedtime_text")
       ),
-    [profileStories, profileId]
+    [profileStories]
   );
+  const storiesResolved = !profileId || (!storiesLoading && profileStories !== undefined);
   const hasStory = personalisedStories.length > 0;
 
   const { data: allStories = [] } = useQuery({ queryKey: ["stories"], queryFn: fetchStories });
