@@ -81,57 +81,108 @@ const Player = () => {
 
 
 
-  // Reset playback when episode (audioUrl) changes; auto-play after 3s
+  // When episode (audioUrl) changes: reset UI state but DO NOT force currentTime=0.
+  // We'll restore the saved position once loadedmetadata fires (below).
   useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
     a.pause();
-    a.currentTime = 0;
     setT(0);
     setDur(0);
     setPlaying(false);
+    resumeAppliedRef.current = null;
     if (!audioUrl) return;
+    // Mark this story as the active "last story" for this profile as soon as
+    // we land on the player (so the floating MiniPlayer surfaces it).
+    if (story?.id) {
+      const pid = getActiveProfileId();
+      if (pid) {
+        setLastStory(pid, story.id);
+        setLastEpisode(pid, story.id, epNum);
+      }
+    }
     const timer = setTimeout(() => {
       a.play()
-        .then(() => {
-          setPlaying(true);
-          if (story?.id) {
-            localStorage.setItem("lulutales_last_story", story.id);
-            localStorage.removeItem("lulutales_last_story_completed");
-          }
-        })
+        .then(() => setPlaying(true))
         .catch(() => {});
     }, 3000);
     return () => clearTimeout(timer);
-  }, [audioUrl, story?.id]);
+  }, [audioUrl, story?.id, epNum]);
 
+  // Apply saved resume position once metadata is loaded, then track progress
+  // (every ~5s, on pause, on unmount). Also write to story_analytics.
   useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
-    const onTime = () => {
-      setT(a.currentTime);
-      if (a.duration > 0 && id) {
-        const pct = Math.floor((a.currentTime / a.duration) * 100);
-        localStorage.setItem("lulutales_last_story_progress", String(pct));
+
+    const pid = getActiveProfileId();
+    const storyId = story?.id ?? null;
+
+    let lastWriteSecs = -10;
+
+    const persist = (force = false) => {
+      if (!pid || !storyId) return;
+      const pos = a.currentTime;
+      const d = a.duration;
+      if (!isFinite(pos)) return;
+      if (!force && Math.abs(pos - lastWriteSecs) < 5) return;
+      lastWriteSecs = pos;
+      setPosition(pid, storyId, epNum, pos, isFinite(d) ? d : 0);
+
+      // Whole-story percent: completed episodes + fraction of current.
+      const total = totalEps || 1;
+      const completedCount = epNum - 1; // earlier episodes treated as complete
+      const frac = isFinite(d) && d > 0 ? Math.min(1, Math.max(0, pos / d)) : 0;
+      const pct = ((completedCount + frac) / total) * 100;
+      setStoryPct(pid, storyId, pct);
+
+      // story_analytics progress row (best-effort, fire and forget).
+      if (current?.id) {
+        void supabase.from("story_analytics").insert({
+          profile_id: pid,
+          story_id: storyId,
+          episode_id: current.id,
+          event_type: "progress",
+          source: "audio",
+          position_seconds: Math.floor(pos),
+          duration_seconds: isFinite(d) ? Math.floor(d) : 0,
+        } as any).then(() => {});
       }
     };
+
+    const onTime = () => {
+      setT(a.currentTime);
+      persist(false);
+    };
+    const onPause = () => persist(true);
     const onMeta = () => {
       setDur(a.duration);
+      if (pid && storyId && resumeAppliedRef.current !== audioUrl) {
+        const saved = getPosition(pid, storyId, epNum);
+        if (saved > 0 && saved < (a.duration || Infinity) - 2) {
+          try { a.currentTime = saved; } catch {}
+          setT(saved);
+        }
+        resumeAppliedRef.current = audioUrl;
+      }
       if (shouldAutoplayRef.current) {
         shouldAutoplayRef.current = false;
         a.play().then(() => setPlaying(true)).catch(() => {});
       }
     };
     const onEnd = () => {
+      if (pid && storyId) {
+        setEpisodeDone(pid, storyId, epNum);
+        const total = totalEps || 1;
+        setStoryPct(pid, storyId, (epNum / total) * 100);
+      }
       if (hasNext) {
         setCountdown(countdownForDuration(dur));
       } else {
-
-        localStorage.setItem("lulutales_last_story_completed", "1");
-        const pid = localStorage.getItem("lulutales_profile_id");
-        if (pid && story?.id) {
+        if (pid && storyId) markStoryCompleted(pid, storyId);
+        if (pid && storyId) {
           import("@/lib/progress").then((m) =>
-            m.recordCompletion(pid, story.id, story.theme ?? null),
+            m.recordCompletion(pid, storyId, story?.theme ?? null),
           );
         }
         setPlaying(false);
@@ -139,13 +190,16 @@ const Player = () => {
     };
     a.addEventListener("timeupdate", onTime);
     a.addEventListener("loadedmetadata", onMeta);
+    a.addEventListener("pause", onPause);
     a.addEventListener("ended", onEnd);
     return () => {
+      persist(true);
       a.removeEventListener("timeupdate", onTime);
       a.removeEventListener("loadedmetadata", onMeta);
+      a.removeEventListener("pause", onPause);
       a.removeEventListener("ended", onEnd);
     };
-  }, [audioUrl, hasNext, epNum, id, nav, story, dur]);
+  }, [audioUrl, hasNext, epNum, id, nav, story, dur, totalEps, current?.id]);
 
   useEffect(() => {
     if (countdown === null) return;
