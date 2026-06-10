@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { TagChip } from "@/components/TagChip";
 import { StoryStatusCard } from "@/components/StoryStatusCard";
 import { getStoryStatus } from "@/lib/storyStatus";
+import { cleanEpisodeTitle } from "@/lib/episodeTitle";
 import { toast } from "sonner";
 
 
@@ -131,19 +132,25 @@ const StoryDetail = () => {
                   {episodes.length === 0 && (
                     <div className="px-4 py-3 text-sm text-muted-foreground">No episodes yet.</div>
                   )}
-                  {episodes.map((ep) => (
-                    <button
-                      key={ep.id}
-                      onClick={() => nav(`/player/${story.id}/${ep.episode_number}`)}
-                      className="flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left last:border-b-0"
-                    >
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-xs text-muted-foreground">
-                        {ep.episode_number}
-                      </div>
-                      <div className="flex-1 text-sm font-semibold text-foreground">{ep.title}</div>
-                      <Play className="h-4 w-4 fill-current text-primary-deep" />
-                    </button>
-                  ))}
+                  {episodes.map((ep) => {
+                    const sub = cleanEpisodeTitle(ep.title, story.title, ep.episode_number);
+                    return (
+                      <button
+                        key={ep.id}
+                        onClick={() => nav(`/player/${story.id}/${ep.episode_number}`)}
+                        className="flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left last:border-b-0"
+                      >
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-xs text-muted-foreground">
+                          {ep.episode_number}
+                        </div>
+                        <div className="flex-1 text-sm font-semibold text-foreground">
+                          Episode {ep.episode_number}
+                          {sub ? <span className="font-normal text-muted-foreground"> · {sub}</span> : null}
+                        </div>
+                        <Play className="h-4 w-4 fill-current text-primary-deep" />
+                      </button>
+                    );
+                  })}
                 </div>
               </>
             )}

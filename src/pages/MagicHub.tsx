@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { PageHeader } from "@/components/PageHeader";
-import { MiniPlayer } from "@/components/MiniPlayer";
 import { fetchStoriesForProfile } from "@/lib/stories";
 
 const MagicHub = () => {
@@ -19,10 +18,6 @@ const MagicHub = () => {
   });
 
   const hasGenerated = useMemo(() => stories.some((s) => s.is_generated), [stories]);
-
-  const lastId = typeof window !== "undefined" ? localStorage.getItem("lulutales_last_story") : null;
-  const lastCompleted = typeof window !== "undefined" && localStorage.getItem("lulutales_last_story_completed") === "1";
-  const showPlayer = !!lastId && !lastCompleted;
 
   const goPersonalised = (path: string) => {
     if (!profileId) {
@@ -119,15 +114,8 @@ const MagicHub = () => {
             </div>
           ))}
         </div>
-
-        {showPlayer && (
-          <div className="mt-3 bg-gradient-primary p-[2px] rounded-2xl shadow-glow">
-            <div className="rounded-[calc(1rem-2px)] overflow-hidden bg-card">
-              <MiniPlayer />
-            </div>
-          </div>
-        )}
       </main>
+
 
       <BottomNav />
     </PhoneShell>

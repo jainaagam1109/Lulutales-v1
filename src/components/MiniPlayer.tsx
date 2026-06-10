@@ -1,37 +1,74 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Play } from "lucide-react";
-import { Headphones } from "lucide-react";
-import { fetchStory, type Story } from "@/lib/stories";
+import { Play, Headphones } from "lucide-react";
+import { fetchStory, fetchEpisodes, type Story } from "@/lib/stories";
+import {
+  getActiveProfileId,
+  getLastStoryId,
+  getLastEpisode,
+  getStoryPct,
+} from "@/lib/lastStory";
 
 export const MiniPlayer = () => {
   const [story, setStory] = useState<Story | null>(null);
-  const [progress, setProgress] = useState(0);
+  const [pct, setPct] = useState(0);
+  const [tick, setTick] = useState(0);
   const location = useLocation();
 
+  // Re-read on route change AND on storage events (profile switch in another tab/route).
   useEffect(() => {
-    const id = localStorage.getItem("lulutales_last_story");
-    const completed = localStorage.getItem("lulutales_last_story_completed") === "1";
-    if (!id || completed) {
+    const onStorage = () => setTick((n) => n + 1);
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  useEffect(() => {
+    const pid = getActiveProfileId();
+    if (!pid) {
       setStory(null);
       return;
     }
-    const p = parseInt(localStorage.getItem("lulutales_last_story_progress") ?? "0", 10);
-    setProgress(isFinite(p) ? p : 0);
-    fetchStory(id).then(setStory).catch(() => setStory(null));
-  }, [location.pathname]);
+    const id = getLastStoryId(pid);
+    if (!id) {
+      setStory(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const s = await fetchStory(id).catch(() => null);
+      if (cancelled) return;
+      // Only audio stories belong in continue-listening.
+      if (!s || s.story_type === "bedtime_text") {
+        setStory(null);
+        return;
+      }
+      // Compute whole-story %: prefer stored pct, fall back to episode-count math.
+      let storyPct = getStoryPct(pid, id);
+      if (!storyPct) {
+        const eps = await fetchEpisodes(id).catch(() => []);
+        const total = eps.length || 1;
+        const lastEp = Math.min(getLastEpisode(pid, id), total);
+        storyPct = Math.floor(((lastEp - 1) / total) * 100);
+      }
+      setStory(s);
+      setPct(storyPct);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [location.pathname, tick]);
 
   if (!story) return null;
-  if (story.story_type === "bedtime_text") return null;
   if (location.pathname.startsWith("/player/")) return null;
-  // Hide on Home — the dashboard already surfaces the ongoing story prominently
-  if (location.pathname === "/") return null;
-  // Hide on Magic Hub — the page renders its own promoted player strip
-  if (location.pathname === "/magic-hub") return null;
+  if (location.pathname.startsWith("/bedtime/")) return null;
+
+  const pid = getActiveProfileId();
+  const ep = pid ? getLastEpisode(pid, story.id) : 1;
+  const safePct = Math.max(0, Math.min(100, pct));
 
   return (
     <Link
-      to={`/player/${story.id}`}
+      to={`/player/${story.id}/${ep}`}
       className="mx-3 mb-2 flex items-center gap-3 rounded-2xl border border-border bg-surface/95 p-2 pr-3 shadow-soft backdrop-blur-md"
     >
       <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-card text-primary-deep">
@@ -40,7 +77,13 @@ export const MiniPlayer = () => {
       <div className="min-w-0 flex-1">
         <div className="truncate text-xs font-bold text-foreground">{story.title}</div>
         <div className="truncate text-[10px] text-muted-foreground">
-          Continue listening · {progress}% complete · tap to resume
+          Continue listening · {safePct}% complete · tap to resume
+        </div>
+        <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-secondary">
+          <div
+            className="h-full bg-gradient-primary"
+            style={{ width: `${safePct}%` }}
+          />
         </div>
       </div>
       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow">
