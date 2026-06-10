@@ -114,15 +114,8 @@ const MagicHub = () => {
             </div>
           ))}
         </div>
-
-        {showPlayer && (
-          <div className="mt-3 bg-gradient-primary p-[2px] rounded-2xl shadow-glow">
-            <div className="rounded-[calc(1rem-2px)] overflow-hidden bg-card">
-              <MiniPlayer />
-            </div>
-          </div>
-        )}
       </main>
+
 
       <BottomNav />
     </PhoneShell>
