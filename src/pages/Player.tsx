@@ -311,8 +311,11 @@ const Player = () => {
       a.play();
       setPlaying(true);
       if (story?.id) {
-        localStorage.setItem("lulutales_last_story", story.id);
-        localStorage.removeItem("lulutales_last_story_completed");
+        const pid = getActiveProfileId();
+        if (pid) {
+          setLastStory(pid, story.id);
+          setLastEpisode(pid, story.id, epNum);
+        }
       }
     }
   };
