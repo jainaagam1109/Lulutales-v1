@@ -6,6 +6,19 @@ import { fetchStory, fetchEpisodes } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
 import { PageHeader } from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
+import { cleanEpisodeTitle } from "@/lib/episodeTitle";
+import {
+  getActiveProfileId,
+  setLastStory,
+  setLastEpisode,
+  setPosition,
+  getPosition,
+  setEpisodeDone,
+  isEpisodeDone,
+  setStoryPct,
+  markStoryCompleted,
+  getLastEpisode,
+} from "@/lib/lastStory";
 
 const fmt = (s: number) => {
   if (!isFinite(s)) return "0:00";
