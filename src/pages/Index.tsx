@@ -64,22 +64,22 @@ const Index = () => {
     if (profileId) recordVisit(profileId);
   }, [profileId]);
 
-  const { data: profileStories = [] } = useQuery({
+  const { data: profileStories, isLoading: storiesLoading } = useQuery({
     queryKey: ["stories-for-profile", profileId],
-    queryFn: () => (profileId ? fetchStoriesForProfile(profileId) : globalThis.Promise.resolve([])),
+    queryFn: () => fetchStoriesForProfile(profileId!),
     enabled: !!profileId,
   });
 
   const personalisedStories = useMemo(
     () =>
-      profileStories.filter(
+      (profileStories ?? []).filter(
         (s) =>
           s.is_generated &&
-          (s.story_type === "personalised_audio" || s.story_type === "bedtime_text") &&
-          s.owner_profile_id === profileId
+          (s.story_type === "personalised_audio" || s.story_type === "bedtime_text")
       ),
-    [profileStories, profileId]
+    [profileStories]
   );
+  const storiesResolved = !profileId || (!storiesLoading && profileStories !== undefined);
   const hasStory = personalisedStories.length > 0;
 
   const { data: allStories = [] } = useQuery({ queryKey: ["stories"], queryFn: fetchStories });
@@ -252,7 +252,7 @@ const Index = () => {
       <PageHeader showBack={false} title={title} subtitle={subtitle} />
 
       <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-5">
-        {profileLoading ? (
+        {profileLoading || !storiesResolved ? (
           <div className="flex items-center justify-center py-12 text-xs text-muted-foreground">
             <Sparkles className="mr-2 h-4 w-4 animate-pulse" /> Loading…
           </div>
