@@ -82,7 +82,7 @@ const HappyPlace = () => {
   const childName = localStorage.getItem("lulutales_child_name");
   const hasActive = !!profileId;
   const pageTitle = childName && hasActive ? `${childName}'s Happy Place` : "Happy Place";
-  const curatedTitle = childName && hasActive ? `Curated for ${childName}` : "Curated for you";
+  const curatedTitle = childName && hasActive ? `Personalised audio for ${childName}` : "Personalised audio stories";
 
   const { data: allStories = [] } = useQuery({ queryKey: ["stories"], queryFn: fetchStories });
   const { data: profileStories = [] } = useQuery({
@@ -162,15 +162,16 @@ const HappyPlace = () => {
 
         {hasActive && (
           <section>
-            <SectionHeader title="Bedtime Stories" />
+            <SectionHeader title="Bedtime stories to read together" />
             <Row stories={bedtime} />
           </section>
         )}
 
         <section>
-          <SectionHeader title="Story Room" />
+          <SectionHeader title="Audio story room" />
           <Row stories={storyRoom} emptyVariant="coming-soon" />
         </section>
+
       </main>
 
       <BottomNav />
