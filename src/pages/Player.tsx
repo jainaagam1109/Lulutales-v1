@@ -361,7 +361,8 @@ const Player = () => {
     return (
       <PhoneShell>
         <PageHeader backTo={id ? `/story/${id}` : "/"} />
-        <div className="flex-1 px-6 pb-10">
+        <div className="flex-1 overflow-y-auto px-6 pb-24">
+
           <div className="mt-20 text-center">
             <div className="text-5xl">🤔</div>
             <h2 className="mt-3 text-lg font-extrabold text-foreground">Episode not found</h2>
@@ -375,7 +376,8 @@ const Player = () => {
   return (
     <PhoneShell>
       <PageHeader backTo={id ? `/story/${id}` : "/"} />
-      <div className="flex-1 px-6 pb-10">
+      <div className="flex-1 overflow-y-auto px-6 pb-24">
+
         <div className="mx-auto mb-6 flex h-64 w-64 items-center justify-center rounded-3xl bg-gradient-card text-8xl shadow-soft">
           {story?.thumbnail ?? "📖"}
         </div>

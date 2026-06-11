@@ -112,6 +112,39 @@ const THEME_EMOJI: Record<string, string> = {
   magic: "✨",
 };
 
+// Friendly badge labels for theme-based badges. Maps lowercased raw theme
+// strings to a clean human-readable badge name. Falls back to title-casing
+// the raw theme + " explorer".
+const titleCase = (s: string) =>
+  s.replace(/\b\w/g, (c) => c.toUpperCase());
+
+const THEME_BADGE_LABEL_OVERRIDES: Record<string, string> = {
+  "saying sorry": "Apology champion",
+  "saying goodnight": "Goodnight star",
+  "courage": "Brave heart",
+  "being brave": "Brave heart",
+  "kindness": "Kindness keeper",
+  "sharing": "Sharing superstar",
+  "sharing toys": "Sharing superstar",
+  "friendship": "Friendship hero",
+  "curiosity": "Little explorer",
+  "family love": "Family hugger",
+  "healthy eating": "Healthy muncher",
+  "eating vegetables": "Veggie champion",
+  "sleep routine": "Sleepy star",
+  "bedtime monsters": "Bedtime brave",
+  "first day of school": "School adventurer",
+  "making a new friend": "Friend-maker",
+  "trying new things": "Brave try-er",
+  "understanding feelings": "Feelings friend",
+};
+
+const friendlyBadgeLabel = (rawTheme: string): string => {
+  const key = rawTheme.toLowerCase().trim();
+  if (THEME_BADGE_LABEL_OVERRIDES[key]) return THEME_BADGE_LABEL_OVERRIDES[key];
+  return `${titleCase(key)} explorer`;
+};
+
 export const computeBadgesFromDb = (
   storiesCompleted: number,
   completedThemes: string[],
@@ -125,7 +158,7 @@ export const computeBadgesFromDb = (
     badges.push({
       id: `theme-${theme}`,
       emoji: THEME_EMOJI[theme] ?? "🎨",
-      label: `${theme.charAt(0).toUpperCase()}${theme.slice(1)} explorer`,
+      label: friendlyBadgeLabel(theme),
     });
   }
   for (const tier of STREAK_TIERS) {
@@ -135,6 +168,7 @@ export const computeBadgesFromDb = (
   }
   return badges;
 };
+
 
 import { HABIT_BUCKET_LABELS, THEMES_BY_AGE, type HabitBucket } from "./themeMap";
 

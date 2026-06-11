@@ -20,7 +20,7 @@ import Admin from "./pages/Admin";
 import AdminUpload from "./pages/AdminUpload";
 import AdminHealth from "./pages/AdminHealth";
 import { RequireAdmin } from "@/components/RequireAdmin";
-import Dashboard from "./pages/Dashboard";
+
 import Insights from "./pages/Insights";
 import MagicHub from "./pages/MagicHub";
 import AudioStoryForm from "./pages/AudioStoryForm";
