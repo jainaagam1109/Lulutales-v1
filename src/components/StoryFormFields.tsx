@@ -42,6 +42,20 @@ export const InfoTooltip = ({ text }: { text: string }) => {
   };
   const close = () => setShow(false);
 
+  // Dismiss tooltip on any scroll (window or scrollable ancestor) and on resize,
+  // so it doesn't stick in a stale position when the user scrolls the page.
+  useEffect(() => {
+    if (!show) return;
+    const onScroll = () => close();
+    const onResize = () => close();
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [show]);
+
   return (
     <>
       <button
@@ -72,6 +86,7 @@ export const InfoTooltip = ({ text }: { text: string }) => {
     </>
   );
 };
+
 
 /* ---------- Pill (kept) ---------- */
 export const Pill = ({
