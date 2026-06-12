@@ -43,8 +43,8 @@ const MagicHub = () => {
     {
       sectionLabel: "Read",
       title: "Generate bedtime story",
-      desc: "Calm, gentle stories for sleep time",
-      formatHint: "📖 Read-aloud text · ~3-10 min",
+      desc: "A story for you to read aloud to your child at bedtime.",
+      formatHint: "📖 You read it from the screen · ~3–10 min",
       emoji: "📖",
       iconBg: "bg-tag-mint-bg text-tag-mint-fg",
       tag: "BETA",
