@@ -114,7 +114,7 @@ const Onboarding = () => {
       if (first) {
         await loadActiveProfileForUser(session.user.id);
         setLoading(false);
-        nav("/");
+        nav("/", { replace: true });
         return;
       }
     }
