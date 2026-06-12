@@ -49,7 +49,7 @@ export function useResumeProgress(profileId: string | null) {
         .order("updated_at", { ascending: false })
         .limit(1);
       if (error) return null;
-      const row = (data?.[0] as PlaybackProgressRow | undefined) ?? null;
+      const row = ((data as unknown as PlaybackProgressRow[])?.[0]) ?? null;
       return row;
     },
     enabled: !!profileId,
