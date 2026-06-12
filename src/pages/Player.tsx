@@ -44,6 +44,8 @@ const Player = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const shouldAutoplayRef = useRef(false);
   const resumeAppliedRef = useRef<string | null>(null);
+  const lastServerWriteAtRef = useRef<number>(0);
+  const serverResumeAppliedRef = useRef<string | null>(null);
   const { data: story } = useQuery({ queryKey: ["story", id], queryFn: () => fetchStory(id) });
   const { data: episodes, isLoading: epLoading } = useQuery({
     queryKey: ["episodes", id],
