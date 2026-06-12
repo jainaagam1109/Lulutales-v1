@@ -111,23 +111,68 @@ const Player = () => {
   }, [audioUrl, story?.id, epNum]);
 
   // Apply saved resume position once metadata is loaded, then track progress
-  // (every ~5s, on pause, on unmount). Also write to story_analytics.
+  // (every ~5s local + 10s server throttle, plus forced flushes on pause/seek/unmount/visibility).
   useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
 
     const pid = getActiveProfileId();
     const storyId = story?.id ?? null;
+    const storyType = story?.story_type ?? null;
+    // Audio-only: bedtime_text never writes to playback_progress.
+    const audioStory = storyType === "personalised_audio" || storyType === "pre_recorded";
 
-    let lastWriteSecs = -10;
+    let lastLocalWriteSecs = -10;
+
+    const flushServer = (force: boolean, opts?: { completed?: boolean }) => {
+      if (!pid || !storyId || !audioStory) return;
+      const node = audioRef.current;
+      if (!node) return;
+      const pos = node.currentTime;
+      const d = node.duration;
+      if (!isFinite(pos)) return;
+      const now = Date.now();
+      if (!force && now - lastServerWriteAtRef.current < 10_000) return;
+      lastServerWriteAtRef.current = now;
+      const pct =
+        totalEps > 0
+          ? Math.max(
+              0,
+              Math.min(
+                100,
+                Math.floor((((epNum - 1) + (isFinite(d) && d > 0 ? Math.min(1, pos / d) : 0)) / totalEps) * 100),
+              ),
+            )
+          : 0;
+      void supabase
+        .from("playback_progress" as any)
+        .upsert(
+          {
+            profile_id: pid,
+            story_id: storyId,
+            episode_id: current?.id ?? null,
+            episode_number: epNum,
+            position_seconds: pos,
+            duration_seconds: isFinite(d) ? d : null,
+            percent: pct,
+            completed: !!opts?.completed,
+          } as any,
+          { onConflict: "profile_id,story_id" } as any,
+        )
+        .then(() => {});
+    };
 
     const persist = (force = false) => {
       if (!pid || !storyId) return;
       const pos = a.currentTime;
       const d = a.duration;
       if (!isFinite(pos)) return;
-      if (!force && Math.abs(pos - lastWriteSecs) < 5) return;
-      lastWriteSecs = pos;
+      if (!force && Math.abs(pos - lastLocalWriteSecs) < 5) {
+        // local throttle; still let server throttle decide independently
+        flushServer(false);
+        return;
+      }
+      lastLocalWriteSecs = pos;
       setPosition(pid, storyId, epNum, pos, isFinite(d) ? d : 0);
 
       // Whole-story percent: only compute once episode count is known.
@@ -153,6 +198,8 @@ const Player = () => {
           } as any)
           .then(() => {});
       }
+
+      flushServer(force);
     };
 
     const onTime = () => {
@@ -160,17 +207,51 @@ const Player = () => {
       persist(false);
     };
     const onPause = () => persist(true);
+    const onSeeked = () => flushServer(true);
     const onMeta = () => {
       setDur(a.duration);
       if (pid && storyId && resumeAppliedRef.current !== audioUrl) {
+        // 1) Try local first for instant resume.
         const saved = getPosition(pid, storyId, epNum);
-        if (saved > 0 && saved < (a.duration || Infinity) - 2) {
+        const dur = a.duration;
+        const farEnoughFromEnd = saved < (isFinite(dur) ? dur : Infinity) - 5;
+        if (saved >= 5 && farEnoughFromEnd) {
           try {
             a.currentTime = saved;
           } catch {}
           setT(saved);
         }
         resumeAppliedRef.current = audioUrl;
+
+        // 2) Also consult the server row (audio-only) in case it's further ahead
+        //    and the matching episode is the one we just loaded. Only on first
+        //    metadata load per audioUrl.
+        if (audioStory && serverResumeAppliedRef.current !== audioUrl) {
+          serverResumeAppliedRef.current = audioUrl;
+          void supabase
+            .from("playback_progress" as any)
+            .select("episode_number, position_seconds, duration_seconds, completed")
+            .eq("profile_id", pid)
+            .eq("story_id", storyId)
+            .maybeSingle()
+            .then(({ data }: any) => {
+              if (!data) return;
+              if (data.completed) return;
+              if ((data.episode_number ?? -1) !== epNum) return;
+              const node = audioRef.current;
+              if (!node) return;
+              const serverPos = Number(data.position_seconds) || 0;
+              const d2 = node.duration;
+              if (serverPos < 5) return;
+              if (isFinite(d2) && serverPos > d2 - 5) return;
+              // No-rewind: never seek backwards from the user's current spot.
+              if (serverPos <= node.currentTime + 1) return;
+              try {
+                node.currentTime = serverPos;
+              } catch {}
+              setT(serverPos);
+            });
+        }
       }
       if (shouldAutoplayRef.current) {
         shouldAutoplayRef.current = false;
@@ -187,24 +268,39 @@ const Player = () => {
       }
       if (hasNext) {
         setCountdown(countdownForDuration(dur));
+        flushServer(true);
       } else {
         if (pid && storyId) markStoryCompleted(pid, storyId);
         if (pid && storyId) {
           import("@/lib/progress").then((m) => m.recordCompletion(pid, storyId, story?.theme ?? null));
         }
+        flushServer(true, { completed: true });
         setPlaying(false);
       }
     };
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        persist(true);
+      }
+    };
+    const onPageHide = () => persist(true);
+
     a.addEventListener("timeupdate", onTime);
     a.addEventListener("loadedmetadata", onMeta);
     a.addEventListener("pause", onPause);
+    a.addEventListener("seeked", onSeeked);
     a.addEventListener("ended", onEnd);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", onPageHide);
     return () => {
       persist(true);
       a.removeEventListener("timeupdate", onTime);
       a.removeEventListener("loadedmetadata", onMeta);
       a.removeEventListener("pause", onPause);
+      a.removeEventListener("seeked", onSeeked);
       a.removeEventListener("ended", onEnd);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", onPageHide);
     };
   }, [audioUrl, hasNext, epNum, id, nav, story, dur, totalEps, current?.id]);
 
