@@ -1,60 +1,110 @@
-# Less aggressive onboarding + multi-child + age 2–9
+# LuluTales — three fixes
 
-## 1. Stop forcing onboarding on profile-less users
-**`src/components/RequireAuth.tsx`**
-- When `kids.length === 0`, no longer set `redirectTo = "/onboarding"`. Instead clear the stale localStorage keys and let the user through to whatever route they requested.
-- Keep the bypass list (`/onboarding`, `/select-profile`, `/add-child`).
-- Still set `profileValidatedForUserId` once auth+lookup completes so we don't re-query per nav.
-- Result: a new signed-in user lands on `/` (Home) and can browse pre-recorded catalog, `/happy-place`, `/story/:id`, `/player/:id`.
+## Fix 1 — Back-after-add returns to the form
 
-**Gate only the personalised flows** (the places that actually need a child profile):
-- `src/pages/MagicHub.tsx`, `src/pages/AudioStoryForm.tsx`, `src/pages/BedtimeStoryForm.tsx` → on mount, if no `lulutales_profile_id`, redirect to `/onboarding` (single-profile first-time flow). The existing in-form "No child profile found" banner in `PersonalisedStoryForm` becomes a fallback for race conditions.
+`src/pages/Onboarding.tsx`, inside `submit()`:
 
-## 2. Fix "Add child" so a 2nd/3rd profile can be created
-**New route `/add-child`** in `src/App.tsx` → renders the same `Onboarding` component, wrapped in `RequireAuth`.
+- Change the early-return navigation (when an existing profile is found) from `nav("/")` to `nav("/", { replace: true })`.
+- Change the final post-insert navigation from `nav("/")` to `nav("/", { replace: true })`.
 
-**`src/pages/Onboarding.tsx`**
-- Detect add-mode: `useSearchParams().get("mode") === "add"` OR `useLocation().pathname === "/add-child"`.
-- In add-mode:
-  - SKIP the "existing profile → redirect home" effect entirely.
-  - SKIP the duplicate-check `select().maybeSingle()` inside `submit`.
-  - Always `INSERT` a new `child_profiles` row, set localStorage active id/name/age to the new row, then `nav("/")`.
-  - Change page copy heading from "About your child" to "Add a child".
-- In normal mode: keep current behaviour, but replace the pre-fill `.maybeSingle()` lookup with `.limit(1).maybeSingle()` (or `.order(...).limit(1)` then read `[0]`) so 2+ existing rows don't throw `PGRST116`. Same fix inside `submit`.
+The "added another child" path (`nav("/profiles")` in add-mode) is left as-is.
 
-**`src/pages/Profile.tsx`**
-- "Add child" button (in the kids panel — find the existing `nav("/onboarding")` call near `Plus` icon) → `nav("/add-child")`.
-- `src/pages/SelectProfile.tsx` "Add child" tile also → `/add-child` (so users adding a 2nd kid from there work too).
+---
 
-## 3. Enforce ages 2–9 everywhere
-| Location | Current | New |
-| --- | --- | --- |
-| `src/pages/Onboarding.tsx` zod schema | `min(1).max(18)` | `min(2).max(9)` with message "Stories are crafted for ages 2–9." |
-| `src/pages/Profile.tsx` `saveKid` | `< 2 \|\| > 14` | `< 2 \|\| > 9` + same message; input `min={2} max={9}` |
-| `src/components/PersonalisedStoryForm.tsx` `submit` | only checks `isNumeric` | also reject `< 2 \|\| > 9` with same message |
-| `src/components/StoryFormFields.tsx` (if `isNumeric` is the only check used elsewhere) | unchanged | leave; add range check at call sites |
+## Fix 2 — Server-backed resume + mini player
 
-Add helper text under every Age field: `"Stories are crafted for ages 2–9."` — locations:
-- Onboarding age field
-- Profile inline-edit age field
-- `PersonalisedStoryForm` age field
+### 2a. Database (migration)
 
-## 4. Privacy line on data-entry screens
-Add a single muted paragraph (`text-[11px] text-muted-foreground`) at the top of the form section:
-> "Your child's details stay private to your account — never sold or shared — and are used only to personalise stories."
+New table `public.playback_progress`:
 
-Places to add it:
-- `src/pages/Onboarding.tsx` — under the "About your child" subtitle.
-- `src/components/PersonalisedStoryForm.tsx` — under the page subtitle (before `Section "Basic details"`).
-- `src/pages/Profile.tsx` — once at the top of the edit panel (parent edit section AND inside the kid edit form, once each).
+- `id uuid pk default gen_random_uuid()`
+- `profile_id uuid not null references public.child_profiles(id) on delete cascade`
+- `story_id uuid not null references public.stories(id) on delete cascade`
+- `episode_id uuid references public.episodes(id) on delete set null`
+- `episode_number int`
+- `position_seconds double precision not null default 0`
+- `duration_seconds double precision`
+- `percent int not null default 0`
+- `completed boolean not null default false`
+- `updated_at timestamptz not null default now()`
+- `UNIQUE (profile_id, story_id)`
+- Index `(profile_id, updated_at desc)`
 
-## Out of scope (per instructions)
-- No Supabase schema changes.
-- No auth/login changes.
-- BedtimeReader header untouched.
-- Backend age-range stays whatever it is; we only constrain the UI.
+GRANTs to `authenticated` (SELECT/INSERT/UPDATE/DELETE) and `service_role` (ALL). No `anon` grant.
+
+RLS enabled. Single `FOR ALL` policy using the existing `public.owns_profile(profile_id)` security-definer (which already checks `child_profiles.user_id = auth.uid()`), applied to both `USING` and `WITH CHECK`. `updated_at` maintained by the existing `update_updated_at_column` trigger.
+
+### 2b. Writes — `src/pages/Player.tsx`
+
+Keep all existing localStorage + `story_analytics` writes untouched. Add a parallel upsert layer on top.
+
+- A `lastWriteAtRef` (ms) and an `inFlightRef` guard.
+- `flushProgress(opts?: { completed?: boolean })` reads `currentTime`/`duration` off `audioRef.current` at call time (no stale closures), computes `percent` against the whole-story math already used by MiniPlayer, then upserts on conflict `(profile_id, story_id)` with the current `episode_id`, `episode_number`, `position_seconds`, `duration_seconds`, `percent`, `completed`. Skips entirely when `story.story_type === "bedtime_text"` (audio-only).
+- Triggers:
+  - `timeupdate` → throttled: only when `now - lastWriteAtRef >= 10_000`.
+  - `pause`, `seeked` → forced flush.
+  - `ended` on the last episode → forced flush with `completed: true`.
+  - Component unmount → forced flush.
+  - `document.visibilitychange` when hidden, and `window.pagehide` → forced flush.
+- Profile id resolved from `localStorage.lulutales_profile_id`, falling back to the user's first child profile (existing pattern in the file).
+- Our own programmatic resume-seek will also fire `seeked` — that re-persists the same position, idempotent, no special case.
+
+### 2c. Resume — `src/pages/Player.tsx`
+
+In the effect that currently sets `audio.currentTime = 0` on episode change:
+
+- After `loadedmetadata` for the active episode, read the row for `(active profile, current story_id)`.
+- Resume to `position_seconds` only when:
+  - `completed === false`, AND
+  - `episode_number` matches the currently loaded episode, AND
+  - `position_seconds >= 5`, AND
+  - `duration_seconds - position_seconds > 5` (or duration unknown).
+- Otherwise start at 0.
+- Keep the existing 3-second autoplay delay and episode-transition autoplay behavior unchanged.
+
+### 2d. `useResumeProgress(profileId)` hook
+
+New file `src/hooks/useResumeProgress.ts`. React-query key `["resume-progress", profileId]`.
+
+- `enabled: !!profileId`.
+- Query: latest `playback_progress` row for `profile_id = profileId` AND `completed = false`, ordered by `updated_at desc`, limit 1. Returns `null` when none.
+- Seed-to-localStorage side effect runs **only** when `profileId` first resolves or changes (tracked via a `useRef<string | null>` of the last-seeded profile id). Background refetches do **not** re-seed.
+- Seeding rules (server-wins-on-switch with a no-rewind guard):
+  - Set `lulutales_last_story_<pid>` to the server's `story_id`.
+  - Set `lulutales_last_ep_<pid>_<storyId>` to server `episode_number`.
+  - For the position key `lulutales_pos_<pid>_<storyId>_<ep>`: if a local value exists and is **greater** than the server `position_seconds`, keep local; otherwise write server value.
+  - Mirror `lulutales_story_pct_<pid>_<storyId>` with the same max-wins guard against any existing local pct.
+  - Dispatch a `storage`-style event (or bump an internal tick) so `MiniPlayer`'s existing `storage` listener re-reads.
+
+### 2e. MiniPlayer & "Continue listening" card
+
+- `src/components/MiniPlayer.tsx`: call `useResumeProgress(activeProfileId)`. When the hook has a row, render using its `story_id`, link to `/player/{story_id}/{episode_number}`, and use its `percent`. While the hook is loading, fall back to the current localStorage-based render so first paint is unchanged. Keep the existing `bedtime_text` filter and route guards (hidden on `/player/*` and `/bedtime/*`).
+- Home/Dashboard "Continue listening" card (`src/pages/Index.tsx`): same — source the ongoing story and percent from `useResumeProgress` with localStorage as first-paint fallback. **If the hook returns `null`, leave the existing `generatedStories[0]` fallback exactly as it is.**
+
+### Out of scope for Fix 2
+
+No removal of existing localStorage writes, no changes to `story_analytics` logging, no changes to MagicHub's inline player removal, no schema changes beyond the new table.
+
+---
+
+## Fix 3 — Magic Hub copy
+
+`src/pages/MagicHub.tsx`, in the `cards` array — edit **only** these four strings, leave titles, emojis, tags, section labels untouched:
+
+- Audio card `desc`: `"Narrated aloud for your child to listen and enjoy on their own."`
+- Audio card `formatHint`: `"🎧 Press play — no reading needed · ~5–15 min"`
+- Bedtime card `desc`: `"A story for you to read aloud to your child at bedtime."`
+- Bedtime card `formatHint`: `"📖 You read it from the screen · ~3–10 min"`
+
+Happy Place / story-form mirroring is deferred — not part of this change.
+
+---
 
 ## Technical notes
-- The existing `profileValidatedForUserId` module flag is fine to keep; we just stop redirecting when kids are empty.
-- The "Couldn't load saved profile" toast in `PersonalisedStoryForm` already handles stale ids — leaving that alone.
-- No new dependencies. No CSS/token changes.
+
+- Migration order: CREATE TABLE → GRANT (authenticated + service_role) → ALTER ENABLE RLS → CREATE POLICY using `public.owns_profile(profile_id)` → CREATE INDEX → updated_at trigger.
+- The `(profile_id, story_id)` uniqueness means one in-progress row per story; on auto-advance or manual episode change the same row updates forward (most-recent-wins). No per-episode memory.
+- `useResumeProgress` returns the single most-recently-updated non-completed row across all of that profile's stories — both MiniPlayer and the Dashboard card read it.
+- No-rewind guard during seeding prevents an offline-stale server value from clobbering a further local position.
+- Flush uses `audioRef.current` reads (not closure-captured values) so unmount/hidden flushes capture the true latest position.
+- `bedtime_text` stories are excluded from all `playback_progress` writes and from `useResumeProgress` consumers (matches current audio-only MiniPlayer behavior).

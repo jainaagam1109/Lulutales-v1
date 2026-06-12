@@ -31,8 +31,8 @@ const MagicHub = () => {
     {
       sectionLabel: "Listen",
       title: "Generate audio story",
-      desc: "A bespoke tale, narrated for your child",
-      formatHint: "🎧 Narrated audio · ~5-15 min",
+      desc: "Narrated aloud for your child to listen and enjoy on their own.",
+      formatHint: "🎧 Press play — no reading needed · ~5–15 min",
       emoji: "🎙",
       iconBg: "bg-tag-warm-bg text-tag-warm-fg",
       tag: "BETA",
@@ -43,8 +43,8 @@ const MagicHub = () => {
     {
       sectionLabel: "Read",
       title: "Generate bedtime story",
-      desc: "Calm, gentle stories for sleep time",
-      formatHint: "📖 Read-aloud text · ~3-10 min",
+      desc: "A story for you to read aloud to your child at bedtime.",
+      formatHint: "📖 You read it from the screen · ~3–10 min",
       emoji: "📖",
       iconBg: "bg-tag-mint-bg text-tag-mint-fg",
       tag: "BETA",

@@ -8,12 +8,17 @@ import {
   getLastEpisode,
   getStoryPct,
 } from "@/lib/lastStory";
+import { useResumeProgress } from "@/hooks/useResumeProgress";
 
 export const MiniPlayer = () => {
   const [story, setStory] = useState<Story | null>(null);
   const [pct, setPct] = useState(0);
+  const [ep, setEp] = useState(1);
   const [tick, setTick] = useState(0);
   const location = useLocation();
+
+  const pid = getActiveProfileId();
+  const { data: serverRow } = useResumeProgress(pid);
 
   // Re-read on route change AND on storage events (profile switch in another tab/route).
   useEffect(() => {
@@ -23,12 +28,14 @@ export const MiniPlayer = () => {
   }, []);
 
   useEffect(() => {
-    const pid = getActiveProfileId();
     if (!pid) {
       setStory(null);
       return;
     }
-    const id = getLastStoryId(pid);
+    // Server row wins for story+ep+pct when available; otherwise fall back to local.
+    const localId = getLastStoryId(pid);
+    const id =
+      serverRow && !serverRow.completed ? serverRow.story_id : localId;
     if (!id) {
       setStory(null);
       return;
@@ -42,28 +49,32 @@ export const MiniPlayer = () => {
         setStory(null);
         return;
       }
-      // Compute whole-story %: prefer stored pct, fall back to episode-count math.
+      // Episode + percent: prefer server when it matches the same story.
+      let resolvedEp = getLastEpisode(pid, id);
       let storyPct = getStoryPct(pid, id);
+      if (serverRow && !serverRow.completed && serverRow.story_id === id) {
+        resolvedEp = serverRow.episode_number ?? resolvedEp;
+        if (serverRow.percent > storyPct) storyPct = serverRow.percent;
+      }
       if (!storyPct) {
         const eps = await fetchEpisodes(id).catch(() => []);
         const total = eps.length || 1;
-        const lastEp = Math.min(getLastEpisode(pid, id), total);
+        const lastEp = Math.min(resolvedEp, total);
         storyPct = Math.floor(((lastEp - 1) / total) * 100);
       }
       setStory(s);
+      setEp(resolvedEp);
       setPct(storyPct);
     })();
     return () => {
       cancelled = true;
     };
-  }, [location.pathname, tick]);
+  }, [location.pathname, tick, pid, serverRow]);
 
   if (!story) return null;
   if (location.pathname.startsWith("/player/")) return null;
   if (location.pathname.startsWith("/bedtime/")) return null;
 
-  const pid = getActiveProfileId();
-  const ep = pid ? getLastEpisode(pid, story.id) : 1;
   const safePct = Math.max(0, Math.min(100, pct));
 
   return (

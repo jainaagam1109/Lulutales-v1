@@ -115,6 +115,70 @@ export type Database = {
           },
         ]
       }
+      playback_progress: {
+        Row: {
+          completed: boolean
+          created_at: string
+          duration_seconds: number | null
+          episode_id: string | null
+          episode_number: number | null
+          id: string
+          percent: number
+          position_seconds: number
+          profile_id: string
+          story_id: string
+          updated_at: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          duration_seconds?: number | null
+          episode_id?: string | null
+          episode_number?: number | null
+          id?: string
+          percent?: number
+          position_seconds?: number
+          profile_id: string
+          story_id: string
+          updated_at?: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          duration_seconds?: number | null
+          episode_id?: string | null
+          episode_number?: number | null
+          id?: string
+          percent?: number
+          position_seconds?: number
+          profile_id?: string
+          story_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playback_progress_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playback_progress_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playback_progress_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

@@ -114,7 +114,7 @@ const Onboarding = () => {
       if (first) {
         await loadActiveProfileForUser(session.user.id);
         setLoading(false);
-        nav("/");
+        nav("/", { replace: true });
         return;
       }
     }
@@ -149,7 +149,7 @@ const Onboarding = () => {
     await qc.invalidateQueries();
     setLoading(false);
     if (!isAddMode) {
-      nav("/");
+      nav("/", { replace: true });
     } else {
       toast.success(`${data.name} added`);
       nav("/profiles");
