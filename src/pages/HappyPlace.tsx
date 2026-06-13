@@ -10,6 +10,8 @@ import { PageHeader } from "@/components/PageHeader";
 import { TagChip } from "@/components/TagChip";
 import { StoryCard } from "@/components/StoryCard";
 import { getStoryStatus } from "@/lib/storyStatus";
+import { fetchCompletedThemes } from "@/lib/analytics";
+import { recommendForAge } from "@/lib/recommend";
 
 import { getThemeVisual } from "@/lib/themeEmoji";
 
@@ -90,6 +92,15 @@ const HappyPlace = () => {
     queryFn: () => (profileId ? fetchStoriesForProfile(profileId) : Promise.resolve([])),
     enabled: !!profileId,
   });
+  const { data: completedThemes = [] } = useQuery({
+    queryKey: ["analytics-completed-themes", profileId],
+    queryFn: () => fetchCompletedThemes(profileId!),
+    enabled: !!profileId,
+  });
+  const childAge = (() => {
+    const n = parseInt(localStorage.getItem("lulutales_child_age") ?? "", 10);
+    return Number.isFinite(n) ? n : null;
+  })();
 
   const [query, setQuery] = useState("");
   const matches = (s: Story) => {
@@ -137,6 +148,10 @@ const HappyPlace = () => {
     () => allStories.filter((s) => s.story_type === "pre_recorded" && s.owner_profile_id === null).filter(matches),
     [allStories, query]
   );
+  const recommended = useMemo(
+    () => (hasActive && childAge != null ? recommendForAge(storyRoom, childAge, completedThemes) : []),
+    [hasActive, childAge, storyRoom, completedThemes]
+  );
 
   return (
     <PhoneShell>
@@ -167,8 +182,19 @@ const HappyPlace = () => {
           </section>
         )}
 
+        {hasActive && recommended.length > 0 && (
+          <section>
+            <SectionHeader title={`Recommended for ${childName}`} />
+            <div className="grid grid-cols-2 gap-3">
+              {recommended.map((s) => (
+                <StoryCard key={s.id} story={s} />
+              ))}
+            </div>
+          </section>
+        )}
+
         <section>
-          <SectionHeader title="Audio story room" />
+          <SectionHeader title={hasActive ? "All audio stories" : "Audio story room"} />
           <Row stories={storyRoom} emptyVariant="coming-soon" />
         </section>
 

@@ -11,6 +11,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { recommendForAge } from "@/lib/recommend";
+
+const HOME_RECO_LIMIT = 6;
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { PageHeader } from "@/components/PageHeader";
@@ -84,17 +87,6 @@ const Index = () => {
 
   const { data: allStories = [] } = useQuery({ queryKey: ["stories"], queryFn: fetchStories });
 
-  const catalog = useMemo(() => {
-    const pool = allStories.filter((s) => s.story_type === "pre_recorded");
-    const featured = pool
-      .filter((s) => s.is_featured)
-      .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
-    const others = pool
-      .filter((s) => !s.is_featured)
-      .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
-    return [...featured, ...others].slice(0, 6);
-  }, [allStories]);
-
   const enableAnalytics = !!profileId && hasStory;
   const { data: streak = 0 } = useQuery({
     queryKey: ["analytics-streak", profileId],
@@ -120,6 +112,23 @@ const Index = () => {
     () => computeBadgesFromDb(storiesListened, completedThemes, bestStreak),
     [storiesListened, completedThemes, bestStreak]
   );
+
+  const catalog = useMemo(() => {
+    const pool = allStories.filter((s) => s.story_type === "pre_recorded");
+    const fallback = () => {
+      const featured = pool
+        .filter((s) => s.is_featured)
+        .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+      const others = pool
+        .filter((s) => !s.is_featured)
+        .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+      return [...featured, ...others].slice(0, HOME_RECO_LIMIT);
+    };
+    const childAge = activeProfile?.age ?? null;
+    if (childAge == null) return fallback();
+    const ranked = recommendForAge(pool, childAge, completedThemes);
+    return ranked.length > 0 ? ranked.slice(0, HOME_RECO_LIMIT) : fallback();
+  }, [allStories, activeProfile?.age, completedThemes]);
 
   if (loading)
     return (
