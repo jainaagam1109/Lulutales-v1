@@ -87,17 +87,6 @@ const Index = () => {
 
   const { data: allStories = [] } = useQuery({ queryKey: ["stories"], queryFn: fetchStories });
 
-  const catalog = useMemo(() => {
-    const pool = allStories.filter((s) => s.story_type === "pre_recorded");
-    const featured = pool
-      .filter((s) => s.is_featured)
-      .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
-    const others = pool
-      .filter((s) => !s.is_featured)
-      .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
-    return [...featured, ...others].slice(0, 6);
-  }, [allStories]);
-
   const enableAnalytics = !!profileId && hasStory;
   const { data: streak = 0 } = useQuery({
     queryKey: ["analytics-streak", profileId],
