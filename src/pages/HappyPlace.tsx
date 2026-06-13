@@ -10,6 +10,8 @@ import { PageHeader } from "@/components/PageHeader";
 import { TagChip } from "@/components/TagChip";
 import { StoryCard } from "@/components/StoryCard";
 import { getStoryStatus } from "@/lib/storyStatus";
+import { fetchCompletedThemes } from "@/lib/analytics";
+import { recommendForAge } from "@/lib/recommend";
 
 import { getThemeVisual } from "@/lib/themeEmoji";
 
