@@ -113,6 +113,23 @@ const Index = () => {
     [storiesListened, completedThemes, bestStreak]
   );
 
+  const catalog = useMemo(() => {
+    const pool = allStories.filter((s) => s.story_type === "pre_recorded");
+    const fallback = () => {
+      const featured = pool
+        .filter((s) => s.is_featured)
+        .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+      const others = pool
+        .filter((s) => !s.is_featured)
+        .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+      return [...featured, ...others].slice(0, HOME_RECO_LIMIT);
+    };
+    const childAge = activeProfile?.age ?? null;
+    if (childAge == null) return fallback();
+    const ranked = recommendForAge(pool, childAge, completedThemes);
+    return ranked.length > 0 ? ranked.slice(0, HOME_RECO_LIMIT) : fallback();
+  }, [allStories, activeProfile?.age, completedThemes]);
+
   if (loading)
     return (
       <div className="flex h-screen items-center justify-center text-sm text-muted-foreground">
