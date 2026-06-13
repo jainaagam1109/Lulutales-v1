@@ -92,6 +92,15 @@ const HappyPlace = () => {
     queryFn: () => (profileId ? fetchStoriesForProfile(profileId) : Promise.resolve([])),
     enabled: !!profileId,
   });
+  const { data: completedThemes = [] } = useQuery({
+    queryKey: ["analytics-completed-themes", profileId],
+    queryFn: () => fetchCompletedThemes(profileId!),
+    enabled: !!profileId,
+  });
+  const childAge = (() => {
+    const n = parseInt(localStorage.getItem("lulutales_child_age") ?? "", 10);
+    return Number.isFinite(n) ? n : null;
+  })();
 
   const [query, setQuery] = useState("");
   const matches = (s: Story) => {
