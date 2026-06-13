@@ -182,8 +182,19 @@ const HappyPlace = () => {
           </section>
         )}
 
+        {hasActive && recommended.length > 0 && (
+          <section>
+            <SectionHeader title={`Recommended for ${childName}`} />
+            <div className="grid grid-cols-2 gap-3">
+              {recommended.map((s) => (
+                <StoryCard key={s.id} story={s} />
+              ))}
+            </div>
+          </section>
+        )}
+
         <section>
-          <SectionHeader title="Audio story room" />
+          <SectionHeader title={hasActive ? "All audio stories" : "Audio story room"} />
           <Row stories={storyRoom} emptyVariant="coming-soon" />
         </section>
 
