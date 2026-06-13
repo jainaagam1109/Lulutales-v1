@@ -148,6 +148,10 @@ const HappyPlace = () => {
     () => allStories.filter((s) => s.story_type === "pre_recorded" && s.owner_profile_id === null).filter(matches),
     [allStories, query]
   );
+  const recommended = useMemo(
+    () => (hasActive && childAge != null ? recommendForAge(storyRoom, childAge, completedThemes) : []),
+    [hasActive, childAge, storyRoom, completedThemes]
+  );
 
   return (
     <PhoneShell>
