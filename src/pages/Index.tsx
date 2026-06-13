@@ -11,6 +11,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { recommendForAge } from "@/lib/recommend";
+
+const HOME_RECO_LIMIT = 6;
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { PageHeader } from "@/components/PageHeader";
