@@ -19,6 +19,22 @@ const Generating = () => {
     typeof window !== "undefined" ? localStorage.getItem("lulutales_child_name") ?? "your child" : "your child"
   );
   const doneRef = useRef(false);
+  const autoRedirectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearAutoRedirect = () => {
+    if (autoRedirectRef.current) {
+      clearTimeout(autoRedirectRef.current);
+      autoRedirectRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    autoRedirectRef.current = setTimeout(() => {
+      nav("/happy-place");
+    }, 30000);
+    return () => clearAutoRedirect();
+  }, [nav]);
+
 
   useEffect(() => {
     if (!storyId) return;
