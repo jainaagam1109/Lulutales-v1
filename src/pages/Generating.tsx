@@ -19,6 +19,22 @@ const Generating = () => {
     typeof window !== "undefined" ? localStorage.getItem("lulutales_child_name") ?? "your child" : "your child"
   );
   const doneRef = useRef(false);
+  const autoRedirectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearAutoRedirect = () => {
+    if (autoRedirectRef.current) {
+      clearTimeout(autoRedirectRef.current);
+      autoRedirectRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    autoRedirectRef.current = setTimeout(() => {
+      nav("/happy-place");
+    }, 30000);
+    return () => clearAutoRedirect();
+  }, [nav]);
+
 
   useEffect(() => {
     if (!storyId) return;
@@ -40,11 +56,13 @@ const Generating = () => {
 
       if (data.is_generated && !doneRef.current) {
         doneRef.current = true;
+        clearAutoRedirect();
         toast.success("Your story is ready!");
         const dest = data.story_type === "bedtime_text" ? `/bedtime/${storyId}` : `/story/${storyId}`;
         setTimeout(() => nav(dest, { replace: true }), 1500);
         return;
       }
+
 
       const ageMs = Date.now() - new Date(data.created_at).getTime();
       if (!data.is_generated && ageMs > MAX_WAIT_MS) {
@@ -62,6 +80,11 @@ const Generating = () => {
 
   const status = story ? getStoryStatus(story) : "preparing";
   const showFailure = status === "stale" || status === "lang_age_failed";
+
+  useEffect(() => {
+    if (showFailure) clearAutoRedirect();
+  }, [showFailure]);
+
 
   return (
     <PhoneShell>
