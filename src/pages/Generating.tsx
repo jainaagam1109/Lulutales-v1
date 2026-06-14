@@ -81,6 +81,11 @@ const Generating = () => {
   const status = story ? getStoryStatus(story) : "preparing";
   const showFailure = status === "stale" || status === "lang_age_failed";
 
+  useEffect(() => {
+    if (showFailure) clearAutoRedirect();
+  }, [showFailure]);
+
+
   return (
     <PhoneShell>
       <main className="flex flex-1 flex-col items-center justify-center px-6 pb-10 pt-10 text-center">
