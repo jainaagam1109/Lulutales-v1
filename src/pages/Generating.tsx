@@ -56,11 +56,13 @@ const Generating = () => {
 
       if (data.is_generated && !doneRef.current) {
         doneRef.current = true;
+        clearAutoRedirect();
         toast.success("Your story is ready!");
         const dest = data.story_type === "bedtime_text" ? `/bedtime/${storyId}` : `/story/${storyId}`;
         setTimeout(() => nav(dest, { replace: true }), 1500);
         return;
       }
+
 
       const ageMs = Date.now() - new Date(data.created_at).getTime();
       if (!data.is_generated && ageMs > MAX_WAIT_MS) {
