@@ -303,12 +303,14 @@ const Index = () => {
           <>
             <Insights />
             <PromiseSection />
+            <FreshlyCurated />
             <Catalog />
             <CreateHero />
           </>
         ) : (
           <>
             <PromiseSection />
+            <FreshlyCurated />
             <CreateHero />
             <Catalog />
           </>
