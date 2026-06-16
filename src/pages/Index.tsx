@@ -19,7 +19,8 @@ import { BottomNav } from "@/components/BottomNav";
 import { PageHeader } from "@/components/PageHeader";
 import { StoryCard } from "@/components/StoryCard";
 import { loadActiveProfileForUser } from "@/lib/activeProfile";
-import { fetchStoriesForProfile, fetchStories } from "@/lib/stories";
+import { fetchStoriesForProfile, fetchStories, fetchFreshPersonalisedStories } from "@/lib/stories";
+import { getStoryStatus } from "@/lib/storyStatus";
 import { recordVisit } from "@/lib/progress";
 import {
   fetchStreak,
@@ -198,6 +199,39 @@ const Index = () => {
       </section>
     ) : null;
 
+  const FreshlyCurated = () => {
+    const { data: fresh = [] } = useQuery({
+      queryKey: ["fresh-personalised", profileId],
+      queryFn: () => (profileId ? fetchFreshPersonalisedStories(profileId) : Promise.resolve([])),
+      enabled: !!profileId,
+    });
+
+    const ready = fresh.filter((s) => {
+      if (getStoryStatus(s) !== "ready") return false;
+      const t = (s.title ?? "").trim();
+      if (!t || /error|failed/i.test(t) || t.toLowerCase() === "story" || t === "[Story title]") return false;
+      if (s.story_type === "bedtime_text") return !!s.story_text && s.story_text.trim().length > 0;
+      return true;
+    });
+
+    if (ready.length === 0) return null;
+
+    return (
+      <section>
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Freshly curated for you
+          </h2>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {ready.map((s) => (
+            <StoryCard key={s.id} story={s} />
+          ))}
+        </div>
+      </section>
+    );
+  };
+
   const Insights = () => (
     <section className="rounded-2xl border border-border bg-card p-4 shadow-soft">
       <div className="grid grid-cols-3 gap-2">
@@ -269,12 +303,14 @@ const Index = () => {
           <>
             <Insights />
             <PromiseSection />
+            <FreshlyCurated />
             <Catalog />
             <CreateHero />
           </>
         ) : (
           <>
             <PromiseSection />
+            <FreshlyCurated />
             <CreateHero />
             <Catalog />
           </>

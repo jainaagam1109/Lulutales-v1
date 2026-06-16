@@ -23,6 +23,7 @@ export const StoryStatusCard = ({ story, variant = "grid" }: Props) => {
       qc.invalidateQueries({ queryKey: ["stories-for-profile"] });
       qc.invalidateQueries({ queryKey: ["story", story.id] });
       qc.invalidateQueries({ queryKey: ["library"] });
+      qc.invalidateQueries({ queryKey: ["fresh-personalised"] });
       nav(`/generating/${story.id}`);
     } catch {
       toast.error("Couldn't retry. Please try again.");

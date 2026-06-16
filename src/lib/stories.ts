@@ -27,6 +27,36 @@ export const fetchStoriesForProfile = async (profileId: string): Promise<Story[]
   return data ?? [];
 };
 
+export const fetchFreshPersonalisedStories = async (profileId: string): Promise<Story[]> => {
+  if (!profileId) return [];
+  const since = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data: stories, error } = await supabase
+    .from("stories")
+    .select("*")
+    .eq("child_profile_id", profileId)
+    .eq("is_generated", true)
+    .in("story_type", ["personalised_audio", "bedtime_text"])
+    .gte("created_at", since)
+    .order("created_at", { ascending: false })
+    .limit(10);
+  if (error) throw error;
+  const candidates = stories ?? [];
+  if (candidates.length === 0) return [];
+
+  const ids = candidates.map((s) => s.id);
+  const { data: completedRows, error: cErr } = await supabase
+    .from("story_analytics")
+    .select("story_id")
+    .eq("profile_id", profileId)
+    .eq("event_type", "complete")
+    .in("story_id", ids);
+  if (cErr) throw cErr;
+  const completed = new Set((completedRows ?? []).map((r) => r.story_id));
+
+  return candidates.filter((s) => !completed.has(s.id)).slice(0, 2);
+};
+
 export const createPersonalisedStory = async (input: {
   title: string;
   theme: string | null;
