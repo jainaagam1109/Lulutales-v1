@@ -64,6 +64,26 @@ const Player = () => {
   const [t, setT] = useState(0);
   const [dur, setDur] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [speed, setSpeed] = useState<number>(() => {
+    if (typeof window === "undefined") return 1;
+    const raw = localStorage.getItem("lulutales_playback_rate");
+    const n = raw ? parseFloat(raw) : NaN;
+    return SPEED_STEPS.includes(n) ? n : 1;
+  });
+
+  const speedIdx = SPEED_STEPS.indexOf(speed);
+  const canSlower = speedIdx > 0;
+  const canFaster = speedIdx >= 0 && speedIdx < SPEED_STEPS.length - 1;
+
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    a.playbackRate = speed;
+    (a as any).preservesPitch = true;
+    try {
+      localStorage.setItem("lulutales_playback_rate", String(speed));
+    } catch {}
+  }, [speed, audioUrl]);
 
   // If user opens /player/:id with no episode in the URL, redirect to the
   // last-played episode for this (active profile, story).
