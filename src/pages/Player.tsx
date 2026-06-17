@@ -20,6 +20,8 @@ import {
   getLastEpisode,
 } from "@/lib/lastStory";
 
+const SPEED_STEPS = [0.75, 0.8, 0.85, 0.9, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.4, 1.5];
+
 const fmt = (s: number) => {
   if (!isFinite(s)) return "0:00";
   const m = Math.floor(s / 60);
@@ -64,6 +66,26 @@ const Player = () => {
   const [t, setT] = useState(0);
   const [dur, setDur] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [speed, setSpeed] = useState<number>(() => {
+    if (typeof window === "undefined") return 1;
+    const raw = localStorage.getItem("lulutales_playback_rate");
+    const n = raw ? parseFloat(raw) : NaN;
+    return SPEED_STEPS.includes(n) ? n : 1;
+  });
+
+  const speedIdx = SPEED_STEPS.indexOf(speed);
+  const canSlower = speedIdx > 0;
+  const canFaster = speedIdx >= 0 && speedIdx < SPEED_STEPS.length - 1;
+
+  useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    a.playbackRate = speed;
+    (a as any).preservesPitch = true;
+    try {
+      localStorage.setItem("lulutales_playback_rate", String(speed));
+    } catch {}
+  }, [speed, audioUrl]);
 
   // If user opens /player/:id with no episode in the URL, redirect to the
   // last-played episode for this (active profile, story).
@@ -540,6 +562,26 @@ const Player = () => {
             className="rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-primary-deep"
           >
             + 10s
+          </button>
+        </div>
+
+        <div className="mt-3 flex items-center justify-center gap-3">
+          <button
+            onClick={() => canSlower && setSpeed(SPEED_STEPS[speedIdx - 1])}
+            disabled={!canSlower}
+            className="rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-primary-deep disabled:opacity-40"
+            aria-label="Slower"
+          >
+            −
+          </button>
+          <span className="min-w-[3rem] text-center text-xs font-bold text-foreground">{speed}x</span>
+          <button
+            onClick={() => canFaster && setSpeed(SPEED_STEPS[speedIdx + 1])}
+            disabled={!canFaster}
+            className="rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-primary-deep disabled:opacity-40"
+            aria-label="Faster"
+          >
+            +
           </button>
         </div>
 
