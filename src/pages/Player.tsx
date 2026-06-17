@@ -81,6 +81,7 @@ const Player = () => {
     const a = audioRef.current;
     if (!a) return;
     a.playbackRate = speed;
+    a.defaultPlaybackRate = speed;
     (a as any).preservesPitch = true;
     try {
       localStorage.setItem("lulutales_playback_rate", String(speed));
