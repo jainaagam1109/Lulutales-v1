@@ -565,6 +565,26 @@ const Player = () => {
           </button>
         </div>
 
+        <div className="mt-3 flex items-center justify-center gap-3">
+          <button
+            onClick={() => canSlower && setSpeed(SPEED_STEPS[speedIdx - 1])}
+            disabled={!canSlower}
+            className="rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-primary-deep disabled:opacity-40"
+            aria-label="Slower"
+          >
+            −
+          </button>
+          <span className="min-w-[3rem] text-center text-xs font-bold text-foreground">{speed}x</span>
+          <button
+            onClick={() => canFaster && setSpeed(SPEED_STEPS[speedIdx + 1])}
+            disabled={!canFaster}
+            className="rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-primary-deep disabled:opacity-40"
+            aria-label="Faster"
+          >
+            +
+          </button>
+        </div>
+
         {!audioUrl && current && (
           <p className="mt-6 text-center text-xs text-muted-foreground">No audio uploaded for this episode yet.</p>
         )}
