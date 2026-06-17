@@ -20,6 +20,8 @@ import {
   getLastEpisode,
 } from "@/lib/lastStory";
 
+const SPEED_STEPS = [0.75, 0.8, 0.85, 0.9, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.4, 1.5];
+
 const fmt = (s: number) => {
   if (!isFinite(s)) return "0:00";
   const m = Math.floor(s / 60);
