@@ -103,6 +103,18 @@ const HappyPlace = () => {
   })();
 
   const [query, setQuery] = useState("");
+  const [formatFilter, setFormatFilter] = useState<"all" | "audio" | "text">("all");
+
+  const matchesFormat = useCallback(
+    (s: Story) => {
+      if (formatFilter === "all") return true;
+      if (formatFilter === "audio") {
+        return s.story_type === "personalised_audio" || s.story_type === "pre_recorded";
+      }
+      return s.story_type === "bedtime_text";
+    },
+    [formatFilter]
+  );
   const matches = (s: Story) => {
     if (!query) return true;
     const q = query.toLowerCase();
