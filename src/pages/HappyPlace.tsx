@@ -128,30 +128,42 @@ const HappyPlace = () => {
     return true;
   };
 
-  const personalised = useMemo(
-    () => profileStories
-      .filter((s) => s.story_type === "personalised_audio" && visible(s))
-      .filter(matches),
+  const madeForChild = useMemo(
+    () =>
+      profileStories
+        .filter((s) => {
+          if (s.story_type !== "personalised_audio" && s.story_type !== "bedtime_text") return false;
+          if (!visible(s)) return false;
+          if (s.story_type === "bedtime_text" && getStoryStatus(s) === "ready") {
+            if (!s.story_text || s.story_text.trim().length === 0) return false;
+          }
+          return true;
+        })
+        .filter(matches)
+        .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? "")),
     [profileStories, query]
   );
-  const bedtime = useMemo(
-    () => profileStories
-      .filter((s) => {
-        if (s.story_type !== "bedtime_text" || !visible(s)) return false;
-        if (getStoryStatus(s) !== "ready") return true;
-        return !!s.story_text && s.story_text.trim().length > 0;
-      })
-      .filter(matches),
-    [profileStories, query]
-  );
+
   const storyRoom = useMemo(
     () => allStories.filter((s) => s.story_type === "pre_recorded" && s.owner_profile_id === null).filter(matches),
     [allStories, query]
   );
-  const recommended = useMemo(
-    () => (hasActive && childAge != null ? recommendForAge(storyRoom, childAge, completedThemes) : []),
-    [hasActive, childAge, storyRoom, completedThemes]
-  );
+
+  const recommended = useMemo(() => {
+    const list = storyRoom.filter((s) => {
+      const featured = !!s.is_featured;
+      const parsed = s.age_group ? parseInt(String(s.age_group).match(/\d+/)?.[0] ?? "", 10) : NaN;
+      if (!Number.isFinite(parsed)) return featured;
+      if (childAge == null) return featured;
+      return featured || Math.abs(parsed - childAge) <= 1;
+    });
+    return list.sort((a, b) => {
+      const af = a.is_featured ? 1 : 0;
+      const bf = b.is_featured ? 1 : 0;
+      if (af !== bf) return bf - af;
+      return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+    });
+  }, [storyRoom, childAge]);
 
   return (
     <PhoneShell>
@@ -170,31 +182,34 @@ const HappyPlace = () => {
       <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-6">
         {hasActive && (
           <section>
-            <SectionHeader title={curatedTitle} />
-            <Row stories={personalised} />
-          </section>
-        )}
-
-        {hasActive && (
-          <section>
-            <SectionHeader title="Bedtime stories to read together" />
-            <Row stories={bedtime} />
+            <SectionHeader title={childName ? `Made for ${childName}` : "Made for you"} />
+            {madeForChild.length === 0 ? (
+              <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-card/60 p-4">
+                <div className="text-sm text-muted-foreground">
+                  No personalised stories yet — create one in the Magic Hub.
+                </div>
+                <Link
+                  to="/magic-hub"
+                  className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-soft"
+                >
+                  Go to Magic Hub
+                </Link>
+              </div>
+            ) : (
+              <Row stories={madeForChild} />
+            )}
           </section>
         )}
 
         {hasActive && recommended.length > 0 && (
           <section>
             <SectionHeader title={`Recommended for ${childName}`} />
-            <div className="grid grid-cols-2 gap-3">
-              {recommended.map((s) => (
-                <StoryCard key={s.id} story={s} />
-              ))}
-            </div>
+            <Row stories={recommended} emptyVariant="coming-soon" />
           </section>
         )}
 
         <section>
-          <SectionHeader title={hasActive ? "All audio stories" : "Audio story room"} />
+          <SectionHeader title="All stories" />
           <Row stories={storyRoom} emptyVariant="coming-soon" />
         </section>
 
