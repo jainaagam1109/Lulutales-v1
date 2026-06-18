@@ -158,8 +158,8 @@ const HappyPlace = () => {
   );
 
   const storyRoom = useMemo(
-    () => allStories.filter((s) => s.story_type === "pre_recorded" && s.owner_profile_id === null).filter(matches),
-    [allStories, query]
+    () => allStories.filter((s) => s.story_type === "pre_recorded" && s.owner_profile_id === null).filter(matches).filter(matchesFormat),
+    [allStories, query, formatFilter]
   );
 
   const recommended = useMemo(() => {
