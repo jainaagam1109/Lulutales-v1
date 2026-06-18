@@ -15,6 +15,13 @@ const ageBucketFromAgeGroup = (ageGroup: string | null | undefined): string | nu
   return "7–9";
 };
 
+const formatBadgeFor = (story_type: Story["story_type"]): { label: string; variant: "mint" | "warm" } | null => {
+  if (story_type === "personalised_audio") return { label: "🎧 Listen · ~15 min", variant: "mint" };
+  if (story_type === "pre_recorded") return { label: "🎧 Listen", variant: "mint" };
+  if (story_type === "bedtime_text") return { label: "📖 Read aloud · ~5 min", variant: "warm" };
+  return null;
+};
+
 export const StoryCard = ({ story, variant = "grid" }: { story: Story; variant?: "grid" | "row" }) => {
   const location = useLocation();
   const status = getStoryStatus(story);
@@ -29,6 +36,8 @@ export const StoryCard = ({ story, variant = "grid" }: { story: Story; variant?:
   const ageLabel =
     story.story_type === "pre_recorded" ? ageBucketFromAgeGroup(story.age_group) : null;
 
+  const badge = formatBadgeFor(story.story_type);
+
   if (variant === "row") {
     return (
       <Link
@@ -40,7 +49,10 @@ export const StoryCard = ({ story, variant = "grid" }: { story: Story; variant?:
           {story.thumbnail ?? "📖"}
         </div>
         <div className="min-w-0 flex-1">
-          {story.theme && <TagChip label={story.theme} />}
+          <div className="flex flex-wrap items-center gap-1">
+            {story.theme && <TagChip label={story.theme} />}
+            {badge && <TagChip label={badge.label} variant={badge.variant} />}
+          </div>
           <div className="mt-1 truncate text-sm font-bold text-foreground">{story.title}</div>
           {ageLabel && (
             <div className="text-xs text-muted-foreground">{ageLabel}</div>
@@ -60,7 +72,10 @@ export const StoryCard = ({ story, variant = "grid" }: { story: Story; variant?:
         {story.thumbnail ?? "📖"}
       </div>
       <div className="min-w-0 space-y-1 p-3">
-        {story.theme && <TagChip label={story.theme} />}
+        <div className="flex flex-wrap items-center gap-1">
+          {story.theme && <TagChip label={story.theme} />}
+          {badge && <TagChip label={badge.label} variant={badge.variant} />}
+        </div>
         <div className="line-clamp-2 text-xs font-bold leading-snug text-foreground">{story.title}</div>
         {ageLabel && (
           <div className="text-[10px] text-muted-foreground">{ageLabel}</div>
