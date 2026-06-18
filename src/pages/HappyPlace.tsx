@@ -178,6 +178,12 @@ const HappyPlace = () => {
     });
   }, [storyRoom, childAge]);
 
+  const filterOptions: { key: "all" | "audio" | "text"; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "audio", label: "Audio" },
+    { key: "text", label: "Text" },
+  ];
+
   return (
     <PhoneShell>
       <PageHeader showBack={false} title={pageTitle}>
@@ -189,6 +195,24 @@ const HappyPlace = () => {
             placeholder="Search stories"
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
+        </div>
+        <div className="mt-3 flex items-center justify-center gap-1 rounded-full border border-border bg-card p-1 shadow-soft">
+          {filterOptions.map((opt) => {
+            const active = formatFilter === opt.key;
+            return (
+              <button
+                key={opt.key}
+                onClick={() => setFormatFilter(opt.key)}
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
+                  active
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
         </div>
       </PageHeader>
 
