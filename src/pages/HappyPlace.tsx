@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
@@ -103,6 +103,18 @@ const HappyPlace = () => {
   })();
 
   const [query, setQuery] = useState("");
+  const [formatFilter, setFormatFilter] = useState<"all" | "audio" | "text">("all");
+
+  const matchesFormat = useCallback(
+    (s: Story) => {
+      if (formatFilter === "all") return true;
+      if (formatFilter === "audio") {
+        return s.story_type === "personalised_audio" || s.story_type === "pre_recorded";
+      }
+      return s.story_type === "bedtime_text";
+    },
+    [formatFilter]
+  );
   const matches = (s: Story) => {
     if (!query) return true;
     const q = query.toLowerCase();
@@ -140,13 +152,14 @@ const HappyPlace = () => {
           return true;
         })
         .filter(matches)
+        .filter(matchesFormat)
         .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? "")),
-    [profileStories, query]
+    [profileStories, query, formatFilter]
   );
 
   const storyRoom = useMemo(
-    () => allStories.filter((s) => s.story_type === "pre_recorded" && s.owner_profile_id === null).filter(matches),
-    [allStories, query]
+    () => allStories.filter((s) => s.story_type === "pre_recorded" && s.owner_profile_id === null).filter(matches).filter(matchesFormat),
+    [allStories, query, formatFilter]
   );
 
   const recommended = useMemo(() => {
@@ -165,6 +178,12 @@ const HappyPlace = () => {
     });
   }, [storyRoom, childAge]);
 
+  const filterOptions: { key: "all" | "audio" | "text"; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "audio", label: "Audio" },
+    { key: "text", label: "Text" },
+  ];
+
   return (
     <PhoneShell>
       <PageHeader showBack={false} title={pageTitle}>
@@ -176,6 +195,24 @@ const HappyPlace = () => {
             placeholder="Search stories"
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
+        </div>
+        <div className="mt-3 flex items-center justify-center gap-1 rounded-full border border-border bg-card p-1 shadow-soft">
+          {filterOptions.map((opt) => {
+            const active = formatFilter === opt.key;
+            return (
+              <button
+                key={opt.key}
+                onClick={() => setFormatFilter(opt.key)}
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
+                  active
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
         </div>
       </PageHeader>
 
