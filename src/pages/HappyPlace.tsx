@@ -152,8 +152,9 @@ const HappyPlace = () => {
           return true;
         })
         .filter(matches)
+        .filter(matchesFormat)
         .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? "")),
-    [profileStories, query]
+    [profileStories, query, formatFilter]
   );
 
   const storyRoom = useMemo(
