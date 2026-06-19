@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
@@ -9,6 +9,7 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { PageHeader } from "@/components/PageHeader";
 import { TagChip } from "@/components/TagChip";
 import { StoryCard } from "@/components/StoryCard";
+import { StoryFormatFilter, type StoryFormat } from "@/components/StoryFormatFilter";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { fetchCompletedThemes } from "@/lib/analytics";
 import { recommendForAge } from "@/lib/recommend";
@@ -103,18 +104,10 @@ const HappyPlace = () => {
   })();
 
   const [query, setQuery] = useState("");
-  const [formatFilter, setFormatFilter] = useState<"all" | "audio" | "text">("all");
+  const [format, setFormat] = useState<StoryFormat>("all");
+  const showAudio = format !== "text";
+  const showText = format !== "audio";
 
-  const matchesFormat = useCallback(
-    (s: Story) => {
-      if (formatFilter === "all") return true;
-      if (formatFilter === "audio") {
-        return s.story_type === "personalised_audio" || s.story_type === "pre_recorded";
-      }
-      return s.story_type === "bedtime_text";
-    },
-    [formatFilter]
-  );
   const matches = (s: Story) => {
     if (!query) return true;
     const q = query.toLowerCase();
@@ -140,27 +133,40 @@ const HappyPlace = () => {
     return true;
   };
 
-  const madeForChild = useMemo(
+  const personalised = useMemo(
+    () =>
+      profileStories
+        .filter((s) => s.story_type === "personalised_audio" && visible(s))
+        .filter(matches)
+        .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? "")),
+    [profileStories, query]
+  );
+
+  const bedtime = useMemo(
     () =>
       profileStories
         .filter((s) => {
-          if (s.story_type !== "personalised_audio" && s.story_type !== "bedtime_text") return false;
+          if (s.story_type !== "bedtime_text") return false;
           if (!visible(s)) return false;
-          if (s.story_type === "bedtime_text" && getStoryStatus(s) === "ready") {
-            if (!s.story_text || s.story_text.trim().length === 0) return false;
-          }
+          if (getStoryStatus(s) === "ready" && (!s.story_text || s.story_text.trim().length === 0)) return false;
           return true;
         })
         .filter(matches)
-        .filter(matchesFormat)
         .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? "")),
-    [profileStories, query, formatFilter]
+    [profileStories, query]
   );
 
   const storyRoom = useMemo(
-    () => allStories.filter((s) => s.story_type === "pre_recorded" && s.owner_profile_id === null).filter(matches).filter(matchesFormat),
-    [allStories, query, formatFilter]
+    () => allStories.filter((s) => s.story_type === "pre_recorded" && s.owner_profile_id === null).filter(matches),
+    [allStories, query]
   );
+
+  const madeForChild = useMemo(() => {
+    const merged: Story[] = [];
+    if (showAudio) merged.push(...personalised);
+    if (showText) merged.push(...bedtime);
+    return merged.sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+  }, [personalised, bedtime, showAudio, showText]);
 
   const recommended = useMemo(() => {
     const list = storyRoom.filter((s) => {
@@ -178,11 +184,11 @@ const HappyPlace = () => {
     });
   }, [storyRoom, childAge]);
 
-  const filterOptions: { key: "all" | "audio" | "text"; label: string }[] = [
-    { key: "all", label: "All" },
-    { key: "audio", label: "Audio" },
-    { key: "text", label: "Text" },
-  ];
+  const counts = {
+    all: personalised.length + bedtime.length + storyRoom.length,
+    audio: personalised.length + storyRoom.length,
+    text: bedtime.length,
+  };
 
   return (
     <PhoneShell>
@@ -196,24 +202,7 @@ const HappyPlace = () => {
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
         </div>
-        <div className="mt-3 flex items-center justify-center gap-1 rounded-full border border-border bg-card p-1 shadow-soft">
-          {filterOptions.map((opt) => {
-            const active = formatFilter === opt.key;
-            return (
-              <button
-                key={opt.key}
-                onClick={() => setFormatFilter(opt.key)}
-                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
-                  active
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
+        <StoryFormatFilter value={format} onChange={setFormat} counts={counts} className="mt-3" />
       </PageHeader>
 
       <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-6">
@@ -238,17 +227,19 @@ const HappyPlace = () => {
           </section>
         )}
 
-        {hasActive && recommended.length > 0 && (
+        {showAudio && hasActive && recommended.length > 0 && (
           <section>
             <SectionHeader title={`Recommended for ${childName}`} />
             <Row stories={recommended} emptyVariant="coming-soon" />
           </section>
         )}
 
-        <section>
-          <SectionHeader title="All stories" />
-          <Row stories={storyRoom} emptyVariant="coming-soon" />
-        </section>
+        {showAudio && (
+          <section>
+            <SectionHeader title="All stories" />
+            <Row stories={storyRoom} emptyVariant="coming-soon" />
+          </section>
+        )}
 
       </main>
 
