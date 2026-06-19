@@ -247,7 +247,7 @@ const Index = () => {
           <div className="mt-1 text-lg font-extrabold text-foreground">
             {completedThemes.length}
           </div>
-          <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Themes</div>
+          <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Life-skills learnt</div>
         </div>
         <div className="flex flex-col items-center rounded-xl bg-secondary/50 p-3 text-center">
           <BookOpen className="h-4 w-4 text-primary-deep" />
