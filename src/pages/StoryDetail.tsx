@@ -9,6 +9,7 @@ import { TagChip } from "@/components/TagChip";
 import { StoryStatusCard } from "@/components/StoryStatusCard";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { cleanEpisodeTitle } from "@/lib/episodeTitle";
+import { trackEvent } from "@/lib/events";
 import { toast } from "sonner";
 
 
@@ -32,6 +33,10 @@ const StoryDetail = () => {
 
   useEffect(() => {
     if (id) isSaved(id).then(setSaved);
+  }, [id]);
+
+  useEffect(() => {
+    if (id) trackEvent("story_opened", { story_id: id });
   }, [id]);
 
   const onToggleSave = async () => {
