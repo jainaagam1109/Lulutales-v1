@@ -35,6 +35,10 @@ const StoryDetail = () => {
     if (id) isSaved(id).then(setSaved);
   }, [id]);
 
+  useEffect(() => {
+    if (id) trackEvent("story_opened", { story_id: id });
+  }, [id]);
+
   const onToggleSave = async () => {
     const next = await toggleSaved(id);
     setSaved(next);
