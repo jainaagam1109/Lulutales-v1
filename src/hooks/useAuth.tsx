@@ -34,6 +34,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!loading && session) {
+      if (!sessionStorage.getItem("lulutales_app_open_logged")) {
+        trackEvent("app_opened");
+        sessionStorage.setItem("lulutales_app_open_logged", "1");
+      }
+    }
+  }, [loading, session]);
+
   const signOut = async () => {
     await supabase.auth.signOut();
     localStorage.removeItem("lulutales_profile_id");
