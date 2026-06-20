@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { trackEvent } from "@/lib/events";
 import type { Tables, Json } from "@/integrations/supabase/types";
 
 export type Story = Tables<"stories">;
@@ -146,8 +147,10 @@ export const toggleSaved = async (storyId: string): Promise<boolean> => {
       .delete()
       .eq("story_id", storyId)
       .eq("profile_id", profileId);
+    trackEvent("library_removed", { story_id: storyId });
     return false;
   }
   await supabase.from("user_library").insert({ story_id: storyId, profile_id: profileId });
+  trackEvent("library_added", { story_id: storyId });
   return true;
 };
