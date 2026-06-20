@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { trackEvent } from "@/lib/events";
 
 type AuthCtx = {
   session: Session | null;
@@ -32,6 +33,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
     return () => sub.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!loading && session) {
+      if (!sessionStorage.getItem("lulutales_app_open_logged")) {
+        trackEvent("app_opened");
+        sessionStorage.setItem("lulutales_app_open_logged", "1");
+      }
+    }
+  }, [loading, session]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
