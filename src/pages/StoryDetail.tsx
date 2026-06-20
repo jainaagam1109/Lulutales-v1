@@ -9,6 +9,7 @@ import { TagChip } from "@/components/TagChip";
 import { StoryStatusCard } from "@/components/StoryStatusCard";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { cleanEpisodeTitle } from "@/lib/episodeTitle";
+import { trackEvent } from "@/lib/events";
 import { toast } from "sonner";
 
 
