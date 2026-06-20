@@ -13,7 +13,7 @@ export async function trackEvent(
       sessionStorage.setItem("lulutales_session_id", sessionId);
     }
 
-    void supabase.from("app_events").insert({
+    void (supabase as any).from("app_events").insert({
       event_name: eventName,
       properties: properties ?? {},
       profile_id: profileId,
