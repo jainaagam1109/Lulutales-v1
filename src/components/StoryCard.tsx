@@ -39,9 +39,6 @@ export const StoryCard = ({ story, variant = "grid" }: { story: Story; variant?:
             {badge && <TagChip label={badge.label} variant={badge.variant} />}
           </div>
           <div className="mt-1 truncate text-sm font-bold text-foreground">{story.title}</div>
-          {ageLabel && (
-            <div className="text-xs text-muted-foreground">{ageLabel}</div>
-          )}
         </div>
       </Link>
     );
