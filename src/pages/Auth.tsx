@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneShell } from "@/components/PhoneShell";
 import { useAuth } from "@/hooks/useAuth";
+import { trackEvent } from "@/lib/events";
 
 const schema = z.object({
   email: z.string().trim().email("Enter a valid email"),
@@ -157,6 +158,7 @@ const Auth = () => {
         toast.error(friendlySignInError(error.message, info));
         return;
       }
+      trackEvent("logged_in", { method: "email" });
       setBusy(false);
       // session change will trigger redirect
       return;
@@ -192,6 +194,7 @@ const Auth = () => {
     setBusy(false);
     if (error) return toast.error(friendlySignUpError(error.message));
     toast.success("Account created. Check your email to confirm your account before logging in.");
+    trackEvent("signed_up", { method: "email" });
   };
 
   const google = async () => {
