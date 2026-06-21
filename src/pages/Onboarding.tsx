@@ -144,6 +144,7 @@ const Onboarding = () => {
       toast.error("Couldn't save. Try again.");
       return;
     }
+    trackEvent("onboarding_completed", { mode: isAddMode ? "add" : "normal" });
     if (!hasActive) {
       await loadActiveProfileForUser(session.user.id);
     }
