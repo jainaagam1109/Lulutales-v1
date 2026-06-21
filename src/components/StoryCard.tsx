@@ -4,17 +4,6 @@ import { getStoryStatus } from "@/lib/storyStatus";
 import { TagChip } from "./TagChip";
 import { StoryStatusCard } from "./StoryStatusCard";
 
-const ageBucketFromAgeGroup = (ageGroup: string | null | undefined): string | null => {
-  if (!ageGroup) return null;
-  const m = ageGroup.match(/\d+/);
-  if (!m) return null;
-  const n = parseInt(m[0], 10);
-  if (Number.isNaN(n)) return null;
-  if (n <= 3) return "2–3";
-  if (n <= 6) return "4–6";
-  return "7–9";
-};
-
 const formatBadgeFor = (story_type: Story["story_type"]): { label: string; variant: "mint" | "warm" } | null => {
   if (story_type === "personalised_audio") return { label: "🎧 Listen · ~15 min", variant: "mint" };
   if (story_type === "pre_recorded") return { label: "🎧 Listen", variant: "mint" };
@@ -31,10 +20,6 @@ export const StoryCard = ({ story, variant = "grid" }: { story: Story; variant?:
 
   const to = story.story_type === "bedtime_text" ? `/bedtime/${story.id}` : `/story/${story.id}`;
   const state = { from: location.pathname };
-
-  // Type 1 & 2 (personalised_audio, bedtime_text): no age. Type 3 (pre_recorded): age bucket.
-  const ageLabel =
-    story.story_type === "pre_recorded" ? ageBucketFromAgeGroup(story.age_group) : null;
 
   const badge = formatBadgeFor(story.story_type);
 
@@ -54,9 +39,6 @@ export const StoryCard = ({ story, variant = "grid" }: { story: Story; variant?:
             {badge && <TagChip label={badge.label} variant={badge.variant} />}
           </div>
           <div className="mt-1 truncate text-sm font-bold text-foreground">{story.title}</div>
-          {ageLabel && (
-            <div className="text-xs text-muted-foreground">{ageLabel}</div>
-          )}
         </div>
       </Link>
     );
@@ -77,9 +59,6 @@ export const StoryCard = ({ story, variant = "grid" }: { story: Story; variant?:
           {badge && <TagChip label={badge.label} variant={badge.variant} />}
         </div>
         <div className="line-clamp-2 text-xs font-bold leading-snug text-foreground">{story.title}</div>
-        {ageLabel && (
-          <div className="text-[10px] text-muted-foreground">{ageLabel}</div>
-        )}
       </div>
     </Link>
   );
