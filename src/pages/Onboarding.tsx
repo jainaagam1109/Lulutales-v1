@@ -7,6 +7,7 @@ import { PhoneShell } from "@/components/PhoneShell";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { loadActiveProfileForUser } from "@/lib/activeProfile";
+import { trackEvent } from "@/lib/events";
 import {
   FieldLabel,
   TextInput,
