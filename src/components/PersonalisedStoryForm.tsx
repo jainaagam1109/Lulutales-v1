@@ -28,6 +28,7 @@ import {
   ValidationState,
 } from "@/components/StoryFormFields";
 import { createPersonalisedStory } from "@/lib/stories";
+import { trackEvent } from "@/lib/events";
 import { getThemeVisual } from "@/lib/themeEmoji";
 import { supabase } from "@/integrations/supabase/client";
 import { getThemeOptions, CUSTOM_THEME_VALUE } from "@/lib/themeOptions";
@@ -304,6 +305,14 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           occasion: form.occasion.trim() || null,
           language: isHindiEligible(form.age) ? form.language : "english",
         },
+      });
+
+      trackEvent("story_requested", {
+        story_type: storyType,
+        theme: form.theme.trim(),
+        occasion: form.occasion.trim() || null,
+        language: isHindiEligible(form.age) ? form.language : "english",
+        age_group: form.age || null,
       });
 
       // Persist details back to the child profile so the next story prefills.
