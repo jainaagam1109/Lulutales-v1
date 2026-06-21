@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneShell } from "@/components/PhoneShell";
 import { useAuth } from "@/hooks/useAuth";
+import { trackEvent } from "@/lib/events";
 
 const schema = z.object({
   email: z.string().trim().email("Enter a valid email"),
