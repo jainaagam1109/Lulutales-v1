@@ -21,10 +21,6 @@ export const StoryCard = ({ story, variant = "grid" }: { story: Story; variant?:
   const to = story.story_type === "bedtime_text" ? `/bedtime/${story.id}` : `/story/${story.id}`;
   const state = { from: location.pathname };
 
-  // Type 1 & 2 (personalised_audio, bedtime_text): no age. Type 3 (pre_recorded): age bucket.
-  const ageLabel =
-    story.story_type === "pre_recorded" ? ageBucketFromAgeGroup(story.age_group) : null;
-
   const badge = formatBadgeFor(story.story_type);
 
   if (variant === "row") {
