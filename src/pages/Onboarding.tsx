@@ -7,6 +7,7 @@ import { PhoneShell } from "@/components/PhoneShell";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { loadActiveProfileForUser } from "@/lib/activeProfile";
+import { trackEvent } from "@/lib/events";
 import {
   FieldLabel,
   TextInput,
@@ -143,6 +144,7 @@ const Onboarding = () => {
       toast.error("Couldn't save. Try again.");
       return;
     }
+    trackEvent("onboarding_completed", { mode: isAddMode ? "add" : "normal" });
     if (!hasActive) {
       await loadActiveProfileForUser(session.user.id);
     }
