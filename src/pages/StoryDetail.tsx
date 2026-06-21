@@ -63,6 +63,11 @@ const StoryDetail = () => {
           <Mic className="h-3 w-3" />
           <span>Narrated by Luna</span>
         </div>
+        {story.age_group && (
+          <div className="mt-1 text-xs text-muted-foreground">
+            Most appropriate for kids aged {story.age_group}
+          </div>
+        )}
 
         {tags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
