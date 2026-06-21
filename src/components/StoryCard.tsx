@@ -4,17 +4,6 @@ import { getStoryStatus } from "@/lib/storyStatus";
 import { TagChip } from "./TagChip";
 import { StoryStatusCard } from "./StoryStatusCard";
 
-const ageBucketFromAgeGroup = (ageGroup: string | null | undefined): string | null => {
-  if (!ageGroup) return null;
-  const m = ageGroup.match(/\d+/);
-  if (!m) return null;
-  const n = parseInt(m[0], 10);
-  if (Number.isNaN(n)) return null;
-  if (n <= 3) return "2–3";
-  if (n <= 6) return "4–6";
-  return "7–9";
-};
-
 const formatBadgeFor = (story_type: Story["story_type"]): { label: string; variant: "mint" | "warm" } | null => {
   if (story_type === "personalised_audio") return { label: "🎧 Listen · ~15 min", variant: "mint" };
   if (story_type === "pre_recorded") return { label: "🎧 Listen", variant: "mint" };
