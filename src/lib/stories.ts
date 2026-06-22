@@ -108,6 +108,18 @@ export const fetchStory = async (id: string): Promise<Story | null> => {
   return data;
 };
 
+export const fetchUniverses = async (): Promise<Universe[]> => {
+  try {
+    const { data, error } = await (supabase as any)
+      .from("universes")
+      .select("id, display_name");
+    if (error) return [];
+    return (data ?? []) as Universe[];
+  } catch {
+    return [];
+  }
+};
+
 export const fetchStoryTags = async (storyId: string): Promise<string[]> => {
   const { data, error } = await supabase.from("story_tags").select("tag").eq("story_id", storyId);
   if (error) throw error;
