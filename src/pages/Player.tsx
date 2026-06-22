@@ -20,7 +20,7 @@ import {
   getLastEpisode,
 } from "@/lib/lastStory";
 
-const SPEED_STEPS = [0.75, 0.8, 0.85, 0.9, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.4, 1.5];
+import { SPEED_STEPS, resolveInitialRate, setProfilePlaybackRate } from "@/lib/playbackRate";
 
 const fmt = (s: number) => {
   if (!isFinite(s)) return "0:00";
@@ -68,9 +68,10 @@ const Player = () => {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [speed, setSpeed] = useState<number>(() => {
     if (typeof window === "undefined") return 1;
-    const raw = localStorage.getItem("lulutales_playback_rate");
-    const n = raw ? parseFloat(raw) : NaN;
-    return SPEED_STEPS.includes(n) ? n : 1;
+    const pid = localStorage.getItem("lulutales_profile_id");
+    const ageRaw = localStorage.getItem("lulutales_child_age");
+    const age = ageRaw ? parseInt(ageRaw, 10) : null;
+    return resolveInitialRate(pid, isFinite(age as number) ? age : null);
   });
 
   const speedIdx = SPEED_STEPS.indexOf(speed);
@@ -84,7 +85,8 @@ const Player = () => {
     a.defaultPlaybackRate = speed;
     (a as any).preservesPitch = true;
     try {
-      localStorage.setItem("lulutales_playback_rate", String(speed));
+      const pid = localStorage.getItem("lulutales_profile_id");
+      setProfilePlaybackRate(pid, speed);
     } catch {}
   }, [speed, audioUrl]);
 
