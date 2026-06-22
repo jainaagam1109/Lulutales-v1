@@ -4,6 +4,7 @@ import type { Tables, Json } from "@/integrations/supabase/types";
 
 export type Story = Tables<"stories">;
 export type Episode = Tables<"episodes">;
+export type Universe = { id: string; display_name: string };
 
 const getActiveProfileId = (): string | null =>
   typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
