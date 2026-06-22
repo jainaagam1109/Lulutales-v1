@@ -22,6 +22,17 @@ import {
 
 import { SPEED_STEPS, resolveInitialRate, setProfilePlaybackRate } from "@/lib/playbackRate";
 
+const fetchUniverse = async (universeId: string | null | undefined): Promise<string | null> => {
+  if (!universeId) return null;
+  const { data, error } = await supabase
+    .from("universes")
+    .select("display_name")
+    .eq("id", universeId)
+    .maybeSingle();
+  if (error) return null;
+  return data?.display_name ?? null;
+};
+
 const fmt = (s: number) => {
   if (!isFinite(s)) return "0:00";
   const m = Math.floor(s / 60);
