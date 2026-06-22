@@ -11,7 +11,15 @@ const formatBadgeFor = (story_type: Story["story_type"]): { label: string; varia
   return null;
 };
 
-export const StoryCard = ({ story, variant = "grid" }: { story: Story; variant?: "grid" | "row" }) => {
+export const StoryCard = ({
+  story,
+  variant = "grid",
+  universeName,
+}: {
+  story: Story;
+  variant?: "grid" | "row";
+  universeName?: string | null;
+}) => {
   const location = useLocation();
   const status = getStoryStatus(story);
   if (status !== "ready") {
