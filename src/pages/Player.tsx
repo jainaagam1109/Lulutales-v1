@@ -68,9 +68,10 @@ const Player = () => {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [speed, setSpeed] = useState<number>(() => {
     if (typeof window === "undefined") return 1;
-    const raw = localStorage.getItem("lulutales_playback_rate");
-    const n = raw ? parseFloat(raw) : NaN;
-    return SPEED_STEPS.includes(n) ? n : 1;
+    const pid = localStorage.getItem("lulutales_profile_id");
+    const ageRaw = localStorage.getItem("lulutales_child_age");
+    const age = ageRaw ? parseInt(ageRaw, 10) : null;
+    return resolveInitialRate(pid, isFinite(age as number) ? age : null);
   });
 
   const speedIdx = SPEED_STEPS.indexOf(speed);
