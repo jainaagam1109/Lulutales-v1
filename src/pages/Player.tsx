@@ -65,6 +65,12 @@ const Player = () => {
     queryFn: () => fetchEpisodes(id),
     enabled: !!id,
   });
+  const universeId = (story as any)?.universe_id;
+  const { data: universeName } = useQuery({
+    queryKey: ["universe", universeId],
+    queryFn: () => fetchUniverse(universeId),
+    enabled: !!universeId,
+  });
 
   const current = episodes?.find((e) => e.episode_number === epNum);
   const audioUrl = current?.audio_url ?? null;
