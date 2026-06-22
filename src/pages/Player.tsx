@@ -24,7 +24,7 @@ import { SPEED_STEPS, resolveInitialRate, setProfilePlaybackRate } from "@/lib/p
 
 const fetchUniverse = async (universeId: string | null | undefined): Promise<string | null> => {
   if (!universeId) return null;
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from("universes")
     .select("display_name")
     .eq("id", universeId)
