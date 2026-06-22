@@ -103,6 +103,17 @@ const HappyPlace = () => {
     queryFn: () => fetchCompletedThemes(profileId!),
     enabled: !!profileId,
   });
+  const { data: universes = [] } = useQuery({
+    queryKey: ["universes"],
+    queryFn: fetchUniverses,
+  });
+  const universesMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const u of universes) {
+      if (u.id && u.display_name) map.set(u.id, u.display_name);
+    }
+    return map;
+  }, [universes]);
   const childAge = (() => {
     const n = parseInt(localStorage.getItem("lulutales_child_age") ?? "", 10);
     return Number.isFinite(n) ? n : null;
