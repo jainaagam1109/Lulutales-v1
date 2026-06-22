@@ -85,7 +85,8 @@ const Player = () => {
     a.defaultPlaybackRate = speed;
     (a as any).preservesPitch = true;
     try {
-      localStorage.setItem("lulutales_playback_rate", String(speed));
+      const pid = localStorage.getItem("lulutales_profile_id");
+      setProfilePlaybackRate(pid, speed);
     } catch {}
   }, [speed, audioUrl]);
 
