@@ -238,7 +238,7 @@ const HappyPlace = () => {
                 </Link>
               </div>
             ) : (
-              <Row stories={madeForChild} />
+              <Row stories={madeForChild} universesMap={universesMap} />
             )}
           </section>
         )}
@@ -246,14 +246,14 @@ const HappyPlace = () => {
         {showAudio && hasActive && recommended.length > 0 && (
           <section>
             <SectionHeader title={`Recommended for ${childName}`} />
-            <Row stories={recommended} emptyVariant="coming-soon" />
+            <Row stories={recommended} emptyVariant="coming-soon" universesMap={universesMap} />
           </section>
         )}
 
         {showAudio && (
           <section>
             <SectionHeader title="All stories" />
-            <Row stories={storyRoom} emptyVariant="coming-soon" />
+            <Row stories={storyRoom} emptyVariant="coming-soon" universesMap={universesMap} />
           </section>
         )}
 
