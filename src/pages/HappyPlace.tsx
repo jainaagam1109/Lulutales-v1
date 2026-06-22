@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
-import { fetchStories, fetchStoriesForProfile, type Story } from "@/lib/stories";
+import { fetchStories, fetchStoriesForProfile, fetchUniverses, type Story, type Universe } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { SectionHeader } from "@/components/SectionHeader";
