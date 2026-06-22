@@ -66,6 +66,11 @@ export const StoryCard = ({
           {story.theme && <TagChip label={story.theme} />}
           {badge && <TagChip label={badge.label} variant={badge.variant} />}
         </div>
+        {universeName ? (
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            {universeName}
+          </div>
+        ) : null}
         <div className="line-clamp-2 text-xs font-bold leading-snug text-foreground">{story.title}</div>
       </div>
     </Link>
