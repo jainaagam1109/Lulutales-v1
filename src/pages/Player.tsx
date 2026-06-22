@@ -22,6 +22,17 @@ import {
 
 import { SPEED_STEPS, resolveInitialRate, setProfilePlaybackRate } from "@/lib/playbackRate";
 
+const fetchUniverse = async (universeId: string | null | undefined): Promise<string | null> => {
+  if (!universeId) return null;
+  const { data, error } = await (supabase as any)
+    .from("universes")
+    .select("display_name")
+    .eq("id", universeId)
+    .maybeSingle();
+  if (error) return null;
+  return data?.display_name ?? null;
+};
+
 const fmt = (s: number) => {
   if (!isFinite(s)) return "0:00";
   const m = Math.floor(s / 60);
@@ -53,6 +64,12 @@ const Player = () => {
     queryKey: ["episodes", id],
     queryFn: () => fetchEpisodes(id),
     enabled: !!id,
+  });
+  const universeId = (story as any)?.universe_id;
+  const { data: universeName } = useQuery({
+    queryKey: ["universe", universeId],
+    queryFn: () => fetchUniverse(universeId),
+    enabled: !!universeId,
   });
 
   const current = episodes?.find((e) => e.episode_number === epNum);
@@ -506,14 +523,16 @@ const Player = () => {
         </div>
 
         <div className="text-center">
+          {universeName && (
+            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {universeName}
+            </div>
+          )}
           <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">{story?.theme}</div>
           <h1 className="mt-1 text-xl font-extrabold text-foreground">{story?.title ?? "Loading…"}</h1>
           <div className="text-xs text-muted-foreground">
             {current
-              ? (() => {
-                  const sub = cleanEpisodeTitle(current.title, story?.title, current.episode_number);
-                  return `Episode ${current.episode_number}${sub ? ` · ${sub}` : ""}`;
-                })()
+              ? cleanEpisodeTitle(current.title, story?.title, current.episode_number) || story?.title || ""
               : "Loading episode…"}
           </div>
         </div>
