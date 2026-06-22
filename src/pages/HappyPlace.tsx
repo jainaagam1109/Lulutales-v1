@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
-import { fetchStories, fetchStoriesForProfile, type Story } from "@/lib/stories";
+import { fetchStories, fetchStoriesForProfile, fetchUniverses, type Story, type Universe } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -54,9 +54,11 @@ const CreateCtaCard = () => (
 const Row = ({
   stories,
   emptyVariant = "create",
+  universesMap,
 }: {
   stories: Story[];
   emptyVariant?: "create" | "coming-soon";
+  universesMap?: Map<string, string>;
 }) => {
   if (stories.length === 0) {
     if (emptyVariant === "coming-soon") {
@@ -70,11 +72,14 @@ const Row = ({
   }
   return (
     <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
-      {stories.map((s) => (
-        <div key={s.id} className="w-44 flex-shrink-0">
-          <StoryCard story={s} />
-        </div>
-      ))}
+      {stories.map((s) => {
+        const universeName = universesMap?.get((s as any).universe_id) ?? null;
+        return (
+          <div key={s.id} className="w-44 flex-shrink-0">
+            <StoryCard story={s} universeName={universeName} />
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -98,6 +103,17 @@ const HappyPlace = () => {
     queryFn: () => fetchCompletedThemes(profileId!),
     enabled: !!profileId,
   });
+  const { data: universes = [] } = useQuery({
+    queryKey: ["universes"],
+    queryFn: fetchUniverses,
+  });
+  const universesMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const u of universes) {
+      if (u.id && u.display_name) map.set(u.id, u.display_name);
+    }
+    return map;
+  }, [universes]);
   const childAge = (() => {
     const n = parseInt(localStorage.getItem("lulutales_child_age") ?? "", 10);
     return Number.isFinite(n) ? n : null;
@@ -222,7 +238,7 @@ const HappyPlace = () => {
                 </Link>
               </div>
             ) : (
-              <Row stories={madeForChild} />
+              <Row stories={madeForChild} universesMap={universesMap} />
             )}
           </section>
         )}
@@ -230,14 +246,14 @@ const HappyPlace = () => {
         {showAudio && hasActive && recommended.length > 0 && (
           <section>
             <SectionHeader title={`Recommended for ${childName}`} />
-            <Row stories={recommended} emptyVariant="coming-soon" />
+            <Row stories={recommended} emptyVariant="coming-soon" universesMap={universesMap} />
           </section>
         )}
 
         {showAudio && (
           <section>
             <SectionHeader title="All stories" />
-            <Row stories={storyRoom} emptyVariant="coming-soon" />
+            <Row stories={storyRoom} emptyVariant="coming-soon" universesMap={universesMap} />
           </section>
         )}
 
