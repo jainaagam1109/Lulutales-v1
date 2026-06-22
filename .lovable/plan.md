@@ -1,30 +1,44 @@
-## Auto-redirect from "Creating magic" screen to Happy Place after 30s
+## Goal
 
-**Scope:** Applies to both story types (personalised audio and bedtime text) since both flows render the same `src/pages/Generating.tsx` screen at `/generating/:storyId`. No other screens touched.
+Seed the audio player's playback speed from the active child profile's age on first play, then remember the user's manual choice per profile.
 
-### Behavior
-- On mount of `Generating.tsx`, start a 30-second timer.
-- When it fires, navigate to `/happy-place` — only if:
-  - the story is still in `preparing` state (not ready, not stale/failed), and
-  - the user hasn't already navigated away.
-- If the user taps the existing "Go to My Happy Place →" CTA before 30s, cancel the timer (manual nav wins).
-- If the story becomes ready within 30s, the existing success path already redirects to the player/reader — cancel the timer so we don't override it.
-- If the story enters a failure state (`stale` / `lang_age_failed`), the screen swaps to `StoryStatusCard`; cancel the timer so we don't yank a user away from the error UI.
-- The `stalled` (>10 min) branch is unaffected — by then the timer has long since fired or been cleared; if somehow still mounted, we don't auto-redirect in stalled state either.
+## Speed buckets
 
-### Implementation (single file: `src/pages/Generating.tsx`)
-1. Add a `useEffect` that runs once on mount: `const t = setTimeout(() => nav("/happy-place"), 30000); return () => clearTimeout(t);`
-2. Store the timeout id in a `useRef` so other effects/handlers can clear it early.
-3. Clear the timer in three places:
-   - the existing `data.is_generated` success branch (right before the 1.5s nav delay),
-   - when `status` becomes `stale` or `lang_age_failed`,
-   - on unmount (cleanup return).
-4. No change to the CTA itself — clicking it unmounts the page, which triggers the cleanup and cancels the timer automatically.
+- age 2–3 → 0.85x
+- age 4   → 0.9x
+- age 5   → 0.95x
+- age 6–9 → 1x
+- missing / <2 / >9 → 1x
 
-### Not changed
-- No copy changes on the screen (no countdown shown — keeps UI identical to the screenshot). If you'd like a visible "Redirecting in Ns…" hint, say the word and I'll add it.
-- No changes to `AudioStoryForm.tsx`, `BedtimeStoryForm.tsx`, routing, analytics, or the stalled/failure flows.
-- No backend or schema changes.
+## Changes
 
-### Open question
-Do you want a visible countdown ("Taking you to Happy Place in 12s…") under the CTA, or keep the screen visually identical and just auto-redirect silently at 30s?
+### 1. `src/lib/lastStory.ts` (or a small new helper in `src/lib/playbackRate.ts`)
+
+Add per-profile playback-rate helpers backed by localStorage:
+
+- Key: `lulutales_playback_rate_<profileId>`
+- `getProfilePlaybackRate(profileId)` → number | null
+- `setProfilePlaybackRate(profileId, rate)` → persists rate
+- `defaultRateForAge(age?: number | null)` → applies the bucket table above, falling back to 1.
+
+### 2. `src/pages/Player.tsx`
+
+Replace the current global `lulutales_playback_rate` logic:
+
+- Initial `speed` state resolves in this order:
+  1. Per-profile stored rate for the active profile (if present and in `SPEED_STEPS`).
+  2. `defaultRateForAge(activeProfile.age)` snapped to nearest `SPEED_STEPS` value.
+  3. `1`.
+- Active profile id + age come from the existing `activeProfile` helpers (`getActiveProfileId`, plus a small read from `child_profiles` or the cached `lulutales_child_age` in `localStorage` that `activeProfile.ts` already maintains — no new query needed).
+- The effect that writes `localStorage.setItem("lulutales_playback_rate", ...)` is replaced with `setProfilePlaybackRate(profileId, speed)` so each profile remembers its own last choice.
+- If the active profile changes while the Player is mounted (rare), re-evaluate the initial speed using the same resolution order.
+
+### 3. Migration / cleanup
+
+- Remove the old global `lulutales_playback_rate` write. Reading it is not needed — we just let the age default kick in for profiles with no stored rate yet.
+
+## Out of scope
+
+- No backend/schema changes; rate stays in localStorage.
+- No UI changes to the +/− speed control itself.
+- No changes to bedtime-text reading speed (audio player only).
