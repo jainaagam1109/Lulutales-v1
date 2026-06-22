@@ -523,14 +523,16 @@ const Player = () => {
         </div>
 
         <div className="text-center">
+          {universeName && (
+            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {universeName}
+            </div>
+          )}
           <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">{story?.theme}</div>
           <h1 className="mt-1 text-xl font-extrabold text-foreground">{story?.title ?? "Loading…"}</h1>
           <div className="text-xs text-muted-foreground">
             {current
-              ? (() => {
-                  const sub = cleanEpisodeTitle(current.title, story?.title, current.episode_number);
-                  return `Episode ${current.episode_number}${sub ? ` · ${sub}` : ""}`;
-                })()
+              ? cleanEpisodeTitle(current.title, story?.title, current.episode_number) || story?.title || ""
               : "Loading episode…"}
           </div>
         </div>
