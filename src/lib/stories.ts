@@ -5,6 +5,13 @@ import type { Tables, Json } from "@/integrations/supabase/types";
 export type Story = Tables<"stories">;
 export type Episode = Tables<"episodes">;
 export type Universe = { id: string; display_name: string };
+export type UniverseWithCount = {
+  id: string;
+  display_name: string;
+  description?: string | null;
+  cover_image?: string | null;
+  story_count: number;
+};
 
 const getActiveProfileId = (): string | null =>
   typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
@@ -118,6 +125,58 @@ export const fetchUniverses = async (): Promise<Universe[]> => {
   } catch {
     return [];
   }
+};
+
+export const fetchUniversesWithCounts = async (): Promise<UniverseWithCount[]> => {
+  try {
+    const { data, error } = await (supabase as any)
+      .from("universes_with_counts")
+      .select("*");
+    if (error) return [];
+    const rows = (data ?? []) as any[];
+    return rows
+      .map((r) => ({
+        id: r.id,
+        display_name: r.display_name,
+        description: r.description ?? null,
+        cover_image: r.cover_image ?? r.thumbnail ?? null,
+        story_count: Number(r.story_count ?? r.count ?? 0),
+      }))
+      .filter((u) => u.story_count > 0)
+      .sort((a, b) => b.story_count - a.story_count);
+  } catch {
+    return [];
+  }
+};
+
+export const fetchUniverse = async (id: string): Promise<UniverseWithCount | null> => {
+  try {
+    const { data, error } = await (supabase as any)
+      .from("universes")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    if (error || !data) return null;
+    return {
+      id: data.id,
+      display_name: data.display_name,
+      description: data.description ?? null,
+      cover_image: data.cover_image ?? data.thumbnail ?? null,
+      story_count: 0,
+    };
+  } catch {
+    return null;
+  }
+};
+
+export const fetchStoriesByUniverse = async (universeId: string): Promise<Story[]> => {
+  const { data, error } = await (supabase as any)
+    .from("stories")
+    .select("*")
+    .eq("universe_id", universeId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Story[];
 };
 
 export const fetchStoryTags = async (storyId: string): Promise<string[]> => {
