@@ -54,6 +54,8 @@ const App = () => (
             <Route path="/library" element={<Navigate to="/happy-place" replace />} />
             <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
             <Route path="/profiles" element={<RequireAuth><KidsProfiles /></RequireAuth>} />
+            <Route path="/universe/:id" element={<RequireAuth><Universe /></RequireAuth>} />
+
 
             <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
             <Route path="/admin/upload" element={<RequireAdmin><AdminUpload /></RequireAdmin>} />
