@@ -5,6 +5,13 @@ import type { Tables, Json } from "@/integrations/supabase/types";
 export type Story = Tables<"stories">;
 export type Episode = Tables<"episodes">;
 export type Universe = { id: string; display_name: string };
+export type UniverseWithCount = {
+  id: string;
+  display_name: string;
+  description?: string | null;
+  cover_image?: string | null;
+  story_count: number;
+};
 
 const getActiveProfileId = (): string | null =>
   typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
