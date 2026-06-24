@@ -243,6 +243,8 @@ const HappyPlace = () => {
             )}
           </section>
         )}
+        <StoryWorldsRow />
+
 
         {showAudio && hasActive && recommended.length > 0 && (
           <section>
