@@ -87,6 +87,13 @@ const Index = () => {
   const hasStory = personalisedStories.length > 0;
 
   const { data: allStories = [] } = useQuery({ queryKey: ["stories"], queryFn: fetchStories });
+  const { data: universes = [] } = useQuery({ queryKey: ["universes"], queryFn: fetchUniverses });
+  const universesMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const u of universes) if (u.id && u.display_name) m.set(u.id, u.display_name);
+    return m;
+  }, [universes]);
+  const nameFor = (s: any): string | null => universesMap.get(s?.universe_id) ?? null;
 
   const enableAnalytics = !!profileId && hasStory;
   const { data: streak = 0 } = useQuery({
