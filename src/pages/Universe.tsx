@@ -39,7 +39,7 @@ const Universe = () => {
             No stories in this world yet.
             <div className="mt-3">
               <Link to="/happy-place" className="text-xs font-bold text-primary-deep">
-                ← Back to Happy Place
+                ← Back to Story Worlds
               </Link>
             </div>
           </div>
