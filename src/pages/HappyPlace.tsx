@@ -229,13 +229,13 @@ const HappyPlace = () => {
             {madeForChild.length === 0 ? (
               <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-card/60 p-4">
                 <div className="text-sm text-muted-foreground">
-                  No personalised stories yet — create one in the Magic Hub.
+                  No personalised stories yet — create one in Story Worlds.
                 </div>
                 <Link
                   to="/magic-hub"
                   className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-soft"
                 >
-                  Go to Magic Hub
+                  Go to Story Worlds
                 </Link>
               </div>
             ) : (
