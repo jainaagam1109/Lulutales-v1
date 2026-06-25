@@ -96,7 +96,7 @@ const Generating = () => {
               onClick={() => nav("/happy-place")}
               className="mt-6 w-full rounded-full border border-border bg-card px-5 py-2 text-xs font-semibold text-primary-deep"
             >
-              Back to Happy Place
+              Back to Story Worlds
             </button>
           </div>
         ) : (
