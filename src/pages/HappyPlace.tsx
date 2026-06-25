@@ -90,7 +90,7 @@ const HappyPlace = () => {
   const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
   const childName = localStorage.getItem("lulutales_child_name");
   const hasActive = !!profileId;
-  const pageTitle = childName && hasActive ? `${childName}'s Happy Place` : "Happy Place";
+  const pageTitle = childName && hasActive ? `${childName}'s Story Worlds` : "Story Worlds";
   const curatedTitle = childName && hasActive ? `Personalised audio for ${childName}` : "Personalised audio stories";
 
   const { data: allStories = [] } = useQuery({ queryKey: ["stories"], queryFn: fetchStories });
@@ -229,13 +229,13 @@ const HappyPlace = () => {
             {madeForChild.length === 0 ? (
               <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-card/60 p-4">
                 <div className="text-sm text-muted-foreground">
-                  No personalised stories yet — create one in the Magic Hub.
+                  No personalised stories yet — create one in Story Worlds.
                 </div>
                 <Link
                   to="/magic-hub"
                   className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-soft"
                 >
-                  Go to Magic Hub
+                  Go to Story Worlds
                 </Link>
               </div>
             ) : (

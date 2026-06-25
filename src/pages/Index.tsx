@@ -188,7 +188,7 @@ const Index = () => {
             onClick={() => nav("/library")}
             className="text-[11px] font-bold text-primary-deep"
           >
-            Story room →
+            Story Worlds →
           </button>
         </div>
         <div className="grid grid-cols-2 gap-3">
