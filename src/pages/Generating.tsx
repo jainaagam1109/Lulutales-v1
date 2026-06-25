@@ -118,7 +118,7 @@ const Generating = () => {
                 ? `This is taking longer than expected. We'll notify you when ${childName}'s story is ready.`
                 : `This usually takes about ${
                     story?.story_type === "bedtime_text" ? "~4 minutes" : "~15 minutes"
-                  }. Head to your Happy Place and enjoy existing stories while you wait.`}
+                  }. Head to your Story Worlds and enjoy existing stories while you wait.`}
             </p>
             <button
               onClick={async () => {
