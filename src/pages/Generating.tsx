@@ -137,7 +137,7 @@ const Generating = () => {
               }}
               className="mt-8 rounded-full border border-border bg-card px-5 py-2 text-xs font-semibold text-primary-deep"
             >
-              {stalled ? "Back to home" : "Go to My Happy Place →"}
+              {stalled ? "Back to home" : "Go to My Story Worlds →"}
             </button>
           </>
         )}
