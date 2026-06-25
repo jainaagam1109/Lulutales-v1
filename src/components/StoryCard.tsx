@@ -52,6 +52,10 @@ export const StoryCard = ({
     );
   }
 
+  // Type 3 = character-universe stories. Detected via universe_id.
+  const isType3 = !!(story as any).universe_id;
+  const characterName = isType3 ? (universeName ?? null) : null;
+
   return (
     <Link
       to={to}
@@ -61,18 +65,32 @@ export const StoryCard = ({
       <div className="flex h-20 items-center justify-center bg-gradient-card text-4xl">
         {story.thumbnail ?? "📖"}
       </div>
-      <div className="min-w-0 space-y-1 p-3">
-        <div className="flex flex-wrap items-center gap-1">
-          {story.theme && <TagChip label={story.theme} />}
-          {badge && <TagChip label={badge.label} variant={badge.variant} />}
-        </div>
-        {universeName ? (
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {universeName}
+      {isType3 ? (
+        <div className="min-w-0 space-y-1.5 p-3">
+          {characterName ? (
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">
+              {characterName}
+            </div>
+          ) : null}
+          <div className="line-clamp-2 text-xs font-bold leading-snug text-foreground">
+            {story.title}
           </div>
-        ) : null}
-        <div className="line-clamp-2 text-xs font-bold leading-snug text-foreground">{story.title}</div>
-      </div>
+          {(story.theme || badge) && (
+            <div className="flex flex-wrap items-center gap-1 pt-0.5">
+              {story.theme && <TagChip label={story.theme} />}
+              {badge && <TagChip label={badge.label} variant={badge.variant} />}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="min-w-0 space-y-1 p-3">
+          <div className="flex flex-wrap items-center gap-1">
+            {story.theme && <TagChip label={story.theme} />}
+            {badge && <TagChip label={badge.label} variant={badge.variant} />}
+          </div>
+          <div className="line-clamp-2 text-xs font-bold leading-snug text-foreground">{story.title}</div>
+        </div>
+      )}
     </Link>
   );
 };
