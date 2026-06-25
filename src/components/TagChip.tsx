@@ -18,9 +18,9 @@ export const TagChip = ({ label, variant }: { label: string; variant?: Variant }
   const v = variant ?? tagVariantFor(label);
   return (
     <span
-      className={`inline-flex max-w-full items-center overflow-hidden rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${cls[v]}`}
+      className={`inline-flex max-w-full items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${cls[v]}`}
     >
-      <span className="block truncate">{label}</span>
+      {label}
     </span>
   );
 };
