@@ -19,7 +19,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { PageHeader } from "@/components/PageHeader";
 import { StoryCard } from "@/components/StoryCard";
 import { loadActiveProfileForUser } from "@/lib/activeProfile";
-import { fetchStoriesForProfile, fetchStories, fetchFreshPersonalisedStories } from "@/lib/stories";
+import { fetchStoriesForProfile, fetchStories, fetchFreshPersonalisedStories, fetchUniverses } from "@/lib/stories";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { recordVisit } from "@/lib/progress";
 import {
@@ -87,6 +87,13 @@ const Index = () => {
   const hasStory = personalisedStories.length > 0;
 
   const { data: allStories = [] } = useQuery({ queryKey: ["stories"], queryFn: fetchStories });
+  const { data: universes = [] } = useQuery({ queryKey: ["universes"], queryFn: fetchUniverses });
+  const universesMap = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const u of universes) if (u.id && u.display_name) m.set(u.id, u.display_name);
+    return m;
+  }, [universes]);
+  const nameFor = (s: any): string | null => universesMap.get(s?.universe_id) ?? null;
 
   const enableAnalytics = !!profileId && hasStory;
   const { data: streak = 0 } = useQuery({
@@ -193,7 +200,7 @@ const Index = () => {
         </div>
         <div className="grid grid-cols-2 gap-3">
           {catalog.map((s) => (
-            <StoryCard key={s.id} story={s} />
+            <StoryCard key={s.id} story={s} universeName={nameFor(s)} />
           ))}
         </div>
       </section>
@@ -225,7 +232,7 @@ const Index = () => {
         </div>
         <div className="grid grid-cols-2 gap-3">
           {ready.map((s) => (
-            <StoryCard key={s.id} story={s} />
+            <StoryCard key={s.id} story={s} universeName={nameFor(s)} />
           ))}
         </div>
       </section>
