@@ -232,7 +232,7 @@ const Index = () => {
         </div>
         <div className="grid grid-cols-2 gap-3">
           {ready.map((s) => (
-            <StoryCard key={s.id} story={s} />
+            <StoryCard key={s.id} story={s} universeName={nameFor(s)} />
           ))}
         </div>
       </section>
