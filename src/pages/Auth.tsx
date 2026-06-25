@@ -118,16 +118,10 @@ const Auth = () => {
       (!!data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0);
 
     if (alreadyExists) {
-      const info = await lookupEmailAccount(parsed.data.email);
       setBusy(false);
       setPassword("");
-      if (isGoogleOnly(info)) {
-        setSuggestGoogle(true);
-        toast('You already have a Google account. Tap "Continue with Google" below.');
-      } else {
-        toast("Welcome back to LuluTales! Please login 👋");
-        setMode("signin");
-      }
+      toast("Welcome back to LuluTales! Please login 👋");
+      setMode("signin");
       return;
     }
 
