@@ -19,7 +19,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { PageHeader } from "@/components/PageHeader";
 import { StoryCard } from "@/components/StoryCard";
 import { loadActiveProfileForUser } from "@/lib/activeProfile";
-import { fetchStoriesForProfile, fetchStories, fetchFreshPersonalisedStories } from "@/lib/stories";
+import { fetchStoriesForProfile, fetchStories, fetchFreshPersonalisedStories, fetchUniverses } from "@/lib/stories";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { recordVisit } from "@/lib/progress";
 import {
