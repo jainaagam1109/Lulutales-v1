@@ -94,15 +94,8 @@ const Auth = () => {
         password: parsed.data.password,
       });
       if (error) {
-        // Only spend a lookup on the ambiguous credentials error.
-        const info = error.message.toLowerCase().includes("invalid login credentials")
-          ? await lookupEmailAccount(parsed.data.email)
-          : null;
         setBusy(false);
-        if (isGoogleOnly(info)) setSuggestGoogle(true);
-        // Clear the password only when retyping it wouldn't help.
-        if (info && (!info.exists || isGoogleOnly(info))) setPassword("");
-        toast.error(friendlySignInError(error.message, info));
+        toast.error(friendlySignInError(error.message));
         return;
       }
       trackEvent("logged_in", { method: "email" });
