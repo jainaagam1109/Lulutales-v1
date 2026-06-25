@@ -17,67 +17,14 @@ const emailOnlySchema = z.object({
 
 type Mode = "signin" | "signup" | "forgot";
 
-type EmailAccountInfo = {
-  exists: boolean;
-  has_password: boolean;
-  providers: string[];
-};
-
-/**
- * Look up which sign-in methods an email is registered with.
- *
- * Relies on the Postgres RPC `auth_methods_for_email` (created in the Supabase
- * SQL editor). If the function isn't installed, or anything goes wrong, this
- * resolves to `null` and callers fall back to a generic-but-helpful message —
- * so the screen works correctly either way.
- */
-async function lookupEmailAccount(email: string): Promise<EmailAccountInfo | null> {
-  try {
-    // Cast to `any` so this compiles even before the generated Supabase types
-    // include the new RPC. (They will once types are regenerated.)
-    const { data, error } = await (supabase as any).rpc("auth_methods_for_email", {
-      p_email: email,
-    });
-    if (error || !data) return null;
-    const obj = data as { exists?: boolean; has_password?: boolean; providers?: unknown };
-    return {
-      exists: !!obj.exists,
-      has_password: !!obj.has_password,
-      providers: Array.isArray(obj.providers) ? (obj.providers as string[]) : [],
-    };
-  } catch {
-    return null;
-  }
-}
-
-/** A Google-only account = registered with Google and no usable password set. */
-function isGoogleOnly(info: EmailAccountInfo | null): boolean {
-  return !!info && info.providers.includes("google") && !info.has_password;
-}
-
 /** Turn a raw Supabase sign-in error into a clear, user-facing message. */
-function friendlySignInError(rawMessage: string, info: EmailAccountInfo | null): string {
+function friendlySignInError(rawMessage: string): string {
   const msg = rawMessage.toLowerCase();
 
-  // Supabase returns "Invalid login credentials" for BOTH a wrong password AND
-  // an email that isn't registered (deliberate, to prevent account enumeration).
-  // We disambiguate using the account lookup so the user isn't left guessing.
+  // Supabase intentionally returns "Invalid login credentials" for both wrong
+  // passwords and unregistered emails to prevent account enumeration. We keep
+  // the message generic for the same reason — no server-side lookup.
   if (msg.includes("invalid login credentials")) {
-    if (info) {
-      if (!info.exists) {
-        return 'We couldn\'t find an account with that email. Switch to "Sign up" to create one.';
-      }
-      if (isGoogleOnly(info)) {
-        return 'This account was created with Google. Tap "Continue with Google" below to sign in.';
-      }
-      if (info.providers.includes("google")) {
-        // Has a password but Google is also linked — likely a wrong password,
-        // but offer Google as an alternate route.
-        return 'Incorrect password. You can also sign in with "Continue with Google" below.';
-      }
-      return "Incorrect email or password. Please try again.";
-    }
-    // RPC not available → safe, still-helpful generic nudge.
     return 'Incorrect email or password. If you signed up with Google, use "Continue with Google" below instead.';
   }
 
