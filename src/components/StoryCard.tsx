@@ -3,6 +3,7 @@ import type { Story } from "@/lib/stories";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { TagChip } from "./TagChip";
 import { StoryStatusCard } from "./StoryStatusCard";
+import { useThemeBuckets, resolveThemeLabel } from "@/hooks/useThemeBuckets";
 
 const formatBadgeFor = (story_type: Story["story_type"]): { label: string; variant: "mint" | "warm" } | null => {
   if (story_type === "personalised_audio") return { label: "🎧 Listen · ~15 min", variant: "mint" };
@@ -55,6 +56,8 @@ export const StoryCard = ({
   // Type 3 = character-universe stories. Detected via universe_id.
   const isType3 = !!(story as any).universe_id;
   const characterName = isType3 ? (universeName ?? null) : null;
+  const themeBuckets = useThemeBuckets();
+  const themeLabel = isType3 ? resolveThemeLabel(themeBuckets, story.theme) : story.theme;
 
   return (
     <Link
@@ -75,9 +78,9 @@ export const StoryCard = ({
           <div className="line-clamp-2 text-xs font-bold leading-snug text-foreground">
             {story.title}
           </div>
-          {(story.theme || badge) && (
+          {(themeLabel || badge) && (
             <div className="flex flex-wrap items-center gap-1 pt-0.5">
-              {story.theme && <TagChip label={story.theme} />}
+              {themeLabel && <TagChip label={themeLabel} />}
               {badge && <TagChip label={badge.label} variant={badge.variant} />}
             </div>
           )}
