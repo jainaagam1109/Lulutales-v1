@@ -23,6 +23,22 @@ const Universe = () => {
 
   const title = universe?.display_name ?? "Story World";
 
+  const bible = (universe?.character_bible ?? {}) as Record<string, any>;
+  const aboutFields: { label: string; value: any }[] = [
+    { label: "Age", value: bible.age },
+    { label: "Personality", value: bible.personality },
+    { label: "Family", value: bible.family_structure },
+    { label: "City", value: bible.city },
+  ].filter((f) => {
+    if (f.value == null) return false;
+    if (typeof f.value === "string") return f.value.trim() !== "";
+    if (Array.isArray(f.value)) return f.value.length > 0;
+    return true;
+  });
+
+  const renderValue = (v: any) =>
+    Array.isArray(v) ? v.join(", ") : typeof v === "object" ? JSON.stringify(v) : String(v);
+
   return (
     <PhoneShell>
       <PageHeader title={title} subtitle={universe?.description ?? undefined} />
@@ -32,6 +48,22 @@ const Universe = () => {
             <img src={universe.cover_image} alt={title} className="h-40 w-full object-cover" />
           </div>
         )}
+        {aboutFields.length > 0 && (
+          <section className="mb-5 rounded-2xl border border-border bg-card/60 p-4">
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-primary-deep">
+              About
+            </h2>
+            <dl className="space-y-2 text-sm">
+              {aboutFields.map((f) => (
+                <div key={f.label} className="flex gap-2">
+                  <dt className="min-w-20 font-semibold text-foreground">{f.label}</dt>
+                  <dd className="text-muted-foreground">{renderValue(f.value)}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )}
+
         {isLoading ? (
           <div className="py-10 text-center text-xs text-muted-foreground">Loading…</div>
         ) : stories.length === 0 ? (
