@@ -11,7 +11,9 @@ export type UniverseWithCount = {
   description?: string | null;
   cover_image?: string | null;
   story_count: number;
+  character_bible?: Record<string, any> | null;
 };
+
 
 const getActiveProfileId = (): string | null =>
   typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
@@ -163,7 +165,9 @@ export const fetchUniverse = async (id: string): Promise<UniverseWithCount | nul
       description: data.description ?? null,
       cover_image: data.cover_image ?? data.thumbnail ?? null,
       story_count: 0,
+      character_bible: data.character_bible ?? null,
     };
+
   } catch {
     return null;
   }
