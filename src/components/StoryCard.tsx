@@ -3,6 +3,7 @@ import type { Story } from "@/lib/stories";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { TagChip } from "./TagChip";
 import { StoryStatusCard } from "./StoryStatusCard";
+import { useThemeBuckets, resolveThemeLabel } from "@/hooks/useThemeBuckets";
 
 const formatBadgeFor = (story_type: Story["story_type"]): { label: string; variant: "mint" | "warm" } | null => {
   if (story_type === "personalised_audio") return { label: "🎧 Listen · ~15 min", variant: "mint" };
