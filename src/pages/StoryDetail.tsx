@@ -133,7 +133,7 @@ const StoryDetail = () => {
               </button>
             </div>
 
-            {story.story_type !== "bedtime_text" && (
+            {story.story_type !== "bedtime_text" && !(story as any).universe_id && (
               <>
                 <h2 className="mt-7 mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Episodes

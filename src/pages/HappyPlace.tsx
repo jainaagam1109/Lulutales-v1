@@ -246,12 +246,6 @@ const HappyPlace = () => {
         <StoryWorldsRow />
 
 
-        {showAudio && hasActive && recommended.length > 0 && (
-          <section>
-            <SectionHeader title={`Recommended for ${childName}`} />
-            <Row stories={recommended} emptyVariant="coming-soon" universesMap={universesMap} />
-          </section>
-        )}
 
         {showAudio && (
           <section>
