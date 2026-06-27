@@ -100,66 +100,26 @@ const STREAK_TIERS = [
   { days: 100, emoji: "👑", label: "100-day streak" },
 ];
 
-const THEME_EMOJI: Record<string, string> = {
-  friendship: "🤝",
-  adventure: "🗺️",
-  bedtime: "🌙",
-  kindness: "💗",
-  courage: "🦁",
-  curiosity: "🔭",
-  family: "🏡",
-  nature: "🌿",
-  magic: "✨",
-};
-
-// Friendly badge labels for theme-based badges. Maps lowercased raw theme
-// strings to a clean human-readable badge name. Falls back to title-casing
-// the raw theme + " explorer".
-const titleCase = (s: string) =>
-  s.replace(/\b\w/g, (c) => c.toUpperCase());
-
-const THEME_BADGE_LABEL_OVERRIDES: Record<string, string> = {
-  "saying sorry": "Apology champion",
-  "saying goodnight": "Goodnight star",
-  "courage": "Brave heart",
-  "being brave": "Brave heart",
-  "kindness": "Kindness keeper",
-  "sharing": "Sharing superstar",
-  "sharing toys": "Sharing superstar",
-  "friendship": "Friendship hero",
-  "curiosity": "Little explorer",
-  "family love": "Family hugger",
-  "healthy eating": "Healthy muncher",
-  "eating vegetables": "Veggie champion",
-  "sleep routine": "Sleepy star",
-  "bedtime monsters": "Bedtime brave",
-  "first day of school": "School adventurer",
-  "making a new friend": "Friend-maker",
-  "trying new things": "Brave try-er",
-  "understanding feelings": "Feelings friend",
-};
-
-const friendlyBadgeLabel = (rawTheme: string): string => {
-  const key = rawTheme.toLowerCase().trim();
-  if (THEME_BADGE_LABEL_OVERRIDES[key]) return THEME_BADGE_LABEL_OVERRIDES[key];
-  return `${titleCase(key)} explorer`;
-};
+import { loadBuckets } from "@/hooks/useThemeBuckets";
+import { getBucketMeta } from "./bucketConfig";
 
 export const computeBadgesFromDb = (
   storiesCompleted: number,
   completedThemes: string[],
-  bestStreak: number
+  bestStreak: number,
+  bucketMap: Map<string, string>
 ): Badge[] => {
   const badges: Badge[] = [];
   if (storiesCompleted >= 1) {
     badges.push({ id: "first-story", emoji: "🌟", label: "First story" });
   }
+  const seenBuckets = new Set<string>();
   for (const theme of completedThemes) {
-    badges.push({
-      id: `theme-${theme}`,
-      emoji: THEME_EMOJI[theme] ?? "🎨",
-      label: friendlyBadgeLabel(theme),
-    });
+    const bucket = bucketMap.get(String(theme).trim().toLowerCase());
+    if (!bucket || seenBuckets.has(bucket)) continue;
+    seenBuckets.add(bucket);
+    const meta = getBucketMeta(bucket);
+    badges.push({ id: `bucket-${bucket}`, emoji: meta.emoji, label: meta.badgeLabel });
   }
   for (const tier of STREAK_TIERS) {
     if (bestStreak >= tier.days) {
@@ -168,9 +128,6 @@ export const computeBadgesFromDb = (
   }
   return badges;
 };
-
-
-import { HABIT_BUCKET_LABELS, THEMES_BY_AGE, type HabitBucket } from "./themeMap";
 
 // Total time spent across all events (play + complete), in seconds.
 export const fetchScreenTimeSeconds = async (profileId: string): Promise<number> => {
@@ -183,30 +140,23 @@ export const fetchScreenTimeSeconds = async (profileId: string): Promise<number>
   return data.reduce((sum, r: any) => sum + (r.duration_seconds || 0), 0);
 };
 
-// Per-bucket aggregation for the "What she's growing in" section.
-// Returns the top 3 buckets by distinct-story count (drops zero-count buckets).
-// Ties broken by most-recent activity in the bucket.
-export type HabitBar = {
-  bucket: HabitBucket;
-  label: string;
+export type BucketBar = {
+  bucket: string;
   storyCount: number;
-  recentTheme: string;
-  pct: number; // relative to the top bucket = 100
-};
-// Per-theme distinct-story counts for completed stories. Returns themes
-// sorted by story count desc (ties broken by recency). Honest, no buckets.
-export type ThemeCount = {
-  theme: string;
-  storyCount: number;
+  pct: number;
 };
 
-export const fetchThemeCounts = async (profileId: string): Promise<ThemeCount[]> => {
-  const { data: events } = await supabase
+const aggregateBuckets = async (
+  profileId: string,
+  sinceIso: string | null
+): Promise<{ bucket: string; storyCount: number }[]> => {
+  let q = supabase
     .from("story_analytics")
     .select("story_id, created_at")
     .eq("profile_id", profileId)
-    .eq("event_type", "complete")
-    .order("created_at", { ascending: false });
+    .eq("event_type", "complete");
+  if (sinceIso) q = q.gte("created_at", sinceIso);
+  const { data: events } = await q;
   if (!events || events.length === 0) return [];
 
   const uniqueStoryIds = Array.from(new Set(events.map((e: any) => e.story_id)));
@@ -221,106 +171,40 @@ export const fetchThemeCounts = async (profileId: string): Promise<ThemeCount[]>
     if (s.theme) themeByStoryId.set(s.id, String(s.theme));
   }
 
-  type Agg = { storyIds: Set<string>; recentAt: number };
-  const agg = new Map<string, Agg>();
-  for (const ev of events as any[]) {
-    const theme = themeByStoryId.get(ev.story_id);
+  const buckets = await loadBuckets();
+  const agg = new Map<string, Set<string>>();
+  for (const sid of uniqueStoryIds) {
+    const theme = themeByStoryId.get(sid);
     if (!theme) continue;
-    const at = new Date(ev.created_at).getTime();
-    let cur = agg.get(theme);
+    const bucket = buckets.get(theme.trim().toLowerCase());
+    if (!bucket) continue;
+    let cur = agg.get(bucket);
     if (!cur) {
-      cur = { storyIds: new Set(), recentAt: at };
-      agg.set(theme, cur);
-    } else if (at > cur.recentAt) {
-      cur.recentAt = at;
+      cur = new Set();
+      agg.set(bucket, cur);
     }
-    cur.storyIds.add(ev.story_id);
+    cur.add(sid);
   }
 
   return Array.from(agg.entries())
-    .map(([theme, a]) => ({ theme, storyCount: a.storyIds.size, recentAt: a.recentAt }))
+    .map(([bucket, ids]) => ({ bucket, storyCount: ids.size }))
     .filter((r) => r.storyCount > 0)
-    .sort((x, y) => (y.storyCount - x.storyCount) || (y.recentAt - x.recentAt))
-    .map(({ theme, storyCount }) => ({ theme, storyCount }));
+    .sort((a, b) => b.storyCount - a.storyCount);
 };
 
-
-export const fetchHabitBars = async (profileId: string): Promise<HabitBar[]> => {
-  const { data: events } = await supabase
-    .from("story_analytics")
-    .select("story_id, created_at")
-    .eq("profile_id", profileId)
-    .eq("event_type", "complete")
-    .order("created_at", { ascending: false });
-  if (!events || events.length === 0) return [];
-
-  const uniqueStoryIds = Array.from(new Set(events.map((e: any) => e.story_id)));
-  const { data: stories } = await supabase
-    .from("stories")
-    .select("id, theme")
-    .in("id", uniqueStoryIds);
-  if (!stories) return [];
-
-  const themeByStoryId = new Map<string, string>();
-  for (const s of stories as any[]) {
-    if (s.theme) themeByStoryId.set(s.id, String(s.theme).toLowerCase());
+export const fetchBucketBreakdown = async (profileId: string): Promise<BucketBar[]> => {
+  const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
+  let ranked = await aggregateBuckets(profileId, since);
+  if (ranked.length === 0) {
+    ranked = await aggregateBuckets(profileId, null);
   }
-
-  const themeToBucket = new Map<string, HabitBucket>();
-  for (const options of Object.values(THEMES_BY_AGE)) {
-    for (const opt of options) {
-      themeToBucket.set(opt.value.toLowerCase(), opt.habit);
-    }
-  }
-
-  type BucketAgg = {
-    storyIds: Set<string>;
-    recentTheme: string;
-    recentAt: number;
-  };
-  const agg = new Map<HabitBucket, BucketAgg>();
-
-  for (const ev of events as any[]) {
-    const theme = themeByStoryId.get(ev.story_id);
-    if (!theme) continue;
-    const bucket = themeToBucket.get(theme);
-    if (!bucket) continue;
-
-    let cur = agg.get(bucket);
-    const at = new Date(ev.created_at).getTime();
-    if (!cur) {
-      cur = { storyIds: new Set(), recentTheme: theme, recentAt: at };
-      agg.set(bucket, cur);
-    } else if (at > cur.recentAt) {
-      cur.recentAt = at;
-      cur.recentTheme = theme;
-    }
-    cur.storyIds.add(ev.story_id);
-  }
-
-  const ranked = Array.from(agg.entries())
-    .map(([bucket, a]) => ({
-      bucket,
-      label: HABIT_BUCKET_LABELS[bucket],
-      storyCount: a.storyIds.size,
-      recentTheme: a.recentTheme,
-      recentAt: a.recentAt,
-    }))
-    .filter((r) => r.storyCount > 0)
-    .sort((x, y) => {
-      if (y.storyCount !== x.storyCount) return y.storyCount - x.storyCount;
-      return y.recentAt - x.recentAt;
-    })
-    .slice(0, 3);
-
+  ranked = ranked.slice(0, 4);
   if (ranked.length === 0) return [];
-
   const top = ranked[0].storyCount;
   return ranked.map((r) => ({
     bucket: r.bucket,
-    label: r.label,
     storyCount: r.storyCount,
-    recentTheme: r.recentTheme,
-    pct: Math.round((r.storyCount / top) * 100),
+    pct: Math.max(8, Math.round((r.storyCount / top) * 100)),
   }));
 };
+
