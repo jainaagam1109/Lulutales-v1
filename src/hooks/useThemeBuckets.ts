@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 let cachedPromise: Promise<Map<string, string>> | null = null;
 
-const loadBuckets = (): Promise<Map<string, string>> => {
+export const loadBuckets = (): Promise<Map<string, string>> => {
   if (cachedPromise) return cachedPromise;
   cachedPromise = (async () => {
     const { data, error } = await (supabase as any)
