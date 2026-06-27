@@ -67,7 +67,7 @@ const Player = () => {
   });
   const universeId = (story as any)?.universe_id;
   const { data: universeName } = useQuery({
-    queryKey: ["universe", universeId],
+    queryKey: ["universe-name", universeId],
     queryFn: () => fetchUniverse(universeId),
     enabled: !!universeId,
   });
@@ -523,7 +523,7 @@ const Player = () => {
         </div>
 
         <div className="text-center">
-          {universeName && (
+          {typeof universeName === "string" && (
             <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               {universeName}
             </div>
