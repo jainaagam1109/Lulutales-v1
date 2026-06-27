@@ -49,9 +49,9 @@ const Insights = () => {
     enabled: !!profileId,
   });
 
-  const { data: themeCounts = [] } = useQuery({
-    queryKey: ["analytics-theme-counts", profileId],
-    queryFn: () => fetchThemeCounts(profileId!),
+  const { data: bucketBars = [] } = useQuery({
+    queryKey: ["analytics-bucket-breakdown", profileId],
+    queryFn: () => fetchBucketBreakdown(profileId!),
     enabled: !!profileId,
   });
 
@@ -67,7 +67,8 @@ const Insights = () => {
     enabled: !!profileId,
   });
 
-  const badges = computeBadgesFromDb(storiesHeard, completedThemes, bestStreak);
+  const themeBuckets = useThemeBuckets();
+  const badges = computeBadgesFromDb(storiesHeard, completedThemes, bestStreak, themeBuckets);
 
   return (
     <PhoneShell>
