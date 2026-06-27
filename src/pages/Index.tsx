@@ -29,6 +29,7 @@ import {
   fetchBestStreak,
   computeBadgesFromDb,
 } from "@/lib/analytics";
+import { useThemeBuckets } from "@/hooks/useThemeBuckets";
 
 const PromiseSection = () => (
   <section className="rounded-2xl border border-border border-l-4 border-l-primary bg-card p-4 shadow-soft">
@@ -116,9 +117,10 @@ const Index = () => {
     queryFn: () => fetchBestStreak(profileId!),
     enabled: enableAnalytics,
   });
+  const themeBuckets = useThemeBuckets();
   const badges = useMemo(
-    () => computeBadgesFromDb(storiesListened, completedThemes, bestStreak),
-    [storiesListened, completedThemes, bestStreak]
+    () => computeBadgesFromDb(storiesListened, completedThemes, bestStreak, themeBuckets),
+    [storiesListened, completedThemes, bestStreak, themeBuckets]
   );
 
   const catalog = useMemo(() => {
