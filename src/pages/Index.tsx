@@ -117,9 +117,10 @@ const Index = () => {
     queryFn: () => fetchBestStreak(profileId!),
     enabled: enableAnalytics,
   });
+  const themeBuckets = useThemeBuckets();
   const badges = useMemo(
-    () => computeBadgesFromDb(storiesListened, completedThemes, bestStreak),
-    [storiesListened, completedThemes, bestStreak]
+    () => computeBadgesFromDb(storiesListened, completedThemes, bestStreak, themeBuckets),
+    [storiesListened, completedThemes, bestStreak, themeBuckets]
   );
 
   const catalog = useMemo(() => {
