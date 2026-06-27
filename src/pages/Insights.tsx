@@ -108,33 +108,26 @@ const Insights = () => {
           <p className="mb-3 mt-1 text-[11px] text-muted-foreground">
             Based on stories completed — each story builds the skill.
           </p>
-          {themeCounts.length === 0 ? (
+          {bucketBars.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Once {childName} completes a few stories, their growth areas will show up here ✨
             </p>
           ) : (
             <div className="space-y-3">
-              {(() => {
-                const max = themeCounts[0]?.storyCount ?? 1;
-                return themeCounts.map((t) => {
-                  const pct = Math.max(8, Math.round((t.storyCount / max) * 100));
-                  const label = t.theme.charAt(0).toUpperCase() + t.theme.slice(1);
-                  return (
-                    <div key={t.theme}>
-                      <div className="mb-1 text-xs font-bold text-foreground">{label}</div>
-                      <div className="mb-1 text-[11px] text-muted-foreground">
-                        {t.storyCount} {t.storyCount === 1 ? "story" : "stories"}
-                      </div>
-                      <div className="h-2 rounded-full bg-secondary">
-                        <div
-                          className="h-full rounded-full bg-gradient-primary"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                });
-              })()}
+              {bucketBars.map((b) => (
+                <div key={b.bucket}>
+                  <div className="mb-1 text-xs font-bold text-foreground">{b.bucket}</div>
+                  <div className="mb-1 text-[11px] text-muted-foreground">
+                    {b.storyCount} {b.storyCount === 1 ? "story" : "stories"}
+                  </div>
+                  <div className="h-2 rounded-full bg-secondary">
+                    <div
+                      className="h-full rounded-full bg-gradient-primary"
+                      style={{ width: `${b.pct}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </section>
