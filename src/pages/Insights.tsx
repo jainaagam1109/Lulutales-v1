@@ -9,11 +9,12 @@ import {
   fetchStreak,
   fetchStoriesCompleted,
   fetchScreenTimeSeconds,
-  fetchThemeCounts,
+  fetchBucketBreakdown,
   fetchCompletedThemes,
   fetchBestStreak,
   computeBadgesFromDb,
 } from "@/lib/analytics";
+import { useThemeBuckets } from "@/hooks/useThemeBuckets";
 
 const fmtMinutes = (seconds: number): string => {
   if (!seconds) return "0 min";
