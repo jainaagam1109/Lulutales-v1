@@ -29,6 +29,7 @@ import {
   fetchBestStreak,
   computeBadgesFromDb,
 } from "@/lib/analytics";
+import { useThemeBuckets } from "@/hooks/useThemeBuckets";
 
 const PromiseSection = () => (
   <section className="rounded-2xl border border-border border-l-4 border-l-primary bg-card p-4 shadow-soft">
