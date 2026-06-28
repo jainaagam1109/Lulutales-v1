@@ -4,10 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Wand2,
   ChevronRight,
-  BarChart3,
-  Flame,
-  Palette,
-  BookOpen,
   Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,18 +14,12 @@ import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { PageHeader } from "@/components/PageHeader";
 import { StoryCard } from "@/components/StoryCard";
+import { InsightsSummary } from "@/components/InsightsSummary";
 import { loadActiveProfileForUser } from "@/lib/activeProfile";
 import { fetchStoriesForProfile, fetchStories, fetchFreshPersonalisedStories, fetchUniverses } from "@/lib/stories";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { recordVisit } from "@/lib/progress";
-import {
-  fetchStreak,
-  fetchStoriesCompleted,
-  fetchCompletedThemes,
-  fetchBestStreak,
-  computeBadgesFromDb,
-} from "@/lib/analytics";
-import { useThemeBuckets } from "@/hooks/useThemeBuckets";
+import { fetchCompletedThemes } from "@/lib/analytics";
 
 const PromiseSection = () => (
   <section className="rounded-2xl border border-border border-l-4 border-l-primary bg-card p-4 shadow-soft">
