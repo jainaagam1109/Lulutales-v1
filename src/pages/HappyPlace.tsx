@@ -243,6 +243,12 @@ const HappyPlace = () => {
             )}
           </section>
         )}
+        {recommended.length > 0 && (
+          <section>
+            <SectionHeader title={childName ? `Recommended for ${childName}` : "Recommended for you"} />
+            <Row stories={recommended} universesMap={universesMap} />
+          </section>
+        )}
         <StoryWorldsRow />
 
 
