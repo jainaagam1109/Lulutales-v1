@@ -186,7 +186,7 @@ const KidsProfiles = () => {
     <PhoneShell>
       <PageHeader title="Kids' profiles" />
 
-      <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-3">
+      <main className="flex-1 overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] space-y-3">
         {kids.map((k) => {
           const isActive = k.status === "active";
           const isEditing = editingId === k.id;
