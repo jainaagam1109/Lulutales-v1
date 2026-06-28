@@ -223,7 +223,7 @@ const Index = () => {
           </div>
         ) : hasStory ? (
           <>
-            <Insights />
+            <InsightsSummary profileId={profileId} variant="card" />
             <PromiseSection />
             <FreshlyCurated />
             <Catalog />
