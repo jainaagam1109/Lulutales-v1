@@ -86,32 +86,12 @@ const Index = () => {
   }, [universes]);
   const nameFor = (s: any): string | null => universesMap.get(s?.universe_id) ?? null;
 
-  const enableAnalytics = !!profileId && hasStory;
-  const { data: streak = 0 } = useQuery({
-    queryKey: ["analytics-streak", profileId],
-    queryFn: () => fetchStreak(profileId!),
-    enabled: enableAnalytics,
-  });
-  const { data: storiesListened = 0 } = useQuery({
-    queryKey: ["analytics-stories-completed", profileId],
-    queryFn: () => fetchStoriesCompleted(profileId!),
-    enabled: enableAnalytics,
-  });
   const { data: completedThemes = [] } = useQuery({
     queryKey: ["analytics-completed-themes", profileId],
     queryFn: () => fetchCompletedThemes(profileId!),
-    enabled: enableAnalytics,
+    enabled: !!profileId,
   });
-  const { data: bestStreak = 0 } = useQuery({
-    queryKey: ["analytics-best-streak", profileId],
-    queryFn: () => fetchBestStreak(profileId!),
-    enabled: enableAnalytics,
-  });
-  const themeBuckets = useThemeBuckets();
-  const badges = useMemo(
-    () => computeBadgesFromDb(storiesListened, completedThemes, bestStreak, themeBuckets),
-    [storiesListened, completedThemes, bestStreak, themeBuckets]
-  );
+
 
   const catalog = useMemo(() => {
     const pool = allStories.filter((s) => s.story_type === "pre_recorded");
