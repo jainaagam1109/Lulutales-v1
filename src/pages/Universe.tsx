@@ -21,7 +21,7 @@ const Universe = () => {
     enabled: !!id,
   });
 
-  const title = universe?.display_name ?? "Story World";
+  const title = universe?.display_name ?? "Story Worlds";
 
   const bible = (universe?.character_bible ?? {}) as Record<string, any>;
   const aboutFields: { label: string; value: any }[] = [
