@@ -154,7 +154,7 @@ const Index = () => {
   // ---------- titles ----------
   const title =
     hasChild && childName
-      ? `${childName}'s Story World`
+      ? `${childName}'s Story Worlds`
       : "Welcome to LuluTales ✨";
   const subtitle =
     hasChild && childName
