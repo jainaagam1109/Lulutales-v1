@@ -9,9 +9,9 @@ const items = [
 ];
 
 export const BottomNav = () => (
-  <div className="sticky bottom-0 z-30">
+  <div className="sticky bottom-0 z-30 shrink-0">
     <MiniPlayer />
-    <nav className="flex items-stretch justify-around gap-1 border-t border-border bg-surface/90 px-2 pt-2 pb-3 backdrop-blur-md">
+    <nav className="flex items-stretch justify-around gap-1 border-t border-border bg-surface/90 px-2 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md">
       {items.map(({ to, label, icon: Icon, premium }) => (
         <NavLink
           key={to}

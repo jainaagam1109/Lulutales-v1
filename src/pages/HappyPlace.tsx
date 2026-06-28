@@ -222,7 +222,7 @@ const HappyPlace = () => {
         <StoryFormatFilter value={format} onChange={setFormat} counts={counts} className="mt-3" />
       </PageHeader>
 
-      <main className="flex-1 overflow-y-auto px-5 pb-6 space-y-6">
+      <main className="flex-1 overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] space-y-6">
         {hasActive && (
           <section>
             <SectionHeader title={childName ? `Made for ${childName}` : "Made for you"} />

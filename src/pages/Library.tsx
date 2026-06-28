@@ -12,7 +12,7 @@ const Library = () => {
   return (
     <PhoneShell>
       <PageHeader showBack={false} title="Library" subtitle="Your saved stories" />
-      <main className="flex-1 overflow-y-auto px-5 pb-6">
+      <main className="flex-1 overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))]">
         {isLoading && (
           <div className="grid grid-cols-2 gap-3">
             {Array.from({ length: 4 }).map((_, i) => (
