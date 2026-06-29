@@ -190,6 +190,22 @@ export const fetchStoryTags = async (storyId: string): Promise<string[]> => {
   return (data ?? []).map((r) => r.tag);
 };
 
+export const fetchPlayCounts = async (): Promise<Map<string, number>> => {
+  try {
+    const { data, error } = await (supabase as any)
+      .from("story_play_counts")
+      .select("story_id, play_count");
+    if (error) return new Map();
+    const m = new Map<string, number>();
+    for (const r of (data ?? []) as any[]) {
+      if (r?.story_id) m.set(r.story_id, Number(r.play_count ?? 0));
+    }
+    return m;
+  } catch {
+    return new Map();
+  }
+};
+
 export const fetchSavedStories = async (): Promise<Story[]> => {
   const profileId = getActiveProfileId();
   if (!profileId) return [];

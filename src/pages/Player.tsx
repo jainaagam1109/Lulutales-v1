@@ -532,7 +532,8 @@ const Player = () => {
           <h1 className="mt-1 text-xl font-extrabold text-foreground">{story?.title ?? "Loading…"}</h1>
           <div className="text-xs text-muted-foreground">
             {current
-              ? cleanEpisodeTitle(current.title, story?.title, current.episode_number) || story?.title || ""
+              ? cleanEpisodeTitle(current.title, story?.title, current.episode_number) ||
+                `Episode ${current.episode_number}`
               : "Loading episode…"}
           </div>
         </div>
