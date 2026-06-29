@@ -10,7 +10,21 @@ const formatBadgeFor = (story_type: Story["story_type"]): { label: string; varia
   if (story_type === "pre_recorded") return { label: "🎧 Listen", variant: "mint" };
   if (story_type === "bedtime_text") return { label: "📖 Read aloud · ~5 min", variant: "warm" };
   return null;
+const TILE_TINTS = [
+  "hsl(var(--tag-warm-bg))",
+  "hsl(var(--tag-cool-bg))",
+  "hsl(var(--tag-mint-bg))",
+  "hsl(var(--secondary))",
+  "hsl(var(--primary) / 0.18)",
+  "hsl(var(--accent) / 0.22)",
+];
+
+const hashId = (s: string): number => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
 };
+
 
 export const StoryCard = ({
   story,
