@@ -4,7 +4,7 @@ import { MiniPlayer } from "./MiniPlayer";
 
 const items = [
   { to: "/", label: "Home", icon: LayoutDashboard, premium: false },
-  { to: "/happy-place", label: "My Story Worlds", icon: Heart, premium: false },
+  { to: "/happy-place", label: "My Happy Place", icon: Heart, premium: false },
   { to: "/magic-hub", label: "Story Worlds", icon: Sparkles, premium: false },
 ];
 

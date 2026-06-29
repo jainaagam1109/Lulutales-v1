@@ -7,18 +7,7 @@ import { PhoneShell } from "@/components/PhoneShell";
 import { PageHeader } from "@/components/PageHeader";
 import { TagChip } from "@/components/TagChip";
 import { parseBedtimeStory } from "@/lib/parseBedtimeStory";
-
-const themeEmoji = (theme: string | null | undefined) => {
-  if (!theme) return "🌙";
-  const t = theme.toLowerCase();
-  if (t.includes("space") || t.includes("star")) return "🌌";
-  if (t.includes("ocean") || t.includes("sea")) return "🌊";
-  if (t.includes("forest") || t.includes("nature")) return "🌳";
-  if (t.includes("dragon") || t.includes("magic")) return "🐉";
-  if (t.includes("animal")) return "🦊";
-  if (t.includes("dream")) return "💭";
-  return "🌙";
-};
+import { getThemeVisual } from "@/lib/themeEmoji";
 
 const BedtimePreview = () => {
   const { id = "" } = useParams();
@@ -40,7 +29,7 @@ const BedtimePreview = () => {
 
   const parsed = parseBedtimeStory(story?.story_text);
   const displayTitle = parsed.title ?? story?.title ?? "Bedtime story";
-  const emoji = story?.thumbnail ?? themeEmoji(story?.theme);
+  const emoji = story?.thumbnail ?? getThemeVisual(story?.theme).emoji;
 
   return (
     <PhoneShell>

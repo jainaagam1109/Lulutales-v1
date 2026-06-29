@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
@@ -32,7 +33,7 @@ const StoryRowCard = ({ story, to }: { story: Story; to: string }) => {
         {visual.emoji}
       </div>
       {story.theme && <TagChip label={story.theme} />}
-      <div className="line-clamp-2 text-xs font-bold leading-snug text-foreground">
+      <div className="line-clamp-2 min-h-[2.25rem] text-xs font-bold leading-snug text-foreground">
         {story.title}
       </div>
     </Link>
@@ -87,11 +88,21 @@ const Row = ({
 
 
 const HappyPlace = () => {
+  const location = useLocation();
   const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
   const childName = localStorage.getItem("lulutales_child_name");
   const hasActive = !!profileId;
   const pageTitle = childName && hasActive ? `${childName}'s Story Worlds` : "Story Worlds";
   const curatedTitle = childName && hasActive ? `Personalised audio for ${childName}` : "Personalised audio stories";
+
+  useEffect(() => {
+    if (location.hash !== "#recommended") return;
+    const t = setTimeout(() => {
+      const el = document.getElementById("recommended");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 200);
+    return () => clearTimeout(t);
+  }, [location.hash]);
 
   const { data: allStories = [] } = useQuery({ queryKey: ["stories"], queryFn: fetchStories });
   const { data: profileStories = [] } = useQuery({
@@ -231,7 +242,7 @@ const HappyPlace = () => {
         <StoryFormatFilter value={format} onChange={setFormat} counts={counts} className="mt-3" />
       </PageHeader>
 
-      <main className="flex-1 overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] space-y-6">
+      <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] space-y-6">
         {savedStories.length > 0 && (
           <section>
             <SectionHeader title="Favorites" />
@@ -259,7 +270,7 @@ const HappyPlace = () => {
           </section>
         )}
         {recommended.length > 0 && (
-          <section>
+          <section id="recommended" className="scroll-mt-4">
             <SectionHeader title={childName ? `Recommended for ${childName}` : "Recommended for you"} />
             <Row stories={recommended} universesMap={universesMap} />
           </section>

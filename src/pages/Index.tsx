@@ -158,10 +158,10 @@ const Index = () => {
             {hasChild && childName ? `Stories ${childName} might love` : "Stories to explore"}
           </h2>
           <button
-            onClick={() => nav("/library")}
+            onClick={() => nav("/happy-place#recommended")}
             className="text-[11px] font-bold text-primary-deep"
           >
-            Story Worlds →
+            See all →
           </button>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -210,7 +210,7 @@ const Index = () => {
     <PhoneShell>
       <PageHeader showBack={false} title={title} subtitle={subtitle} />
 
-      <main className="flex-1 overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] space-y-5">
+      <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] space-y-5">
         {profileLoading || !storiesResolved ? (
           <div className="flex items-center justify-center py-12 text-xs text-muted-foreground">
             <Sparkles className="mr-2 h-4 w-4 animate-pulse" /> Loading…

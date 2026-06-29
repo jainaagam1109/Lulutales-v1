@@ -69,11 +69,11 @@ const MagicHub = () => {
   return (
     <PhoneShell>
       <PageHeader
-        title="Story Worlds"
+        title="Magic Hub"
         subtitle={!hasGenerated ? "✨ Tap below to create your first story" : undefined}
       />
 
-      <main className="flex-1 overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))]">
+      <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
         <div className="space-y-3">
           {cards.map(({ sectionLabel, title, desc, formatHint, emoji, iconBg, tag, tagClass, onClick, disabled }) => (
             <div key={title}>

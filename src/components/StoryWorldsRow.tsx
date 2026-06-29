@@ -6,30 +6,14 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { ageDistance } from "@/lib/sortStories";
 
 const PALETTE = [
-  {
-    bg: "linear-gradient(135deg, hsl(var(--primary) / 0.22) 0%, hsl(var(--primary) / 0.08) 100%)",
-    text: "hsl(var(--primary-deep))",
-  },
-  {
-    bg: "linear-gradient(135deg, hsl(var(--accent) / 0.28) 0%, hsl(var(--accent) / 0.10) 100%)",
-    text: "hsl(var(--accent-foreground))",
-  },
-  {
-    bg: "hsl(var(--tag-warm-bg))",
-    text: "hsl(var(--tag-warm-fg))",
-  },
-  {
-    bg: "hsl(var(--tag-cool-bg))",
-    text: "hsl(var(--tag-cool-fg))",
-  },
-  {
-    bg: "hsl(var(--tag-mint-bg))",
-    text: "hsl(var(--tag-mint-fg))",
-  },
-  {
-    bg: "hsl(var(--secondary))",
-    text: "hsl(var(--secondary-foreground))",
-  },
+  { bg: "linear-gradient(135deg, #FFD7A8 0%, #FFB066 100%)", text: "#7A3B00" },
+  { bg: "linear-gradient(135deg, #C7E9FF 0%, #6FB9F0 100%)", text: "#0B3C66" },
+  { bg: "linear-gradient(135deg, #D6F5DC 0%, #7FCE94 100%)", text: "#0E4A22" },
+  { bg: "linear-gradient(135deg, #FFD1E1 0%, #F26AA0 100%)", text: "#5B0E33" },
+  { bg: "linear-gradient(135deg, #E2D6FF 0%, #9B7BE8 100%)", text: "#2E1466" },
+  { bg: "linear-gradient(135deg, #FFF1A8 0%, #F2C84B 100%)", text: "#5A3D00" },
+  { bg: "linear-gradient(135deg, #B8F1EA 0%, #2DB6A6 100%)", text: "#0B3E39" },
+  { bg: "linear-gradient(135deg, #F5C7B8 0%, #D9745A 100%)", text: "#5A1B0A" },
 ];
 
 const hashString = (s: string): number => {

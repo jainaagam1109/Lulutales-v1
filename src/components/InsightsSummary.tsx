@@ -51,7 +51,11 @@ export const InsightsSummary = ({ profileId, variant = "card" }: InsightsSummary
     <div className="grid grid-cols-3 gap-2">
       <div className="flex flex-col items-center rounded-xl bg-secondary/50 p-3 text-center">
         <Flame className="h-4 w-4 text-primary-deep" />
-        <div className="mt-1 text-lg font-extrabold text-foreground">{streak}</div>
+        {streak === 0 ? (
+          <div className="mt-1 text-[11px] font-bold leading-tight text-foreground">Start your streak</div>
+        ) : (
+          <div className="mt-1 text-lg font-extrabold text-foreground">{streak}</div>
+        )}
         <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Day streak</div>
       </div>
       <div className="flex flex-col items-center rounded-xl bg-secondary/50 p-3 text-center">
