@@ -270,7 +270,7 @@ const HappyPlace = () => {
           </section>
         )}
         {recommended.length > 0 && (
-          <section>
+          <section id="recommended" className="scroll-mt-4">
             <SectionHeader title={childName ? `Recommended for ${childName}` : "Recommended for you"} />
             <Row stories={recommended} universesMap={universesMap} />
           </section>
