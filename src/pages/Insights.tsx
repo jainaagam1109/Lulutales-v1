@@ -58,7 +58,7 @@ const Insights = () => {
             What {childName} has been exploring
           </h2>
           <p className="mb-3 mt-1 text-[11px] text-muted-foreground">
-            Based on stories completed — each story builds the skill.
+            Based on stories completed — each story builds a life skill.
           </p>
           {bucketBars.length === 0 ? (
             <p className="text-sm text-muted-foreground">
