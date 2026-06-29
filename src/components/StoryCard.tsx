@@ -75,23 +75,33 @@ export const StoryCard = ({
   const themeBuckets = useThemeBuckets();
   const themeLabel = isType3 ? resolveThemeLabel(themeBuckets, story.theme) : story.theme;
 
+  const tileBg = TILE_TINTS[hashId(story.id) % TILE_TINTS.length];
+
   return (
     <Link
       to={to}
       state={state}
-      className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition-colors hover:border-primary/40"
+      className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition-colors hover:border-primary/40"
     >
-      <div className="flex h-20 items-center justify-center bg-gradient-card text-4xl">
+      <div
+        className="flex h-20 items-center justify-center text-4xl"
+        style={{ background: tileBg }}
+      >
         {story.thumbnail ?? "📖"}
       </div>
       {isType3 ? (
-        <div className="min-w-0 space-y-1.5 p-3">
+        <div className="flex min-w-0 flex-1 flex-col space-y-1.5 p-3">
           {characterName ? (
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">
-              {characterName}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">
+                {characterName}
+              </span>
+              <TagChip label="Story World" variant="cool" />
             </div>
-          ) : null}
-          <div className="line-clamp-2 text-xs font-bold leading-snug text-foreground">
+          ) : (
+            <TagChip label="Story World" variant="cool" />
+          )}
+          <div className="line-clamp-2 min-h-[2.25rem] text-xs font-bold leading-snug text-foreground">
             {story.title}
           </div>
           {(themeLabel || badge) && (
@@ -102,12 +112,12 @@ export const StoryCard = ({
           )}
         </div>
       ) : (
-        <div className="min-w-0 space-y-1 p-3">
+        <div className="flex min-w-0 flex-1 flex-col space-y-1 p-3">
           <div className="flex flex-wrap items-center gap-1">
             {story.theme && <TagChip label={story.theme} />}
             {badge && <TagChip label={badge.label} variant={badge.variant} />}
           </div>
-          <div className="line-clamp-2 text-xs font-bold leading-snug text-foreground">{story.title}</div>
+          <div className="line-clamp-2 min-h-[2.25rem] text-xs font-bold leading-snug text-foreground">{story.title}</div>
         </div>
       )}
     </Link>
