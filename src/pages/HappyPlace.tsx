@@ -272,7 +272,58 @@ const HappyPlace = () => {
         )}
         {hasActive && (
           <section>
-            <SectionHeader title={childName ? `Made for ${childName}` : "Made for you"} />
+            <div className="relative mb-2 flex items-center justify-between px-5">
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {childName ? `Made for ${childName}` : "Made for you"}
+              </h2>
+              <button
+                ref={triggerRef}
+                type="button"
+                aria-haspopup="true"
+                aria-expanded={menuOpen}
+                onClick={() => setMenuOpen((o) => !o)}
+                className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] font-bold transition-colors ${
+                  menuOpen || madeForFormat !== "all"
+                    ? "border-primary/40 bg-primary/10 text-primary-deep"
+                    : "border-border bg-card text-foreground"
+                }`}
+              >
+                <span>{formatLabels[madeForFormat]}</span>
+                {menuOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              </button>
+              {menuOpen && (
+                <div
+                  ref={menuRef}
+                  role="menu"
+                  className="absolute right-5 top-full z-30 mt-1 w-44 overflow-hidden rounded-xl border border-border bg-card shadow-lg"
+                >
+                  {(["all", "audio", "text"] as MadeForFormat[]).map((opt) => {
+                    const selected = madeForFormat === opt;
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        role="menuitem"
+                        tabIndex={0}
+                        onClick={() => {
+                          setMadeForFormat(opt);
+                          setMenuOpen(false);
+                        }}
+                        className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-xs font-semibold transition-colors hover:bg-muted ${
+                          selected ? "text-primary-deep" : "text-foreground"
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          {selected ? <Check className="h-3.5 w-3.5" /> : <span className="inline-block w-3.5" />}
+                          <span>{formatLabels[opt]}</span>
+                        </span>
+                        <span className="text-muted-foreground">{madeForCounts[opt]}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             {madeForChild.length === 0 ? (
               <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-card/60 p-4">
                 <div className="text-sm text-muted-foreground">
@@ -298,14 +349,11 @@ const HappyPlace = () => {
         )}
         <StoryWorldsRow />
 
+        <section>
+          <SectionHeader title="All stories" />
+          <Row stories={storyRoomSorted} emptyVariant="coming-soon" universesMap={universesMap} />
+        </section>
 
-
-        {showAudio && (
-          <section>
-            <SectionHeader title="All stories" />
-            <Row stories={storyRoomSorted} emptyVariant="coming-soon" universesMap={universesMap} />
-          </section>
-        )}
 
       </main>
 
