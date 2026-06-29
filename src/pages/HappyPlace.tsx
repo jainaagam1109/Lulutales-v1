@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Search } from "lucide-react";
+import { Search, ChevronDown, ChevronUp, Check } from "lucide-react";
 import { fetchStories, fetchStoriesForProfile, fetchUniverses, fetchSavedStories, fetchPlayCounts, type Story, type Universe } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
@@ -11,10 +11,11 @@ import { PageHeader } from "@/components/PageHeader";
 import { TagChip } from "@/components/TagChip";
 import { StoryCard } from "@/components/StoryCard";
 import { StoryWorldsRow } from "@/components/StoryWorldsRow";
-import { StoryFormatFilter, type StoryFormat } from "@/components/StoryFormatFilter";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { fetchCompletedThemes } from "@/lib/analytics";
 import { sortStories } from "@/lib/sortStories";
+
+type MadeForFormat = "all" | "audio" | "text";
 
 import { getThemeVisual } from "@/lib/themeEmoji";
 
