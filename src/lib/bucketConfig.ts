@@ -5,7 +5,7 @@ export const BUCKET_CONFIG: Record<string, BucketMeta> = {
   "Self-Worth & Resilience": { badgeLabel: "Bounce-Back Star", emoji: "🌟" },
   "Frustration Tolerance & Persistence": { badgeLabel: "Never Gives Up", emoji: "🧗" },
   "Empathy & Kindness": { badgeLabel: "Kindness Keeper", emoji: "💛" },
-  "Sharing, Turn-Taking & Fairness": { badgeLabel: "Fair & Sharing", emoji: "🤝" },
+  "Sharing, Turn-Taking & Fairness": { badgeLabel: "Fair Player", emoji: "🤝" },
   "Belonging & Friendship": { badgeLabel: "True Friend", emoji: "👫" },
   "Emotions & Feelings": { badgeLabel: "Feelings Explorer", emoji: "🎭" },
   "Sleep & Calm": { badgeLabel: "Calm & Cosy", emoji: "🌙" },
