@@ -158,10 +158,10 @@ const Index = () => {
             {hasChild && childName ? `Stories ${childName} might love` : "Stories to explore"}
           </h2>
           <button
-            onClick={() => nav("/library")}
+            onClick={() => nav("/happy-place#recommended")}
             className="text-[11px] font-bold text-primary-deep"
           >
-            Story Worlds →
+            See all →
           </button>
         </div>
         <div className="grid grid-cols-2 gap-3">
