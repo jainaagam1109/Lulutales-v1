@@ -29,7 +29,7 @@ const BedtimePreview = () => {
 
   const parsed = parseBedtimeStory(story?.story_text);
   const displayTitle = parsed.title ?? story?.title ?? "Bedtime story";
-  const emoji = story?.thumbnail ?? themeEmoji(story?.theme);
+  const emoji = story?.thumbnail ?? getThemeVisual(story?.theme).emoji;
 
   return (
     <PhoneShell>
