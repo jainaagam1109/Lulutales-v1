@@ -88,11 +88,21 @@ const Row = ({
 
 
 const HappyPlace = () => {
+  const location = useLocation();
   const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
   const childName = localStorage.getItem("lulutales_child_name");
   const hasActive = !!profileId;
   const pageTitle = childName && hasActive ? `${childName}'s Story Worlds` : "Story Worlds";
   const curatedTitle = childName && hasActive ? `Personalised audio for ${childName}` : "Personalised audio stories";
+
+  useEffect(() => {
+    if (location.hash !== "#recommended") return;
+    const t = setTimeout(() => {
+      const el = document.getElementById("recommended");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 200);
+    return () => clearTimeout(t);
+  }, [location.hash]);
 
   const { data: allStories = [] } = useQuery({ queryKey: ["stories"], queryFn: fetchStories });
   const { data: profileStories = [] } = useQuery({
