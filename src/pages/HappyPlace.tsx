@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Search } from "lucide-react";
+import { Search, ChevronDown, ChevronUp, Check } from "lucide-react";
 import { fetchStories, fetchStoriesForProfile, fetchUniverses, fetchSavedStories, fetchPlayCounts, type Story, type Universe } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
@@ -11,10 +11,11 @@ import { PageHeader } from "@/components/PageHeader";
 import { TagChip } from "@/components/TagChip";
 import { StoryCard } from "@/components/StoryCard";
 import { StoryWorldsRow } from "@/components/StoryWorldsRow";
-import { StoryFormatFilter, type StoryFormat } from "@/components/StoryFormatFilter";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { fetchCompletedThemes } from "@/lib/analytics";
 import { sortStories } from "@/lib/sortStories";
+
+type MadeForFormat = "all" | "audio" | "text";
 
 import { getThemeVisual } from "@/lib/themeEmoji";
 
@@ -139,11 +140,24 @@ const HappyPlace = () => {
     const n = parseInt(localStorage.getItem("lulutales_child_age") ?? "", 10);
     return Number.isFinite(n) ? n : null;
   })();
-
   const [query, setQuery] = useState("");
-  const [format, setFormat] = useState<StoryFormat>("all");
-  const showAudio = format !== "text";
-  const showText = format !== "audio";
+
+  const [madeForFormat, setMadeForFormat] = useState<MadeForFormat>("all");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (menuRef.current?.contains(t)) return;
+      if (triggerRef.current?.contains(t)) return;
+      setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
 
   const matches = (s: Story) => {
     if (!query) return true;
@@ -205,10 +219,22 @@ const HappyPlace = () => {
 
   const madeForChild = useMemo(() => {
     const merged: Story[] = [];
-    if (showAudio) merged.push(...personalised);
-    if (showText) merged.push(...bedtime);
+    if (madeForFormat === "all" || madeForFormat === "audio") merged.push(...personalised);
+    if (madeForFormat === "all" || madeForFormat === "text") merged.push(...bedtime);
     return merged.sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
-  }, [personalised, bedtime, showAudio, showText]);
+  }, [personalised, bedtime, madeForFormat]);
+
+  const madeForCounts = {
+    all: personalised.length + bedtime.length,
+    audio: personalised.length,
+    text: bedtime.length,
+  };
+
+  const formatLabels: Record<MadeForFormat, string> = {
+    all: "All",
+    audio: "Listen",
+    text: "Read",
+  };
 
   const recommended = useMemo(() => {
     const list = storyRoom.filter((s) => {
@@ -221,11 +247,6 @@ const HappyPlace = () => {
     return sortStories(list, { childAge, playCounts, completedThemes });
   }, [storyRoom, childAge, playCounts, completedThemes]);
 
-  const counts = {
-    all: personalised.length + bedtime.length + storyRoom.length,
-    audio: personalised.length + storyRoom.length,
-    text: bedtime.length,
-  };
 
   return (
     <PhoneShell>
@@ -239,8 +260,8 @@ const HappyPlace = () => {
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
         </div>
-        <StoryFormatFilter value={format} onChange={setFormat} counts={counts} className="mt-3" />
       </PageHeader>
+
 
       <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] space-y-6">
         {savedStories.length > 0 && (
@@ -251,7 +272,58 @@ const HappyPlace = () => {
         )}
         {hasActive && (
           <section>
-            <SectionHeader title={childName ? `Made for ${childName}` : "Made for you"} />
+            <div className="relative mb-2 flex items-center justify-between px-5">
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {childName ? `Made for ${childName}` : "Made for you"}
+              </h2>
+              <button
+                ref={triggerRef}
+                type="button"
+                aria-haspopup="true"
+                aria-expanded={menuOpen}
+                onClick={() => setMenuOpen((o) => !o)}
+                className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] font-bold transition-colors ${
+                  menuOpen || madeForFormat !== "all"
+                    ? "border-primary/40 bg-primary/10 text-primary-deep"
+                    : "border-border bg-card text-foreground"
+                }`}
+              >
+                <span>{formatLabels[madeForFormat]}</span>
+                {menuOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              </button>
+              {menuOpen && (
+                <div
+                  ref={menuRef}
+                  role="menu"
+                  className="absolute right-5 top-full z-30 mt-1 w-44 overflow-hidden rounded-xl border border-border bg-card shadow-lg"
+                >
+                  {(["all", "audio", "text"] as MadeForFormat[]).map((opt) => {
+                    const selected = madeForFormat === opt;
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        role="menuitem"
+                        tabIndex={0}
+                        onClick={() => {
+                          setMadeForFormat(opt);
+                          setMenuOpen(false);
+                        }}
+                        className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-xs font-semibold transition-colors hover:bg-muted ${
+                          selected ? "text-primary-deep" : "text-foreground"
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          {selected ? <Check className="h-3.5 w-3.5" /> : <span className="inline-block w-3.5" />}
+                          <span>{formatLabels[opt]}</span>
+                        </span>
+                        <span className="text-muted-foreground">{madeForCounts[opt]}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             {madeForChild.length === 0 ? (
               <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-card/60 p-4">
                 <div className="text-sm text-muted-foreground">
@@ -277,14 +349,11 @@ const HappyPlace = () => {
         )}
         <StoryWorldsRow />
 
+        <section>
+          <SectionHeader title="All stories" />
+          <Row stories={storyRoomSorted} emptyVariant="coming-soon" universesMap={universesMap} />
+        </section>
 
-
-        {showAudio && (
-          <section>
-            <SectionHeader title="All stories" />
-            <Row stories={storyRoomSorted} emptyVariant="coming-soon" universesMap={universesMap} />
-          </section>
-        )}
 
       </main>
 
