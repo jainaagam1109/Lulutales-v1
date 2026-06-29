@@ -134,8 +134,9 @@ const Profile = () => {
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-lg font-extrabold capitalize text-foreground truncate">{parentForm.name || parentName}</div>
-            <div className="text-xs text-muted-foreground truncate">
-              {user?.email} · {kidsCount} child {kidsCount === 1 ? "profile" : "profiles"}
+            <div className="text-xs text-muted-foreground truncate">{user?.email}</div>
+            <div className="text-xs text-muted-foreground">
+              {kidsCount} child {kidsCount === 1 ? "profile" : "profiles"}
             </div>
           </div>
           {!editingParent && (

@@ -1,7 +1,9 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUniversesWithCounts } from "@/lib/stories";
 import { SectionHeader } from "@/components/SectionHeader";
+import { ageDistance } from "@/lib/sortStories";
 
 const PALETTE = [
   {
@@ -94,13 +96,34 @@ export const StoryWorldsRow = () => {
     queryFn: fetchUniversesWithCounts,
   });
 
+  const childAge = (() => {
+    if (typeof window === "undefined") return null;
+    const n = parseInt(localStorage.getItem("lulutales_child_age") ?? "", 10);
+    return Number.isFinite(n) ? n : null;
+  })();
+
+  const sortedUniverses = useMemo(() => {
+    return [...universes].sort((a, b) => {
+      const aAgeRaw = a.character_bible?.age;
+      const bAgeRaw = b.character_bible?.age;
+      const aAge = typeof aAgeRaw === "string" ? parseInt(aAgeRaw, 10) : typeof aAgeRaw === "number" ? aAgeRaw : NaN;
+      const bAge = typeof bAgeRaw === "string" ? parseInt(bAgeRaw, 10) : typeof bAgeRaw === "number" ? bAgeRaw : NaN;
+      const aDist = ageDistance(Number.isFinite(aAge) ? [aAge, aAge] : null, childAge);
+      const bDist = ageDistance(Number.isFinite(bAge) ? [bAge, bAge] : null, childAge);
+      if (aDist !== bDist) return aDist - bDist;
+      const ad = a.created_at ?? "";
+      const bd = b.created_at ?? "";
+      return bd.localeCompare(ad);
+    });
+  }, [universes, childAge]);
+
   if (universes.length === 0) return null;
 
   return (
     <section>
       <SectionHeader title="Story Worlds" />
       <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
-        {universes.map((u) => (
+        {sortedUniverses.map((u) => (
           <UniverseCard
             key={u.id}
             id={u.id}

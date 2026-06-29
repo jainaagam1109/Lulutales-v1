@@ -12,6 +12,7 @@ export type UniverseWithCount = {
   cover_image?: string | null;
   story_count: number;
   character_bible?: Record<string, any> | null;
+  created_at?: string | null;
 };
 
 
@@ -144,9 +145,9 @@ export const fetchUniversesWithCounts = async (): Promise<UniverseWithCount[]> =
         cover_image: r.cover_image ?? r.thumbnail ?? null,
         story_count: Number(r.story_count ?? r.count ?? 0),
         character_bible: r.character_bible ?? null,
+        created_at: r.created_at ?? null,
       }))
-      .filter((u) => u.story_count > 0)
-      .sort((a, b) => b.story_count - a.story_count);
+      .filter((u) => u.story_count > 0);
   } catch {
     return [];
   }
@@ -188,6 +189,22 @@ export const fetchStoryTags = async (storyId: string): Promise<string[]> => {
   const { data, error } = await supabase.from("story_tags").select("tag").eq("story_id", storyId);
   if (error) throw error;
   return (data ?? []).map((r) => r.tag);
+};
+
+export const fetchPlayCounts = async (): Promise<Map<string, number>> => {
+  try {
+    const { data, error } = await (supabase as any)
+      .from("story_play_counts")
+      .select("story_id, play_count");
+    if (error) return new Map();
+    const m = new Map<string, number>();
+    for (const r of (data ?? []) as any[]) {
+      if (r?.story_id) m.set(r.story_id, Number(r.play_count ?? 0));
+    }
+    return m;
+  } catch {
+    return new Map();
+  }
 };
 
 export const fetchSavedStories = async (): Promise<Story[]> => {

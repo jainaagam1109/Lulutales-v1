@@ -16,7 +16,7 @@ export const BottomNav = () => (
         <NavLink
           key={to}
           to={to}
-          end
+          end={to === "/"}
           className={({ isActive }) =>
             `flex flex-1 flex-col items-center gap-1 rounded-2xl px-1 py-1.5 text-[10px] uppercase tracking-wider transition-all ${
               isActive
