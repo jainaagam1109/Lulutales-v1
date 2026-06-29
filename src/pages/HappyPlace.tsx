@@ -232,6 +232,12 @@ const HappyPlace = () => {
       </PageHeader>
 
       <main className="flex-1 overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] space-y-6">
+        {savedStories.length > 0 && (
+          <section>
+            <SectionHeader title="Favorites" />
+            <Row stories={savedStories} universesMap={universesMap} />
+          </section>
+        )}
         {hasActive && (
           <section>
             <SectionHeader title={childName ? `Made for ${childName}` : "Made for you"} />
@@ -265,7 +271,7 @@ const HappyPlace = () => {
         {showAudio && (
           <section>
             <SectionHeader title="All stories" />
-            <Row stories={storyRoom} emptyVariant="coming-soon" universesMap={universesMap} />
+            <Row stories={storyRoomSorted} emptyVariant="coming-soon" universesMap={universesMap} />
           </section>
         )}
 
