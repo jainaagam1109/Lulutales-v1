@@ -42,7 +42,7 @@ const Universe = () => {
   return (
     <PhoneShell>
       <PageHeader title={title} subtitle={universe?.description ?? undefined} />
-      <main className="flex-1 overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))]">
+      <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
         {universe?.cover_image && (
           <div className="mb-4 overflow-hidden rounded-2xl">
             <img src={universe.cover_image} alt={title} className="h-40 w-full object-cover" />
