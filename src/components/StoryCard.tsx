@@ -10,6 +10,8 @@ const formatBadgeFor = (story_type: Story["story_type"]): { label: string; varia
   if (story_type === "pre_recorded") return { label: "🎧 Listen", variant: "mint" };
   if (story_type === "bedtime_text") return { label: "📖 Read aloud · ~5 min", variant: "warm" };
   return null;
+};
+
 const TILE_TINTS = [
   "hsl(var(--tag-warm-bg))",
   "hsl(var(--tag-cool-bg))",
