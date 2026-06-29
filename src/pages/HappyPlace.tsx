@@ -140,6 +140,7 @@ const HappyPlace = () => {
     const n = parseInt(localStorage.getItem("lulutales_child_age") ?? "", 10);
     return Number.isFinite(n) ? n : null;
   })();
+  const [query, setQuery] = useState("");
 
   const [madeForFormat, setMadeForFormat] = useState<MadeForFormat>("all");
   const [menuOpen, setMenuOpen] = useState(false);
