@@ -260,8 +260,8 @@ const HappyPlace = () => {
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
         </div>
-        </PageHeader>
       </PageHeader>
+
 
       <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] space-y-6">
         {savedStories.length > 0 && (
