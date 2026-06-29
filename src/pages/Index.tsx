@@ -7,7 +7,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { recommendForAge } from "@/lib/recommend";
+import { sortStories } from "@/lib/sortStories";
 
 const HOME_RECO_LIMIT = 6;
 import { PhoneShell } from "@/components/PhoneShell";
@@ -16,7 +16,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { StoryCard } from "@/components/StoryCard";
 import { InsightsSummary } from "@/components/InsightsSummary";
 import { loadActiveProfileForUser } from "@/lib/activeProfile";
-import { fetchStoriesForProfile, fetchStories, fetchFreshPersonalisedStories, fetchUniverses } from "@/lib/stories";
+import { fetchStoriesForProfile, fetchStories, fetchFreshPersonalisedStories, fetchUniverses, fetchPlayCounts } from "@/lib/stories";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { recordVisit } from "@/lib/progress";
 import { fetchCompletedThemes } from "@/lib/analytics";
@@ -92,23 +92,17 @@ const Index = () => {
     enabled: !!profileId,
   });
 
+  const { data: playCounts = new Map<string, number>() } = useQuery({
+    queryKey: ["story-play-counts"],
+    queryFn: fetchPlayCounts,
+  });
 
   const catalog = useMemo(() => {
     const pool = allStories.filter((s) => s.story_type === "pre_recorded");
-    const fallback = () => {
-      const featured = pool
-        .filter((s) => s.is_featured)
-        .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
-      const others = pool
-        .filter((s) => !s.is_featured)
-        .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
-      return [...featured, ...others].slice(0, HOME_RECO_LIMIT);
-    };
     const childAge = activeProfile?.age ?? null;
-    if (childAge == null) return fallback();
-    const ranked = recommendForAge(pool, childAge, completedThemes);
-    return ranked.length > 0 ? ranked.slice(0, HOME_RECO_LIMIT) : fallback();
-  }, [allStories, activeProfile?.age, completedThemes]);
+    const sorted = sortStories(pool, { childAge, playCounts, completedThemes });
+    return sorted.slice(0, HOME_RECO_LIMIT);
+  }, [allStories, activeProfile?.age, completedThemes, playCounts]);
 
   if (loading)
     return (
