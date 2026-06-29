@@ -12,6 +12,7 @@ export type UniverseWithCount = {
   cover_image?: string | null;
   story_count: number;
   character_bible?: Record<string, any> | null;
+  created_at?: string | null;
 };
 
 
@@ -144,9 +145,9 @@ export const fetchUniversesWithCounts = async (): Promise<UniverseWithCount[]> =
         cover_image: r.cover_image ?? r.thumbnail ?? null,
         story_count: Number(r.story_count ?? r.count ?? 0),
         character_bible: r.character_bible ?? null,
+        created_at: r.created_at ?? null,
       }))
-      .filter((u) => u.story_count > 0)
-      .sort((a, b) => b.story_count - a.story_count);
+      .filter((u) => u.story_count > 0);
   } catch {
     return [];
   }
