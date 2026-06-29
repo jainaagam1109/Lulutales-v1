@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
-import { fetchStories, fetchStoriesForProfile, fetchUniverses, type Story, type Universe } from "@/lib/stories";
+import { fetchStories, fetchStoriesForProfile, fetchUniverses, fetchSavedStories, fetchPlayCounts, type Story, type Universe } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -13,7 +13,7 @@ import { StoryWorldsRow } from "@/components/StoryWorldsRow";
 import { StoryFormatFilter, type StoryFormat } from "@/components/StoryFormatFilter";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { fetchCompletedThemes } from "@/lib/analytics";
-import { recommendForAge } from "@/lib/recommend";
+import { sortStories } from "@/lib/sortStories";
 
 import { getThemeVisual } from "@/lib/themeEmoji";
 
@@ -108,6 +108,15 @@ const HappyPlace = () => {
     queryKey: ["universes"],
     queryFn: fetchUniverses,
   });
+  const { data: savedStories = [] } = useQuery({
+    queryKey: ["saved-stories", profileId],
+    queryFn: fetchSavedStories,
+    enabled: !!profileId,
+  });
+  const { data: playCounts = new Map<string, number>() } = useQuery({
+    queryKey: ["story-play-counts"],
+    queryFn: fetchPlayCounts,
+  });
   const universesMap = useMemo(() => {
     const map = new Map<string, string>();
     for (const u of universes) {
@@ -178,6 +187,11 @@ const HappyPlace = () => {
     [allStories, query]
   );
 
+  const storyRoomSorted = useMemo(
+    () => sortStories(storyRoom, { childAge, playCounts, completedThemes }),
+    [storyRoom, childAge, playCounts, completedThemes]
+  );
+
   const madeForChild = useMemo(() => {
     const merged: Story[] = [];
     if (showAudio) merged.push(...personalised);
@@ -193,13 +207,8 @@ const HappyPlace = () => {
       if (childAge == null) return featured;
       return featured || Math.abs(parsed - childAge) <= 1;
     });
-    return list.sort((a, b) => {
-      const af = a.is_featured ? 1 : 0;
-      const bf = b.is_featured ? 1 : 0;
-      if (af !== bf) return bf - af;
-      return (b.created_at ?? "").localeCompare(a.created_at ?? "");
-    });
-  }, [storyRoom, childAge]);
+    return sortStories(list, { childAge, playCounts, completedThemes });
+  }, [storyRoom, childAge, playCounts, completedThemes]);
 
   const counts = {
     all: personalised.length + bedtime.length + storyRoom.length,
