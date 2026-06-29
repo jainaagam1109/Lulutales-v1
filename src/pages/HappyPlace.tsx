@@ -141,10 +141,22 @@ const HappyPlace = () => {
     return Number.isFinite(n) ? n : null;
   })();
 
-  const [query, setQuery] = useState("");
-  const [format, setFormat] = useState<StoryFormat>("all");
-  const showAudio = format !== "text";
-  const showText = format !== "audio";
+  const [madeForFormat, setMadeForFormat] = useState<MadeForFormat>("all");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (menuRef.current?.contains(t)) return;
+      if (triggerRef.current?.contains(t)) return;
+      setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
 
   const matches = (s: Story) => {
     if (!query) return true;
