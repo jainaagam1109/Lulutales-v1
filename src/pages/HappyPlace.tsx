@@ -33,7 +33,7 @@ const StoryRowCard = ({ story, to }: { story: Story; to: string }) => {
         {visual.emoji}
       </div>
       {story.theme && <TagChip label={story.theme} />}
-      <div className="line-clamp-2 text-xs font-bold leading-snug text-foreground">
+      <div className="line-clamp-2 min-h-[2.25rem] text-xs font-bold leading-snug text-foreground">
         {story.title}
       </div>
     </Link>
