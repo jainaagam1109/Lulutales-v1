@@ -92,15 +92,10 @@ export const StoryCard = ({
       {isType3 ? (
         <div className="flex min-w-0 flex-1 flex-col space-y-1.5 p-3">
           {characterName ? (
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">
-                {characterName}
-              </span>
-              <TagChip label="Story World" variant="cool" />
-            </div>
-          ) : (
-            <TagChip label="Story World" variant="cool" />
-          )}
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">
+              {characterName}
+            </span>
+          ) : null}
           <div className="line-clamp-2 min-h-[2.25rem] text-xs font-bold leading-snug text-foreground">
             {story.title}
           </div>
