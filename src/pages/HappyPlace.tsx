@@ -219,10 +219,22 @@ const HappyPlace = () => {
 
   const madeForChild = useMemo(() => {
     const merged: Story[] = [];
-    if (showAudio) merged.push(...personalised);
-    if (showText) merged.push(...bedtime);
+    if (madeForFormat === "all" || madeForFormat === "audio") merged.push(...personalised);
+    if (madeForFormat === "all" || madeForFormat === "text") merged.push(...bedtime);
     return merged.sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
-  }, [personalised, bedtime, showAudio, showText]);
+  }, [personalised, bedtime, madeForFormat]);
+
+  const madeForCounts = {
+    all: personalised.length + bedtime.length,
+    audio: personalised.length,
+    text: bedtime.length,
+  };
+
+  const formatLabels: Record<MadeForFormat, string> = {
+    all: "All",
+    audio: "Listen",
+    text: "Read",
+  };
 
   const recommended = useMemo(() => {
     const list = storyRoom.filter((s) => {
@@ -235,11 +247,6 @@ const HappyPlace = () => {
     return sortStories(list, { childAge, playCounts, completedThemes });
   }, [storyRoom, childAge, playCounts, completedThemes]);
 
-  const counts = {
-    all: personalised.length + bedtime.length + storyRoom.length,
-    audio: personalised.length + storyRoom.length,
-    text: bedtime.length,
-  };
 
   return (
     <PhoneShell>
