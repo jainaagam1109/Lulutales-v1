@@ -217,7 +217,7 @@ const Index = () => {
           </div>
         ) : hasStory ? (
           <>
-            <InsightsSummary profileId={profileId} variant="card" />
+            <InsightsSummary profileId={profileId} variant="card" childName={childName ?? undefined} />
             <PromiseSection />
             <FreshlyCurated />
             <Catalog />
