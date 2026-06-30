@@ -140,6 +140,36 @@ export const fetchScreenTimeSeconds = async (profileId: string): Promise<number>
   return data.reduce((sum, r: any) => sum + (r.duration_seconds || 0), 0);
 };
 
+// Active days in the rolling last-7-day window (local timezone). Includes today.
+// Returns count + length-7 boolean array oldest→today (index 0 = 6 days ago, 6 = today).
+export const fetchActiveDaysLast7 = async (
+  profileId: string
+): Promise<{ active: number; days: boolean[] }> => {
+  const since = new Date();
+  since.setDate(since.getDate() - 6);
+  since.setHours(0, 0, 0, 0);
+
+  const { data } = await supabase
+    .from("story_analytics")
+    .select("created_at")
+    .eq("profile_id", profileId)
+    .in("event_type", ["play", "complete"])
+    .gte("created_at", since.toISOString());
+
+  const seen = new Set<string>();
+  for (const r of data ?? []) seen.add(localDateKey((r as any).created_at));
+
+  const days: boolean[] = [];
+  const cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+  cursor.setDate(cursor.getDate() - 6);
+  for (let i = 0; i < 7; i++) {
+    days.push(seen.has(localDateKey(cursor)));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return { active: days.filter(Boolean).length, days };
+};
+
 export type BucketBar = {
   bucket: string;
   storyCount: number;
