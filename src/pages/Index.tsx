@@ -116,14 +116,11 @@ const Index = () => {
   const goCreate = () => nav(hasChild ? "/magic-hub" : "/onboarding");
 
   // ---------- titles ----------
-  const title =
-    hasChild && childName
-      ? `${childName}'s Story Nook`
-      : "Welcome to LuluTales ✨";
+  const title = "Welcome to LuluTales ✨";
   const subtitle =
     hasChild && childName
       ? `Helping ${childName} grow, one story at a time`
-      : "Create your child's first story";
+      : "Helping your child grow, one story at a time";
 
   const ctaLabel =
     hasChild && childName
