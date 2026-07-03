@@ -206,6 +206,42 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_stories: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          story_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          story_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          story_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_stories_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_stories_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stories: {
         Row: {
           age_group: string | null

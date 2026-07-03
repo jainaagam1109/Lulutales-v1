@@ -15,7 +15,7 @@ import { getStoryStatus } from "@/lib/storyStatus";
 import { fetchCompletedThemes } from "@/lib/analytics";
 import { sortStories } from "@/lib/sortStories";
 
-type MadeForFormat = "all" | "audio" | "text";
+type MadeForFormat = "all" | "audio" | "text" | "saved";
 
 import { getThemeVisual } from "@/lib/themeEmoji";
 
@@ -218,22 +218,27 @@ const HappyPlace = () => {
   );
 
   const madeForChild = useMemo(() => {
+    if (madeForFormat === "saved") {
+      return [...savedStories].sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+    }
     const merged: Story[] = [];
     if (madeForFormat === "all" || madeForFormat === "audio") merged.push(...personalised);
     if (madeForFormat === "all" || madeForFormat === "text") merged.push(...bedtime);
     return merged.sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
-  }, [personalised, bedtime, madeForFormat]);
+  }, [personalised, bedtime, madeForFormat, savedStories]);
 
   const madeForCounts = {
     all: personalised.length + bedtime.length,
     audio: personalised.length,
     text: bedtime.length,
+    saved: savedStories.length,
   };
 
   const formatLabels: Record<MadeForFormat, string> = {
     all: "All",
     audio: "Listen",
     text: "Read",
+    saved: "Saved",
   };
 
   const recommended = useMemo(() => {
@@ -297,7 +302,7 @@ const HappyPlace = () => {
                   role="menu"
                   className="absolute right-5 top-full z-30 mt-1 w-44 overflow-hidden rounded-xl border border-border bg-card shadow-lg"
                 >
-                  {(["all", "audio", "text"] as MadeForFormat[]).map((opt) => {
+                  {(["all", "audio", "text", "saved"] as MadeForFormat[]).map((opt) => {
                     const selected = madeForFormat === opt;
                     return (
                       <button
@@ -325,17 +330,23 @@ const HappyPlace = () => {
               )}
             </div>
             {madeForChild.length === 0 ? (
-              <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-card/60 p-4">
-                <div className="text-sm text-muted-foreground">
-                  No personalised stories yet — create one in Story Worlds.
+              madeForFormat === "saved" ? (
+                <div className="rounded-2xl border border-dashed border-border bg-card/60 p-4 text-sm text-muted-foreground">
+                  No saved stories yet — tap the bookmark on any story to keep it here.
                 </div>
-                <Link
-                  to="/magic-hub"
-                  className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-soft"
-                >
-                  Go to Story Worlds
-                </Link>
-              </div>
+              ) : (
+                <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-card/60 p-4">
+                  <div className="text-sm text-muted-foreground">
+                    No personalised stories yet — create one in Story Worlds.
+                  </div>
+                  <Link
+                    to="/magic-hub"
+                    className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-soft"
+                  >
+                    Go to Story Worlds
+                  </Link>
+                </div>
+              )
             ) : (
               <Row stories={madeForChild} universesMap={universesMap} />
             )}
