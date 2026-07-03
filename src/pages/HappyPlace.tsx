@@ -302,7 +302,7 @@ const HappyPlace = () => {
                   role="menu"
                   className="absolute right-5 top-full z-30 mt-1 w-44 overflow-hidden rounded-xl border border-border bg-card shadow-lg"
                 >
-                  {(["all", "audio", "text"] as MadeForFormat[]).map((opt) => {
+                  {(["all", "audio", "text", "saved"] as MadeForFormat[]).map((opt) => {
                     const selected = madeForFormat === opt;
                     return (
                       <button
