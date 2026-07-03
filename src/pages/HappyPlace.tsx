@@ -218,22 +218,27 @@ const HappyPlace = () => {
   );
 
   const madeForChild = useMemo(() => {
+    if (madeForFormat === "saved") {
+      return [...savedStories].sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+    }
     const merged: Story[] = [];
     if (madeForFormat === "all" || madeForFormat === "audio") merged.push(...personalised);
     if (madeForFormat === "all" || madeForFormat === "text") merged.push(...bedtime);
     return merged.sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
-  }, [personalised, bedtime, madeForFormat]);
+  }, [personalised, bedtime, madeForFormat, savedStories]);
 
   const madeForCounts = {
     all: personalised.length + bedtime.length,
     audio: personalised.length,
     text: bedtime.length,
+    saved: savedStories.length,
   };
 
   const formatLabels: Record<MadeForFormat, string> = {
     all: "All",
     audio: "Listen",
     text: "Read",
+    saved: "Saved",
   };
 
   const recommended = useMemo(() => {
