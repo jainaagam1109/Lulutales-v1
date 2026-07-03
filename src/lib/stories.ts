@@ -210,8 +210,8 @@ export const fetchPlayCounts = async (): Promise<Map<string, number>> => {
 export const fetchSavedStories = async (): Promise<Story[]> => {
   const profileId = getActiveProfileId();
   if (!profileId) return [];
-  const { data, error } = await supabase
-    .from("user_library")
+  const { data, error } = await (supabase as any)
+    .from("saved_stories")
     .select("story_id, stories(*)")
     .eq("profile_id", profileId)
     .order("created_at", { ascending: false });
@@ -222,8 +222,8 @@ export const fetchSavedStories = async (): Promise<Story[]> => {
 export const isSaved = async (storyId: string): Promise<boolean> => {
   const profileId = getActiveProfileId();
   if (!profileId) return false;
-  const { data } = await supabase
-    .from("user_library")
+  const { data } = await (supabase as any)
+    .from("saved_stories")
     .select("id")
     .eq("story_id", storyId)
     .eq("profile_id", profileId)
@@ -236,15 +236,16 @@ export const toggleSaved = async (storyId: string): Promise<boolean> => {
   if (!profileId) return false;
   const saved = await isSaved(storyId);
   if (saved) {
-    await supabase
-      .from("user_library")
+    await (supabase as any)
+      .from("saved_stories")
       .delete()
       .eq("story_id", storyId)
       .eq("profile_id", profileId);
     trackEvent("library_removed", { story_id: storyId });
     return false;
   }
-  await supabase.from("user_library").insert({ story_id: storyId, profile_id: profileId });
+  await (supabase as any).from("saved_stories").insert({ story_id: storyId, profile_id: profileId });
   trackEvent("library_added", { story_id: storyId });
   return true;
 };
+
