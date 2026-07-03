@@ -15,7 +15,7 @@ import { getStoryStatus } from "@/lib/storyStatus";
 import { fetchCompletedThemes } from "@/lib/analytics";
 import { sortStories } from "@/lib/sortStories";
 
-type MadeForFormat = "all" | "audio" | "text";
+type MadeForFormat = "all" | "audio" | "text" | "saved";
 
 import { getThemeVisual } from "@/lib/themeEmoji";
 
