@@ -39,26 +39,47 @@ type InfoBtnProps = {
   className?: string;
 };
 
-const InfoBtn = ({ id, openId, setOpenId, label, copy, align = "center", className }: InfoBtnProps) => {
+const InfoBtn = ({ id, openId, setOpenId, label, copy, className }: InfoBtnProps) => {
   const open = openId === id;
-  const wrapRef = useRef<HTMLSpanElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; width: number } | null>(null);
 
   useEffect(() => {
-    if (!open) return;
-    const onDown = (e: MouseEvent | TouchEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpenId(null);
+    if (!open) {
+      setPos(null);
+      return;
+    }
+    const compute = () => {
+      const r = btnRef.current?.getBoundingClientRect();
+      if (!r) return;
+      const margin = 8;
+      const width = Math.min(240, window.innerWidth - margin * 2);
+      let left = r.left + r.width / 2 - width / 2;
+      left = Math.max(margin, Math.min(left, window.innerWidth - width - margin));
+      setPos({ top: r.bottom + 6, left, width });
     };
+    compute();
+    const onDown = (e: MouseEvent | TouchEvent) => {
+      const t = e.target as Node;
+      if (btnRef.current && !btnRef.current.contains(t)) setOpenId(null);
+    };
+    const onDismiss = () => setOpenId(null);
     document.addEventListener("mousedown", onDown);
     document.addEventListener("touchstart", onDown);
+    window.addEventListener("scroll", onDismiss, true);
+    window.addEventListener("resize", onDismiss);
     return () => {
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("touchstart", onDown);
+      window.removeEventListener("scroll", onDismiss, true);
+      window.removeEventListener("resize", onDismiss);
     };
   }, [open, setOpenId]);
 
   return (
-    <span ref={wrapRef} className={cn("relative inline-flex", className)}>
+    <span className={cn("relative inline-flex", className)}>
       <button
+        ref={btnRef}
         type="button"
         aria-label={`About ${label}`}
         aria-expanded={open}
@@ -70,15 +91,11 @@ const InfoBtn = ({ id, openId, setOpenId, label, copy, align = "center", classNa
       >
         <Info className="h-3.5 w-3.5" />
       </button>
-      {open && (
+      {open && pos && (
         <span
           role="tooltip"
-          className={cn(
-            "absolute top-full z-40 mt-1 w-56 rounded-xl border border-border bg-card p-2.5 text-left text-[11px] leading-snug text-foreground shadow-lg",
-            align === "left" && "left-0",
-            align === "right" && "right-0",
-            align === "center" && "left-1/2 -translate-x-1/2"
-          )}
+          style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width }}
+          className="z-50 rounded-xl border border-border bg-card p-2.5 text-left text-[11px] leading-snug text-foreground shadow-lg"
         >
           {copy}
         </span>
@@ -194,7 +211,7 @@ export const InsightsSummary = ({ profileId, variant = "card", childName }: Insi
               setOpenId={setOpenInfo}
               label="Active days"
               align="right"
-              copy={`How many of the last 7 days ${name} listened to a story. A missed day never resets it — it just shows your real rhythm, with daily listening as the gentle goal.`}
+              copy={`How many of the last 7 days ${name} listened to a story. A missed day never resets it — it just shows their real rhythm, with daily listening as the gentle goal.`}
             />
           </div>
           <div className="mt-0.5 text-[11px] text-muted-foreground">

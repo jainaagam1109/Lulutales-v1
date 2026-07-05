@@ -69,6 +69,7 @@ const MagicHub = () => {
   return (
     <PhoneShell>
       <PageHeader
+        backTo="/"
         title="Magic Hub"
         subtitle={!hasGenerated ? "✨ Tap below to create your first story" : undefined}
       />
