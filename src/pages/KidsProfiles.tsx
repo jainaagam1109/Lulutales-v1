@@ -371,7 +371,7 @@ const KidsProfiles = () => {
                       <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                         Family address terms
                       </span>
-                      <InfoTooltip text="What the child calls each family member, e.g. Father: Papa, Mother: Mummy" />
+                      <InfoTooltip label="Family address terms" text="What the child calls each family member, e.g. Father: Papa, Mother: Mummy" />
                     </div>
                     <AddressTermsEditor value={editTerms} onChange={setEditTerms} />
                   </div>
