@@ -92,58 +92,44 @@ const Generating = () => {
   return (
     <PhoneShell>
       <main className="flex flex-1 flex-col items-center justify-center px-6 pb-10 pt-10 text-center">
-        {showFailure && story ? (
-          <div className="w-full max-w-sm">
-            <StoryStatusCard story={story} variant="row" />
-            <button
-              onClick={() => nav("/happy-place")}
-              className="mt-6 w-full rounded-full border border-border bg-card px-5 py-2 text-xs font-semibold text-primary-deep"
-            >
-              Back to Story Worlds
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="relative mb-8 flex h-32 w-32 items-center justify-center rounded-full bg-gradient-primary shadow-glow">
-              <Sparkles className="h-12 w-12 text-primary-foreground" />
-              {!stalled && (
-                <Loader2 className="absolute inset-0 m-auto h-32 w-32 animate-spin text-primary-foreground/40" />
-              )}
-            </div>
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">
-              {stalled ? "Still working" : "Creating magic"}
-            </div>
-            <h1 className="mt-2 text-xl font-extrabold text-foreground">
-              {story?.title ?? "Your story"}
-            </h1>
-            <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-              {stalled
-                ? `This is taking longer than expected. We'll notify you when ${childName}'s story is ready.`
-                : `This usually takes about ${
-                    story?.story_type === "bedtime_text" ? "~4 minutes" : "~15 minutes"
-                  }. Head to your Story Worlds and enjoy existing stories while you wait.`}
-            </p>
-            <button
-              onClick={async () => {
-                if (stalled && storyId) {
-                  try {
-                    await supabase
-                      .from("stories")
-                      .delete()
-                      .eq("id", storyId)
-                      .eq("is_generated", false);
-                  } catch (_) {}
-                  nav("/");
-                  return;
-                }
-                nav("/happy-place");
-              }}
-              className="mt-8 rounded-full border border-border bg-card px-5 py-2 text-xs font-semibold text-primary-deep"
-            >
-              {stalled ? "Back to home" : "Go to My Story Worlds →"}
-            </button>
-          </>
-        )}
+        <div className="relative mb-8 flex h-32 w-32 items-center justify-center rounded-full bg-gradient-primary shadow-glow">
+          <Sparkles className="h-12 w-12 text-primary-foreground" />
+          {!stalled && (
+            <Loader2 className="absolute inset-0 m-auto h-32 w-32 animate-spin text-primary-foreground/40" />
+          )}
+        </div>
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">
+          {stalled ? "Still working" : "Creating magic"}
+        </div>
+        <h1 className="mt-2 text-xl font-extrabold text-foreground">
+          {story?.title ?? "Your story"}
+        </h1>
+        <p className="mt-4 max-w-xs text-sm text-muted-foreground">
+          {stalled
+            ? `This is taking longer than expected. We'll notify you when ${childName}'s story is ready.`
+            : `This usually takes about ${
+                story?.story_type === "bedtime_text" ? "~4 minutes" : "~15 minutes"
+              }. Head to your Story Worlds and enjoy existing stories while you wait.`}
+        </p>
+        <button
+          onClick={async () => {
+            if (stalled && storyId) {
+              try {
+                await supabase
+                  .from("stories")
+                  .delete()
+                  .eq("id", storyId)
+                  .eq("is_generated", false);
+              } catch (_) {}
+              nav("/");
+              return;
+            }
+            nav("/happy-place");
+          }}
+          className="mt-8 rounded-full border border-border bg-card px-5 py-2 text-xs font-semibold text-primary-deep"
+        >
+          {stalled ? "Back to home" : "Go to My Story Worlds →"}
+        </button>
       </main>
     </PhoneShell>
   );
