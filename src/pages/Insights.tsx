@@ -1,4 +1,4 @@
-import { useEffect, useQuery as _unused, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Info } from "lucide-react";
 import { PhoneShell } from "@/components/PhoneShell";
