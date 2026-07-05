@@ -1,4 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
 import type { Story } from "./stories";
 
 export type StoryStatus = "ready" | "preparing" | "stale" | "lang_age_failed";
@@ -15,17 +14,9 @@ export const getStoryStatus = (s: StatusInput): StoryStatus => {
   if ((s.scoring_status === null || s.scoring_status === "failed_retrying") && attempts < MAX_ATTEMPTS) {
     return "preparing";
   }
-  // Unknown status — be forward-compatible and assume the pipeline is still working.
   if (s.scoring_status && s.scoring_status !== "failed_retrying" && attempts < MAX_ATTEMPTS) {
     return "preparing";
   }
   return "stale";
 };
 
-export const retryStory = async (id: string) => {
-  const { error } = await supabase
-    .from("stories")
-    .update({ generation_attempts: 0, scoring_status: null })
-    .eq("id", id);
-  if (error) throw error;
-};
