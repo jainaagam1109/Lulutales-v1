@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useQuery as _unused, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Info } from "lucide-react";
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { PageHeader } from "@/components/PageHeader";
 import { InsightsSummary } from "@/components/InsightsSummary";
-import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { pronounsFor } from "@/lib/pronouns";
 
 import { fetchBucketBreakdown } from "@/lib/analytics";
 
