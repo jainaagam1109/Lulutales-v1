@@ -43,32 +43,64 @@ const TextInput = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
   />
 );
 
-const InfoTooltip = ({ text }: { text: string }) => {
+const InfoTooltip = ({ text, label = "info" }: { text: string; label?: string }) => {
   const [show, setShow] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; width: number } | null>(null);
+
+  useEffect(() => {
+    if (!show) {
+      setPos(null);
+      return;
+    }
+    const compute = () => {
+      const r = btnRef.current?.getBoundingClientRect();
+      if (!r) return;
+      const margin = 8;
+      const width = Math.min(240, window.innerWidth - margin * 2);
+      let left = r.left + r.width / 2 - width / 2;
+      left = Math.max(margin, Math.min(left, window.innerWidth - width - margin));
+      setPos({ top: r.bottom + 6, left, width });
+    };
+    compute();
+    const onDown = (e: MouseEvent | TouchEvent) => {
+      if (btnRef.current && !btnRef.current.contains(e.target as Node)) setShow(false);
+    };
+    const onDismiss = () => setShow(false);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown);
+    window.addEventListener("scroll", onDismiss, true);
+    window.addEventListener("resize", onDismiss);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown);
+      window.removeEventListener("scroll", onDismiss, true);
+      window.removeEventListener("resize", onDismiss);
+    };
+  }, [show]);
+
   return (
-    <div className="relative inline-block align-middle">
+    <span className="relative inline-block align-middle">
       <button
+        ref={btnRef}
         type="button"
+        aria-label={`About ${label}`}
         onClick={() => setShow((v) => !v)}
         className="ml-1 text-muted-foreground hover:text-primary-deep"
       >
         <Info className="h-3.5 w-3.5" />
       </button>
-      {show && (
-        <div
-          className="absolute left-1/2 top-full z-10 mt-1 w-56 -translate-x-1/2 rounded-xl border border-border bg-card p-2.5 text-[11px] text-foreground shadow-soft"
+      {show && pos && (
+        <span
+          role="tooltip"
+          style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width }}
+          className="z-50 block rounded-xl border border-border bg-card p-2.5 text-[11px] text-foreground shadow-soft"
           onClick={(e) => e.stopPropagation()}
         >
           {text}
-          <button
-            onClick={() => setShow(false)}
-            className="mt-1 block w-full text-center text-[10px] font-semibold text-primary-deep"
-          >
-            Dismiss
-          </button>
-        </div>
+        </span>
       )}
-    </div>
+    </span>
   );
 };
 
