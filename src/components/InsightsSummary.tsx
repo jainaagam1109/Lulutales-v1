@@ -211,7 +211,7 @@ export const InsightsSummary = ({ profileId, variant = "card", childName }: Insi
               setOpenId={setOpenInfo}
               label="Active days"
               align="right"
-              copy={`How many of the last 7 days ${name} listened to a story. A missed day never resets it — it just shows your real rhythm, with daily listening as the gentle goal.`}
+              copy={`How many of the last 7 days ${name} listened to a story. A missed day never resets it — it just shows their real rhythm, with daily listening as the gentle goal.`}
             />
           </div>
           <div className="mt-0.5 text-[11px] text-muted-foreground">
