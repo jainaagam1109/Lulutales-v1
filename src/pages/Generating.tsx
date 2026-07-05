@@ -82,8 +82,11 @@ const Generating = () => {
   const showFailure = status === "stale" || status === "lang_age_failed";
 
   useEffect(() => {
-    if (showFailure) clearAutoRedirect();
-  }, [showFailure]);
+    if (!showFailure) return;
+    clearAutoRedirect();
+    const t = setTimeout(() => nav("/happy-place", { replace: true }), 2000);
+    return () => clearTimeout(t);
+  }, [showFailure, nav]);
 
 
   return (
