@@ -39,8 +39,11 @@ export const StoryCard = ({
 }) => {
   const location = useLocation();
   const status = getStoryStatus(story);
-  if (status !== "ready") {
+  if (status === "preparing") {
     return <StoryStatusCard story={story} variant={variant} />;
+  }
+  if (status !== "ready") {
+    return null;
   }
 
   const to = story.story_type === "bedtime_text" ? `/bedtime/${story.id}` : `/story/${story.id}`;
