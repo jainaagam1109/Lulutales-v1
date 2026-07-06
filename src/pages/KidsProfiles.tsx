@@ -48,7 +48,7 @@ const FAMILY_SETUPS = [
 ];
 
 const Label = ({ children }: { children: React.ReactNode }) => (
-  <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{children}</div>
+  <div className="mb-1.5 text-[10px] font-semibold text-muted-foreground">{children}</div>
 );
 
 const TextInput = (props: React.InputHTMLAttributes<HTMLInputElement>) => (

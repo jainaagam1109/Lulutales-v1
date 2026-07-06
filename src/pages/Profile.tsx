@@ -51,7 +51,7 @@ const Row = ({
 );
 
 const Label = ({ children }: { children: React.ReactNode }) => (
-  <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{children}</div>
+  <div className="mb-1.5 text-[10px] font-semibold text-muted-foreground">{children}</div>
 );
 
 const TextInput = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
@@ -152,7 +152,7 @@ const Profile = () => {
 
         {editingParent && (
           <section className="rounded-2xl border border-border bg-card p-4 shadow-soft space-y-3">
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">Edit parent account</div>
+            <div className="text-[10px] font-semibold text-primary-deep">Edit parent account</div>
             <div>
               <Label>Name</Label>
               <TextInput

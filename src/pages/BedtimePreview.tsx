@@ -43,7 +43,7 @@ const BedtimePreview = () => {
         {story?.theme && <TagChip label={story.theme} />}
         <h1 className="mt-2 text-2xl font-extrabold text-foreground">{displayTitle}</h1>
 
-        <h2 className="mt-6 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <h2 className="mt-6 text-[11px] font-semibold text-muted-foreground">
           Summary
         </h2>
         {isLoading ? (

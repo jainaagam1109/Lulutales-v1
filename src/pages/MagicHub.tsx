@@ -36,7 +36,7 @@ const MagicHub = () => {
       formatHint: "🎧 Press play — no reading needed · ~5–15 min",
       emoji: "🎙",
       iconBg: "bg-tag-warm-bg text-tag-warm-fg",
-      tag: "BETA",
+      tag: "Beta",
       tagClass: "bg-tag-warm-bg text-tag-warm-fg border-tag-warm-border",
       onClick: () => goPersonalised("/magic-hub/audio"),
       disabled: false,
@@ -48,7 +48,7 @@ const MagicHub = () => {
       formatHint: "📖 You read it from the screen · ~3–10 min",
       emoji: "📖",
       iconBg: "bg-tag-mint-bg text-tag-mint-fg",
-      tag: "BETA",
+      tag: "Beta",
       tagClass: "bg-tag-mint-bg text-tag-mint-fg border-tag-mint-border",
       onClick: () => goPersonalised("/magic-hub/bedtime"),
       disabled: false,
@@ -60,7 +60,7 @@ const MagicHub = () => {
       formatHint: "",
       emoji: "",
       iconBg: "bg-muted text-muted-foreground",
-      tag: "COMING SOON",
+      tag: "Coming soon",
       tagClass: "bg-muted text-muted-foreground border-border",
       onClick: () => {},
       disabled: true,
@@ -84,7 +84,7 @@ const MagicHub = () => {
         <div className="space-y-3">
           {cards.map(({ sectionLabel, title, desc, formatHint, emoji, iconBg, tag, tagClass, onClick, disabled }) => (
             <div key={title}>
-              <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="mb-2 text-[10px] font-semibold text-muted-foreground">
                 {sectionLabel}
               </div>
               <button
@@ -100,7 +100,7 @@ const MagicHub = () => {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <div className="text-sm font-extrabold text-foreground">{title}</div>
-                    <span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${tagClass}`}>
+                    <span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold ${tagClass}`}>
                       {tag}
                     </span>
                   </div>

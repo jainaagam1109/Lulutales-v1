@@ -176,7 +176,7 @@ const Auth = () => {
         )}
 
         <label className="mb-3 block">
-          <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="mb-2 block text-[10px] font-semibold text-muted-foreground">
             Email
           </span>
           <input
@@ -193,7 +193,7 @@ const Auth = () => {
             const tooShort = mode === "signup" && password.length > 0 && password.length < 6;
             return (
               <label className="mb-2 block">
-                <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <span className="mb-2 block text-[10px] font-semibold text-muted-foreground">
                   Password
                 </span>
                 <input
@@ -252,7 +252,7 @@ const Auth = () => {
           <>
             <div className="my-4 flex items-center gap-3">
               <div className="h-px flex-1 bg-border" />
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">or</span>
+              <span className="text-[10px] text-muted-foreground">or</span>
               <div className="h-px flex-1 bg-border" />
             </div>
 

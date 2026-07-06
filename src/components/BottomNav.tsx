@@ -18,7 +18,7 @@ export const BottomNav = () => (
           to={to}
           end={to === "/"}
           className={({ isActive }) =>
-            `flex flex-1 flex-col items-center gap-1 rounded-2xl px-1 py-1.5 text-[10px] uppercase tracking-wider transition-all ${
+            `flex flex-1 flex-col items-center gap-1 rounded-2xl px-1 py-1.5 text-[10px] transition-all ${
               isActive
                 ? "bg-card text-primary-deep shadow-soft"
                 : "text-muted-foreground"
@@ -31,7 +31,7 @@ export const BottomNav = () => (
               <span className="flex items-center gap-1 text-center leading-tight">
                 {label}
                 {premium && (
-                  <span className="rounded-full bg-tag-warm-bg px-1 py-px text-[7px] font-bold uppercase text-tag-warm-fg">
+                  <span className="rounded-full bg-tag-warm-bg px-1 py-px text-[7px] font-bold text-tag-warm-fg">
                     Premium
                   </span>
                 )}

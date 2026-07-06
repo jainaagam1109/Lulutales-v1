@@ -18,7 +18,7 @@ export const TagChip = ({ label, variant }: { label: string; variant?: Variant }
   const v = variant ?? tagVariantFor(label);
   return (
     <span
-      className={`inline-block max-w-full line-clamp-2 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${cls[v]}`}
+      className={`inline-block max-w-full line-clamp-2 rounded-full border px-2 py-0.5 text-[9px] font-bold ${cls[v]}`}
     >
       {label}
     </span>

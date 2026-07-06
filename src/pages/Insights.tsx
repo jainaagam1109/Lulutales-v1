@@ -81,7 +81,7 @@ const Insights = () => {
 
         <section>
           <div className="flex items-center gap-1">
-            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <h2 className="text-[11px] font-semibold text-muted-foreground">
               What {childName} has been exploring
             </h2>
             <span className="relative inline-flex">

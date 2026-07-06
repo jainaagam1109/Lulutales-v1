@@ -234,7 +234,7 @@ export const InsightsSummary = ({ profileId, variant = "card", childName }: Insi
         </div>
         <Clock className="h-4 w-4 text-primary-deep" />
         <div className="mt-1 text-lg font-extrabold leading-tight text-foreground">{fmtMinutes(screenTimeSec)}</div>
-        <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Screen time saved</div>
+        <div className="text-[9px] text-muted-foreground">Screen time saved</div>
       </div>
       <div className="relative flex flex-col items-center rounded-xl bg-secondary/50 p-3 text-center">
         <div className="absolute right-1 top-1">
@@ -249,7 +249,7 @@ export const InsightsSummary = ({ profileId, variant = "card", childName }: Insi
         </div>
         <Palette className="h-4 w-4 text-primary-deep" />
         <div className="mt-1 text-lg font-extrabold text-foreground">{completedThemes.length}</div>
-        <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Life-skills learnt</div>
+        <div className="text-[9px] text-muted-foreground">Life-skills learnt</div>
       </div>
       <div className="relative flex flex-col items-center rounded-xl bg-secondary/50 p-3 text-center">
         <div className="absolute right-1 top-1">
@@ -264,7 +264,7 @@ export const InsightsSummary = ({ profileId, variant = "card", childName }: Insi
         </div>
         <BookOpen className="h-4 w-4 text-primary-deep" />
         <div className="mt-1 text-lg font-extrabold text-foreground">{storiesListened}</div>
-        <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Stories finished</div>
+        <div className="text-[9px] text-muted-foreground">Stories finished</div>
       </div>
     </div>
   );
@@ -313,7 +313,7 @@ export const InsightsSummary = ({ profileId, variant = "card", childName }: Insi
   const badgesBlock = (
     <div className="mt-4">
       <div className="mb-2 flex items-center gap-1">
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="text-[10px] font-semibold text-muted-foreground">
           Badges earned
         </div>
         <InfoBtn

@@ -17,7 +17,7 @@ export const FieldLabel = ({
   tooltip?: string;
   optional?: boolean;
 }) => (
-  <div className="mb-2 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+  <div className="mb-2 flex items-center gap-1 text-[10px] font-semibold text-muted-foreground">
     <span>{children}</span>
     {optional && <span className="font-normal normal-case tracking-normal text-muted-foreground/70">(optional)</span>}
     {tooltip && <InfoTooltip text={tooltip} />}
