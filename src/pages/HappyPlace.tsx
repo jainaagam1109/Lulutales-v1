@@ -212,9 +212,33 @@ const HappyPlace = () => {
     [allStories, query]
   );
 
+  const [allAgeFilter, setAllAgeFilter] = useState<string>("");
+  const [allThemeFilter, setAllThemeFilter] = useState<string>("");
+
+  const allAgeOptions = useMemo(() => {
+    const s = new Set<string>();
+    storyRoom.forEach((x) => x.age_group && s.add(String(x.age_group)));
+    return Array.from(s).sort();
+  }, [storyRoom]);
+  const allThemeOptions = useMemo(() => {
+    const s = new Set<string>();
+    storyRoom.forEach((x) => x.theme && s.add(String(x.theme)));
+    return Array.from(s).sort();
+  }, [storyRoom]);
+
+  const storyRoomFiltered = useMemo(
+    () =>
+      storyRoom.filter(
+        (s) =>
+          (!allAgeFilter || String(s.age_group ?? "") === allAgeFilter) &&
+          (!allThemeFilter || String(s.theme ?? "") === allThemeFilter)
+      ),
+    [storyRoom, allAgeFilter, allThemeFilter]
+  );
+
   const storyRoomSorted = useMemo(
-    () => sortStories(storyRoom, { childAge, playCounts, completedThemes }),
-    [storyRoom, childAge, playCounts, completedThemes]
+    () => sortStories(storyRoomFiltered, { childAge, playCounts, completedThemes }),
+    [storyRoomFiltered, childAge, playCounts, completedThemes]
   );
 
   const madeForChild = useMemo(() => {
