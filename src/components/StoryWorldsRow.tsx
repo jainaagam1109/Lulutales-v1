@@ -74,7 +74,7 @@ const UniverseCard = ({
   );
 };
 
-export const StoryWorldsRow = () => {
+export const StoryWorldsRow = ({ hideHeader = false }: { hideHeader?: boolean } = {}) => {
   const { data: universes = [] } = useQuery({
     queryKey: ["universes-with-counts"],
     queryFn: fetchUniversesWithCounts,
