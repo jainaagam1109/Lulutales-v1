@@ -330,73 +330,103 @@ const KidsProfiles = () => {
               {isEditing && (
                 <div className="border-t border-border p-3 space-y-3">
                   <div>
-                    <Label>Name</Label>
+                    <FieldLabel tooltip="Your child's first name — used to personalise the story.">Name</FieldLabel>
                     <TextInput
                       value={editForm.name ?? ""}
                       onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                      placeholder="e.g. Aanya"
                     />
                   </div>
                   <div>
-                    <Label>Age</Label>
+                    <FieldLabel tooltip="Helps us pitch the language and length just right.">Age</FieldLabel>
                     <TextInput
                       type="number"
                       min={2}
                       max={9}
                       value={editForm.age ?? ""}
                       onChange={(e) => setEditForm((f) => ({ ...f, age: parseInt(e.target.value, 10) || 0 }))}
+                      placeholder="e.g. 5"
                     />
                     <p className="mt-1 text-[11px] text-muted-foreground">Stories are crafted for ages 2–9.</p>
                   </div>
                   <div>
-                    <Label>Gender</Label>
-                    <TextInput
+                    <FieldLabel tooltip="So we use the right pronouns in the story.">Gender</FieldLabel>
+                    <Select
                       value={editForm.gender ?? ""}
-                      onChange={(e) => setEditForm((f) => ({ ...f, gender: e.target.value }))}
-                      placeholder="e.g. Girl, Boy"
+                      onChange={(v) => setEditForm((f) => ({ ...f, gender: v }))}
+                      options={GENDERS}
+                      placeholder="Select gender"
                     />
                   </div>
                   <div>
-                    <Label>Family setup</Label>
-                    <TextInput
+                    <FieldLabel tooltip="This gives a quick overview. You can add more details about family members below.">
+                      Family setup
+                    </FieldLabel>
+                    <Select
                       value={editForm.family_type ?? ""}
-                      onChange={(e) => setEditForm((f) => ({ ...f, family_type: e.target.value }))}
+                      onChange={(v) => setEditForm((f) => ({ ...f, family_type: v }))}
+                      options={FAMILY_SETUPS}
+                      placeholder="Select family setup"
                     />
                   </div>
                   <div>
-                    <Label>City</Label>
+                    <FieldLabel tooltip="Adds local flavour and familiar places.">City</FieldLabel>
                     <TextInput
                       value={editForm.city ?? ""}
                       onChange={(e) => setEditForm((f) => ({ ...f, city: e.target.value }))}
+                      placeholder="e.g. Bengaluru"
                     />
                   </div>
                   <div>
-                    <Label>Personality</Label>
+                    <FieldLabel tooltip="Shapes how the child behaves in the story.">Personality</FieldLabel>
                     <TextInput
                       value={editForm.personality ?? ""}
                       onChange={(e) => setEditForm((f) => ({ ...f, personality: e.target.value }))}
+                      placeholder="e.g. playful, shy, curious"
                     />
                   </div>
                   <div>
-                    <Label>Home type</Label>
+                    <FieldLabel tooltip="So the setting feels like your child's everyday world.">Home type</FieldLabel>
                     <TextInput
                       value={editForm.home_type ?? ""}
                       onChange={(e) => setEditForm((f) => ({ ...f, home_type: e.target.value }))}
+                      placeholder="e.g. Apartment, Independent House"
                     />
                   </div>
                   <div>
-                    <Label>Family members</Label>
+                    <FieldLabel tooltip="The people who appear around your child every day.">Family members</FieldLabel>
                     <TextInput
                       value={editForm.family_members ?? ""}
                       onChange={(e) => setEditForm((f) => ({ ...f, family_members: e.target.value }))}
+                      placeholder="e.g. Father, Mother, Grandparents"
                     />
                   </div>
                   <div>
-                    <div className="mb-1.5 flex items-center">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        Family address terms
-                      </span>
-                      <InfoTooltip label="Family address terms" text="What the child calls each family member, e.g. Father: Papa, Mother: Mummy" />
-                    </div>
+                    <FieldLabel
+                      optional
+                      tooltip="If your child has a sibling, their age helps us write a more realistic family dynamic."
+                    >
+                      Sibling's age
+                    </FieldLabel>
+                    <TextInput
+                      inputMode="numeric"
+                      value={editForm.sibling_age ?? ""}
+                      onChange={(e) =>
+                        setEditForm((f) => ({
+                          ...f,
+                          sibling_age: e.target.value === "" ? null : (parseInt(e.target.value, 10) as any),
+                        }))
+                      }
+                      placeholder="e.g. 3"
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel tooltip="Helps us make the story feel more personal and familiar.">
+                      Family address terms
+                    </FieldLabel>
+                    <p className="-mt-1 mb-2 text-[11px] text-muted-foreground">
+                      e.g. Mother → Mummy, Father → Papa, Dog → Doggo
+                    </p>
                     <AddressTermsEditor value={editTerms} onChange={setEditTerms} />
                   </div>
 
