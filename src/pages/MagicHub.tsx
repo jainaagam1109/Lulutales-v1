@@ -10,6 +10,7 @@ import { fetchStoriesForProfile } from "@/lib/stories";
 const MagicHub = () => {
   const nav = useNavigate();
   const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
+  const childName = typeof window !== "undefined" ? localStorage.getItem("lulutales_child_name") : null;
 
   const { data: stories = [] } = useQuery({
     queryKey: ["stories-for-profile", profileId],
