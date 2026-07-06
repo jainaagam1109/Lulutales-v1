@@ -105,7 +105,7 @@ export const StoryWorldsRow = ({ hideHeader = false }: { hideHeader?: boolean } 
 
   return (
     <section>
-      <SectionHeader title="Story Worlds" />
+      {!hideHeader && <SectionHeader title="Story Worlds" />}
       <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
         {sortedUniverses.map((u) => (
           <UniverseCard
