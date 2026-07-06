@@ -390,20 +390,34 @@ const HappyPlace = () => {
         )}
         {recommended.length > 0 && (
           <section id="recommended" className="scroll-mt-4">
-            <SectionHeader title={childName ? `Recommended for ${childName}` : "Recommended for you"} />
+            <SectionHeader
+              title={childName ? `Recommended for ${childName}` : "Recommended for you"}
+              subtitle={
+                childName
+                  ? `Handpicked stories matched to ${childName}'s interests.`
+                  : "Handpicked stories matched to your child's interests."
+              }
+            />
             <Row stories={recommended} universesMap={universesMap} />
           </section>
         )}
         <section>
-          <SectionHeader title="Story Worlds" />
-          <p className="mb-2 px-5 text-[11px] text-muted-foreground">
-            Shared LuluTales characters, enjoyed by every child.
-          </p>
+          <SectionHeader
+            title="Story Worlds"
+            subtitle="Recurring characters from LuluTales, each with their own story universe."
+          />
           <StoryWorldsRow hideHeader />
         </section>
 
         <section>
-          <SectionHeader title="All stories" />
+          <SectionHeader
+            title="All stories"
+            subtitle={
+              childName
+                ? `Every story in ${childName}'s library, all in one place.`
+                : "Every story in your child's library, all in one place."
+            }
+          />
           <div className="mb-2 flex gap-2 px-5">
             <select
               value={allAgeFilter}
