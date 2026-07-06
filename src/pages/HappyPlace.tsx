@@ -360,11 +360,6 @@ const HappyPlace = () => {
                   : "Stories personalised especially for your child."}
               </p>
             )}
-            {hasActive && childName && (
-              <p className="mb-2 px-5 text-[11px] text-muted-foreground">
-                Made just for {childName} — only visible on this profile.
-              </p>
-            )}
             {madeForChild.length === 0 ? (
               madeForFormat === "saved" ? (
                 <div className="rounded-2xl border border-dashed border-border bg-card/60 p-4 text-sm text-muted-foreground">
