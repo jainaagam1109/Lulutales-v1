@@ -23,7 +23,7 @@ import { fetchCompletedThemes } from "@/lib/analytics";
 
 const PromiseSection = () => (
   <section className="rounded-2xl border border-border border-l-4 border-l-primary bg-card p-4 shadow-soft">
-    <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">
+    <div className="text-[10px] font-semibold text-primary-deep">
       Our promise to you
     </div>
     <p className="mt-1.5 text-sm leading-relaxed text-foreground">
@@ -151,7 +151,7 @@ const Index = () => {
     catalog.length > 0 ? (
       <section>
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <h2 className="text-[11px] font-semibold text-muted-foreground">
             {hasChild && childName ? `Stories ${childName} might love` : "Stories to explore"}
           </h2>
           <button
@@ -189,7 +189,7 @@ const Index = () => {
     return (
       <section>
         <div className="mb-1 flex items-center justify-between">
-          <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <h2 className="text-[11px] font-semibold text-muted-foreground">
             Freshly curated for you
           </h2>
         </div>

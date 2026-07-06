@@ -84,7 +84,7 @@ const MagicHub = () => {
         <div className="space-y-3">
           {cards.map(({ sectionLabel, title, desc, formatHint, emoji, iconBg, tag, tagClass, onClick, disabled }) => (
             <div key={title}>
-              <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="mb-2 text-[10px] font-semibold text-muted-foreground">
                 {sectionLabel}
               </div>
               <button
@@ -100,7 +100,7 @@ const MagicHub = () => {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <div className="text-sm font-extrabold text-foreground">{title}</div>
-                    <span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${tagClass}`}>
+                    <span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold ${tagClass}`}>
                       {tag}
                     </span>
                   </div>

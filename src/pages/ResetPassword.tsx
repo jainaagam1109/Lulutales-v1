@@ -64,7 +64,7 @@ const ResetPassword = () => {
         ) : (
           <>
             <label className="mb-3 block">
-              <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="mb-2 block text-[10px] font-semibold text-muted-foreground">
                 New password
               </span>
               <input
@@ -76,7 +76,7 @@ const ResetPassword = () => {
               />
             </label>
             <label className="mb-5 block">
-              <span className="mb-2 block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="mb-2 block text-[10px] font-semibold text-muted-foreground">
                 Confirm password
               </span>
               <input

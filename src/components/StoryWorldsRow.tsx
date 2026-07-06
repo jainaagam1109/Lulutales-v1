@@ -67,7 +67,7 @@ const UniverseCard = ({
         )}
       </div>
       <div className="line-clamp-1 text-xs font-bold text-foreground">{name}</div>
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+      <div className="text-[10px] font-semibold text-muted-foreground">
         {count} {count === 1 ? "story" : "stories"}
       </div>
     </Link>

@@ -79,7 +79,7 @@ const StoryDetail = () => {
           const canToggle = summary.length > 200;
           return (
             <div className="mt-4">
-              <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="mb-1 text-[10px] font-semibold text-muted-foreground">
                 About this story
               </div>
               <p
@@ -131,7 +131,7 @@ const StoryDetail = () => {
 
             {story.story_type !== "bedtime_text" && !(story as any).universe_id && (
               <>
-                <h2 className="mt-7 mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <h2 className="mt-7 mb-2 text-[11px] font-semibold text-muted-foreground">
                   Episodes
                 </h2>
                 <div className="rounded-2xl border border-border bg-card">

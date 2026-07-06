@@ -524,11 +524,11 @@ const Player = () => {
 
         <div className="text-center">
           {typeof universeName === "string" && (
-            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="mb-1 text-[10px] font-semibold text-muted-foreground">
               {universeName}
             </div>
           )}
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">{story?.theme}</div>
+          <div className="text-[10px] font-semibold text-primary-deep">{story?.theme}</div>
           <h1 className="mt-1 text-xl font-extrabold text-foreground">{story?.title ?? "Loading…"}</h1>
           <div className="text-xs text-muted-foreground">
             {current

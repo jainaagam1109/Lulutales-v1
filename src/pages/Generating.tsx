@@ -98,7 +98,7 @@ const Generating = () => {
             <Loader2 className="absolute inset-0 m-auto h-32 w-32 animate-spin text-primary-foreground/40" />
           )}
         </div>
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">
+        <div className="text-[10px] font-semibold text-primary-deep">
           {stalled ? "Still working" : "Creating magic"}
         </div>
         <h1 className="mt-2 text-xl font-extrabold text-foreground">

@@ -95,7 +95,7 @@ export const StoryCard = ({
       {isType3 ? (
         <div className="flex min-w-0 flex-1 flex-col space-y-1.5 p-3">
           {characterName ? (
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">
+            <span className="text-[10px] font-semibold text-primary-deep">
               {characterName}
             </span>
           ) : null}

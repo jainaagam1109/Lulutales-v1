@@ -50,7 +50,7 @@ const Universe = () => {
         )}
         {aboutFields.length > 0 && (
           <section className="mb-5 rounded-2xl border border-border bg-card/60 p-4">
-            <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-primary-deep">
+            <h2 className="mb-3 text-xs font-bold text-primary-deep">
               About
             </h2>
             <dl className="space-y-2 text-sm">

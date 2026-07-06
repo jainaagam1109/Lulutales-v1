@@ -19,7 +19,7 @@ export const StoryStatusCard = ({ story, variant = "grid" }: Props) => {
           <Loader2 className="h-5 w-5 animate-spin text-primary-deep" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">
+          <div className="text-[10px] font-semibold text-primary-deep">
             In progress
           </div>
           <div className="truncate text-sm font-bold text-foreground">{story.title || "Your story"}</div>
@@ -38,7 +38,7 @@ export const StoryStatusCard = ({ story, variant = "grid" }: Props) => {
         <Loader2 className="h-6 w-6 animate-spin text-primary-deep" />
       </div>
       <div className="space-y-1 p-3">
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-primary-deep">
+        <div className="text-[10px] font-semibold text-primary-deep">
           In progress
         </div>
         <div className="line-clamp-2 text-xs font-bold leading-snug text-foreground">

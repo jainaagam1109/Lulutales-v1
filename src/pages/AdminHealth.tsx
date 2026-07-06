@@ -41,7 +41,7 @@ const AdminHealth = () => {
 
   const Tile = ({ label, value }: { label: string; value: string | number }) => (
     <div className="rounded-2xl border border-border bg-card p-3">
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+      <div className="text-[10px] font-semibold text-muted-foreground">
         {label}
       </div>
       <div className="mt-1 text-xl font-extrabold text-foreground">{value}</div>
@@ -68,13 +68,13 @@ const AdminHealth = () => {
         </div>
 
         <div className="mt-4 rounded-2xl border border-border bg-card p-3">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className="text-[10px] font-semibold text-muted-foreground">
             Avg generation time
           </div>
           <div className="mt-1 text-xl font-extrabold text-foreground">—</div>
         </div>
 
-        <h2 className="mt-6 mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <h2 className="mt-6 mb-2 text-[10px] font-semibold text-muted-foreground">
           Recent generations
         </h2>
         <div className="max-h-[420px] overflow-y-auto rounded-2xl border border-border bg-card">
@@ -93,7 +93,7 @@ const AdminHealth = () => {
                 </div>
               </div>
               <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
                   r.is_generated
                     ? "bg-secondary text-foreground"
                     : "border border-border text-muted-foreground"

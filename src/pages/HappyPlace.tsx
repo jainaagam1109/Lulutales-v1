@@ -302,7 +302,7 @@ const HappyPlace = () => {
         {hasActive && (
           <section>
             <div className="relative mb-2 flex items-center justify-between px-5">
-              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <h2 className="text-[11px] font-semibold text-muted-foreground">
                 {childName ? `Made for ${childName}` : "Made for you"}
               </h2>
               <button
