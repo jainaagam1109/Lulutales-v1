@@ -353,6 +353,13 @@ const HappyPlace = () => {
                 </div>
               )}
             </div>
+            {hasActive && (
+              <p className="mb-2 px-5 text-xs text-muted-foreground">
+                {childName
+                  ? `Stories personalised especially for ${childName}.`
+                  : "Stories personalised especially for your child."}
+              </p>
+            )}
             {hasActive && childName && (
               <p className="mb-2 px-5 text-[11px] text-muted-foreground">
                 Made just for {childName} — only visible on this profile.
