@@ -104,6 +104,79 @@ const InfoBtn = ({ id, openId, setOpenId, label, copy, className }: InfoBtnProps
   );
 };
 
+type BadgeChipProps = {
+  badge: { id: string; emoji: string; label: string; description: string };
+  openId: string | null;
+  setOpenId: (id: string | null) => void;
+};
+
+const BadgeChip = ({ badge, openId, setOpenId }: BadgeChipProps) => {
+  const tipId = `badge-${badge.id}`;
+  const open = openId === tipId;
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; width: number } | null>(null);
+
+  useEffect(() => {
+    if (!open) {
+      setPos(null);
+      return;
+    }
+    const compute = () => {
+      const r = btnRef.current?.getBoundingClientRect();
+      if (!r) return;
+      const margin = 8;
+      const width = Math.min(240, window.innerWidth - margin * 2);
+      let left = r.left + r.width / 2 - width / 2;
+      left = Math.max(margin, Math.min(left, window.innerWidth - width - margin));
+      setPos({ top: r.bottom + 6, left, width });
+    };
+    compute();
+    const onDown = (e: MouseEvent | TouchEvent) => {
+      if (btnRef.current && !btnRef.current.contains(e.target as Node)) setOpenId(null);
+    };
+    const onDismiss = () => setOpenId(null);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown);
+    window.addEventListener("scroll", onDismiss, true);
+    window.addEventListener("resize", onDismiss);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown);
+      window.removeEventListener("scroll", onDismiss, true);
+      window.removeEventListener("resize", onDismiss);
+    };
+  }, [open, setOpenId]);
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        type="button"
+        aria-label={`${badge.label} — badge info`}
+        aria-expanded={open}
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpenId(open ? null : tipId);
+        }}
+        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-bold text-foreground hover:border-primary/40"
+      >
+        <span className="text-sm">{badge.emoji}</span>
+        {badge.label}
+      </button>
+      {open && pos && (
+        <span
+          role="tooltip"
+          style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width }}
+          className="z-50 rounded-xl border border-border bg-card p-2.5 text-left text-[11px] leading-snug text-foreground shadow-lg"
+        >
+          <span className="mb-0.5 block font-bold">{badge.emoji} {badge.label}</span>
+          {badge.description}
+        </span>
+      )}
+    </>
+  );
+};
+
 export const InsightsSummary = ({ profileId, variant = "card", childName }: InsightsSummaryProps) => {
   const nav = useNavigate();
   const enabled = !!profileId;
