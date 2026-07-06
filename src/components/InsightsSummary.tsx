@@ -259,13 +259,7 @@ export const InsightsSummary = ({ profileId, variant = "card", childName }: Insi
       ) : (
         <div className="flex flex-wrap gap-2">
           {visibleBadges.map((b) => (
-            <div
-              key={b.id}
-              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-bold text-foreground"
-            >
-              <span className="text-sm">{b.emoji}</span>
-              {b.label}
-            </div>
+            <BadgeChip key={b.id} badge={b} openId={openInfo} setOpenId={setOpenInfo} />
           ))}
           {showSeeAll && (
             <button
