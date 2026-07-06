@@ -137,7 +137,7 @@ const KidsProfiles = () => {
     const { data } = await (supabase as any)
       .from("child_profiles")
       .select(
-        "id, name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, status"
+        "id, name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, status"
       )
       .eq("user_id", user.id)
       .neq("status", "deleted")
@@ -168,6 +168,11 @@ const KidsProfiles = () => {
     const age = editForm.age ?? 0;
     if (!name) return toast.error("Name is required");
     if (!age || age < 2 || age > 9) return toast.error("Stories are crafted for ages 2–9.");
+    const siblingRaw = editForm.sibling_age;
+    const siblingNum =
+      siblingRaw === null || siblingRaw === undefined || String(siblingRaw).trim() === ""
+        ? null
+        : Number(siblingRaw);
     const updateData = {
       name,
       age,
@@ -178,6 +183,7 @@ const KidsProfiles = () => {
       home_type: editForm.home_type?.trim() || null,
       family_members: editForm.family_members?.trim() || null,
       family_address_terms: serializeAddressTerms(editTerms) || null,
+      sibling_age: Number.isFinite(siblingNum) ? siblingNum : null,
     };
     const { error } = await (supabase as any).from("child_profiles").update(updateData).eq("id", id);
     if (error) return toast.error("Failed to save profile");
@@ -190,6 +196,7 @@ const KidsProfiles = () => {
     toast.success("Profile updated");
     reload();
   };
+
 
   const makeActive = async (id: string) => {
     try {
