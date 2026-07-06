@@ -76,6 +76,11 @@ const MagicHub = () => {
       />
 
       <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
+        {childName && (
+          <p className="mb-3 text-[11px] text-muted-foreground">
+            Made just for {childName} — only visible on this profile.
+          </p>
+        )}
         <div className="space-y-3">
           {cards.map(({ sectionLabel, title, desc, formatHint, emoji, iconBg, tag, tagClass, onClick, disabled }) => (
             <div key={title}>
