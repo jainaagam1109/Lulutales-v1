@@ -193,11 +193,16 @@ const Index = () => {
 
     return (
       <section>
-        <div className="mb-1 flex items-center justify-between">
-          <h2 className="text-[11px] font-semibold text-muted-foreground">
+        <div className="mb-0.5 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-foreground">
             Freshly curated for you
           </h2>
         </div>
+        <p className="mb-1 text-xs text-muted-foreground">
+          {childName
+            ? `New stories added just for ${childName}, updated regularly.`
+            : "New stories added just for your child, updated regularly."}
+        </p>
         {childName && (
           <p className="mb-2 text-[11px] text-muted-foreground">
             Made just for {childName} — only visible on this profile.
