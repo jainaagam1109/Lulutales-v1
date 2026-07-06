@@ -188,11 +188,16 @@ const Index = () => {
 
     return (
       <section>
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-1 flex items-center justify-between">
           <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             Freshly curated for you
           </h2>
         </div>
+        {childName && (
+          <p className="mb-2 text-[11px] text-muted-foreground">
+            Made just for {childName} — only visible on this profile.
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-3">
           {ready.map((s) => (
             <StoryCard key={s.id} story={s} universeName={nameFor(s)} />
