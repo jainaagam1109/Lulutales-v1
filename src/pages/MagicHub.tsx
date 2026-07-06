@@ -10,6 +10,7 @@ import { fetchStoriesForProfile } from "@/lib/stories";
 const MagicHub = () => {
   const nav = useNavigate();
   const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
+  const childName = typeof window !== "undefined" ? localStorage.getItem("lulutales_child_name") : null;
 
   const { data: stories = [] } = useQuery({
     queryKey: ["stories-for-profile", profileId],
@@ -75,6 +76,11 @@ const MagicHub = () => {
       />
 
       <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
+        {childName && (
+          <p className="mb-3 text-[11px] text-muted-foreground">
+            Made just for {childName} — only visible on this profile.
+          </p>
+        )}
         <div className="space-y-3">
           {cards.map(({ sectionLabel, title, desc, formatHint, emoji, iconBg, tag, tagClass, onClick, disabled }) => (
             <div key={title}>

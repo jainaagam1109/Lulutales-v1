@@ -212,9 +212,33 @@ const HappyPlace = () => {
     [allStories, query]
   );
 
+  const [allAgeFilter, setAllAgeFilter] = useState<string>("");
+  const [allThemeFilter, setAllThemeFilter] = useState<string>("");
+
+  const allAgeOptions = useMemo(() => {
+    const s = new Set<string>();
+    storyRoom.forEach((x) => x.age_group && s.add(String(x.age_group)));
+    return Array.from(s).sort();
+  }, [storyRoom]);
+  const allThemeOptions = useMemo(() => {
+    const s = new Set<string>();
+    storyRoom.forEach((x) => x.theme && s.add(String(x.theme)));
+    return Array.from(s).sort();
+  }, [storyRoom]);
+
+  const storyRoomFiltered = useMemo(
+    () =>
+      storyRoom.filter(
+        (s) =>
+          (!allAgeFilter || String(s.age_group ?? "") === allAgeFilter) &&
+          (!allThemeFilter || String(s.theme ?? "") === allThemeFilter)
+      ),
+    [storyRoom, allAgeFilter, allThemeFilter]
+  );
+
   const storyRoomSorted = useMemo(
-    () => sortStories(storyRoom, { childAge, playCounts, completedThemes }),
-    [storyRoom, childAge, playCounts, completedThemes]
+    () => sortStories(storyRoomFiltered, { childAge, playCounts, completedThemes }),
+    [storyRoomFiltered, childAge, playCounts, completedThemes]
   );
 
   const madeForChild = useMemo(() => {
@@ -329,6 +353,11 @@ const HappyPlace = () => {
                 </div>
               )}
             </div>
+            {hasActive && childName && (
+              <p className="mb-2 px-5 text-[11px] text-muted-foreground">
+                Made just for {childName} — only visible on this profile.
+              </p>
+            )}
             {madeForChild.length === 0 ? (
               madeForFormat === "saved" ? (
                 <div className="rounded-2xl border border-dashed border-border bg-card/60 p-4 text-sm text-muted-foreground">
@@ -358,10 +387,40 @@ const HappyPlace = () => {
             <Row stories={recommended} universesMap={universesMap} />
           </section>
         )}
-        <StoryWorldsRow />
+        <section>
+          <SectionHeader title="Story Worlds" />
+          <p className="mb-2 px-5 text-[11px] text-muted-foreground">
+            Shared LuluTales characters, enjoyed by every child.
+          </p>
+          <StoryWorldsRow hideHeader />
+        </section>
 
         <section>
           <SectionHeader title="All stories" />
+          <div className="mb-2 flex gap-2 px-5">
+            <select
+              value={allAgeFilter}
+              onChange={(e) => setAllAgeFilter(e.target.value)}
+              aria-label="Filter by age"
+              className="flex-1 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground focus:border-primary focus:outline-none"
+            >
+              <option value="">All ages</option>
+              {allAgeOptions.map((a) => (
+                <option key={a} value={a}>{a}</option>
+              ))}
+            </select>
+            <select
+              value={allThemeFilter}
+              onChange={(e) => setAllThemeFilter(e.target.value)}
+              aria-label="Filter by theme"
+              className="flex-1 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground focus:border-primary focus:outline-none"
+            >
+              <option value="">All themes</option>
+              {allThemeOptions.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
           <Row stories={storyRoomSorted} emptyVariant="coming-soon" universesMap={universesMap} />
         </section>
 

@@ -11,6 +11,8 @@ import {
   AddressTermsEditor,
   parseAddressTerms,
   serializeAddressTerms,
+  FieldLabel,
+  Select,
   type AddressTerm,
 } from "@/components/StoryFormFields";
 import { softDeleteProfile, loadActiveProfileForUser } from "@/lib/activeProfile";
@@ -27,8 +29,23 @@ type Kid = {
   home_type: string | null;
   family_members: string | null;
   family_address_terms: string | null;
+  sibling_age: number | null;
   status: "active" | "inactive" | "deleted";
 };
+
+const GENDERS = [
+  { label: "Girl", value: "Girl" },
+  { label: "Boy", value: "Boy" },
+  { label: "Prefer not to say", value: "Prefer not to say" },
+];
+
+const FAMILY_SETUPS = [
+  { label: "Nuclear family", value: "Nuclear family" },
+  { label: "Single parent", value: "Single parent" },
+  { label: "Joint family", value: "Joint family" },
+  { label: "Lives with grandparents", value: "Lives with grandparents" },
+  { label: "Other", value: "Other" },
+];
 
 const Label = ({ children }: { children: React.ReactNode }) => (
   <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{children}</div>
@@ -120,7 +137,7 @@ const KidsProfiles = () => {
     const { data } = await (supabase as any)
       .from("child_profiles")
       .select(
-        "id, name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, status"
+        "id, name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, status"
       )
       .eq("user_id", user.id)
       .neq("status", "deleted")
@@ -151,6 +168,11 @@ const KidsProfiles = () => {
     const age = editForm.age ?? 0;
     if (!name) return toast.error("Name is required");
     if (!age || age < 2 || age > 9) return toast.error("Stories are crafted for ages 2–9.");
+    const siblingRaw = editForm.sibling_age;
+    const siblingNum =
+      siblingRaw === null || siblingRaw === undefined || String(siblingRaw).trim() === ""
+        ? null
+        : Number(siblingRaw);
     const updateData = {
       name,
       age,
@@ -161,6 +183,7 @@ const KidsProfiles = () => {
       home_type: editForm.home_type?.trim() || null,
       family_members: editForm.family_members?.trim() || null,
       family_address_terms: serializeAddressTerms(editTerms) || null,
+      sibling_age: Number.isFinite(siblingNum) ? siblingNum : null,
     };
     const { error } = await (supabase as any).from("child_profiles").update(updateData).eq("id", id);
     if (error) return toast.error("Failed to save profile");
@@ -173,6 +196,7 @@ const KidsProfiles = () => {
     toast.success("Profile updated");
     reload();
   };
+
 
   const makeActive = async (id: string) => {
     try {
@@ -306,73 +330,103 @@ const KidsProfiles = () => {
               {isEditing && (
                 <div className="border-t border-border p-3 space-y-3">
                   <div>
-                    <Label>Name</Label>
+                    <FieldLabel tooltip="Your child's first name — used to personalise the story.">Name</FieldLabel>
                     <TextInput
                       value={editForm.name ?? ""}
                       onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                      placeholder="e.g. Aanya"
                     />
                   </div>
                   <div>
-                    <Label>Age</Label>
+                    <FieldLabel tooltip="Helps us pitch the language and length just right.">Age</FieldLabel>
                     <TextInput
                       type="number"
                       min={2}
                       max={9}
                       value={editForm.age ?? ""}
                       onChange={(e) => setEditForm((f) => ({ ...f, age: parseInt(e.target.value, 10) || 0 }))}
+                      placeholder="e.g. 5"
                     />
                     <p className="mt-1 text-[11px] text-muted-foreground">Stories are crafted for ages 2–9.</p>
                   </div>
                   <div>
-                    <Label>Gender</Label>
-                    <TextInput
+                    <FieldLabel tooltip="So we use the right pronouns in the story.">Gender</FieldLabel>
+                    <Select
                       value={editForm.gender ?? ""}
-                      onChange={(e) => setEditForm((f) => ({ ...f, gender: e.target.value }))}
-                      placeholder="e.g. Girl, Boy"
+                      onChange={(v) => setEditForm((f) => ({ ...f, gender: v }))}
+                      options={GENDERS}
+                      placeholder="Select gender"
                     />
                   </div>
                   <div>
-                    <Label>Family setup</Label>
-                    <TextInput
+                    <FieldLabel tooltip="This gives a quick overview. You can add more details about family members below.">
+                      Family setup
+                    </FieldLabel>
+                    <Select
                       value={editForm.family_type ?? ""}
-                      onChange={(e) => setEditForm((f) => ({ ...f, family_type: e.target.value }))}
+                      onChange={(v) => setEditForm((f) => ({ ...f, family_type: v }))}
+                      options={FAMILY_SETUPS}
+                      placeholder="Select family setup"
                     />
                   </div>
                   <div>
-                    <Label>City</Label>
+                    <FieldLabel tooltip="Adds local flavour and familiar places.">City</FieldLabel>
                     <TextInput
                       value={editForm.city ?? ""}
                       onChange={(e) => setEditForm((f) => ({ ...f, city: e.target.value }))}
+                      placeholder="e.g. Bengaluru"
                     />
                   </div>
                   <div>
-                    <Label>Personality</Label>
+                    <FieldLabel tooltip="Shapes how the child behaves in the story.">Personality</FieldLabel>
                     <TextInput
                       value={editForm.personality ?? ""}
                       onChange={(e) => setEditForm((f) => ({ ...f, personality: e.target.value }))}
+                      placeholder="e.g. playful, shy, curious"
                     />
                   </div>
                   <div>
-                    <Label>Home type</Label>
+                    <FieldLabel tooltip="So the setting feels like your child's everyday world.">Home type</FieldLabel>
                     <TextInput
                       value={editForm.home_type ?? ""}
                       onChange={(e) => setEditForm((f) => ({ ...f, home_type: e.target.value }))}
+                      placeholder="e.g. Apartment, Independent House"
                     />
                   </div>
                   <div>
-                    <Label>Family members</Label>
+                    <FieldLabel tooltip="The people who appear around your child every day.">Family members</FieldLabel>
                     <TextInput
                       value={editForm.family_members ?? ""}
                       onChange={(e) => setEditForm((f) => ({ ...f, family_members: e.target.value }))}
+                      placeholder="e.g. Father, Mother, Grandparents"
                     />
                   </div>
                   <div>
-                    <div className="mb-1.5 flex items-center">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        Family address terms
-                      </span>
-                      <InfoTooltip label="Family address terms" text="What the child calls each family member, e.g. Father: Papa, Mother: Mummy" />
-                    </div>
+                    <FieldLabel
+                      optional
+                      tooltip="If your child has a sibling, their age helps us write a more realistic family dynamic."
+                    >
+                      Sibling's age
+                    </FieldLabel>
+                    <TextInput
+                      inputMode="numeric"
+                      value={editForm.sibling_age ?? ""}
+                      onChange={(e) =>
+                        setEditForm((f) => ({
+                          ...f,
+                          sibling_age: e.target.value === "" ? null : (parseInt(e.target.value, 10) as any),
+                        }))
+                      }
+                      placeholder="e.g. 3"
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel tooltip="Helps us make the story feel more personal and familiar.">
+                      Family address terms
+                    </FieldLabel>
+                    <p className="-mt-1 mb-2 text-[11px] text-muted-foreground">
+                      e.g. Mother → Mummy, Father → Papa, Dog → Doggo
+                    </p>
                     <AddressTermsEditor value={editTerms} onChange={setEditTerms} />
                   </div>
 
