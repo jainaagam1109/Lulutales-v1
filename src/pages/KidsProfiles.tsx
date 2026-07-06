@@ -11,6 +11,8 @@ import {
   AddressTermsEditor,
   parseAddressTerms,
   serializeAddressTerms,
+  FieldLabel,
+  Select,
   type AddressTerm,
 } from "@/components/StoryFormFields";
 import { softDeleteProfile, loadActiveProfileForUser } from "@/lib/activeProfile";
@@ -27,8 +29,23 @@ type Kid = {
   home_type: string | null;
   family_members: string | null;
   family_address_terms: string | null;
+  sibling_age: number | null;
   status: "active" | "inactive" | "deleted";
 };
+
+const GENDERS = [
+  { label: "Girl", value: "Girl" },
+  { label: "Boy", value: "Boy" },
+  { label: "Prefer not to say", value: "Prefer not to say" },
+];
+
+const FAMILY_SETUPS = [
+  { label: "Nuclear family", value: "Nuclear family" },
+  { label: "Single parent", value: "Single parent" },
+  { label: "Joint family", value: "Joint family" },
+  { label: "Lives with grandparents", value: "Lives with grandparents" },
+  { label: "Other", value: "Other" },
+];
 
 const Label = ({ children }: { children: React.ReactNode }) => (
   <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{children}</div>
