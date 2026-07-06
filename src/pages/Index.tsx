@@ -150,8 +150,8 @@ const Index = () => {
   const Catalog = () =>
     catalog.length > 0 ? (
       <section>
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-[11px] font-semibold text-muted-foreground">
+        <div className="mb-0.5 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-foreground">
             {hasChild && childName ? `Stories ${childName} might love` : "Stories to explore"}
           </h2>
           <button
@@ -161,6 +161,11 @@ const Index = () => {
             See all →
           </button>
         </div>
+        <p className="mb-2 text-xs text-muted-foreground">
+          {hasChild && childName
+            ? `Picks based on what ${childName} has enjoyed so far.`
+            : "Picks based on what your child has enjoyed so far."}
+        </p>
         <div className="grid grid-cols-2 gap-3">
           {catalog.map((s) => (
             <StoryCard key={s.id} story={s} universeName={nameFor(s)} />
