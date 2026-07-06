@@ -89,7 +89,7 @@ export const fetchBestStreak = async (profileId: string): Promise<number> => {
 };
 
 // Badge types and computation (replaces computeBadges from @/lib/progress for DB-backed flows)
-export type Badge = { id: string; emoji: string; label: string };
+export type Badge = { id: string; emoji: string; label: string; description: string };
 
 const STREAK_TIERS = [
   { days: 7, emoji: "🔥", label: "7-day streak" },
@@ -111,7 +111,12 @@ export const computeBadgesFromDb = (
 ): Badge[] => {
   const badges: Badge[] = [];
   if (storiesCompleted >= 1) {
-    badges.push({ id: "first-story", emoji: "🌟", label: "First story" });
+    badges.push({
+      id: "first-story",
+      emoji: "🌟",
+      label: "First story",
+      description: "Awarded for finishing your first story.",
+    });
   }
   const seenBuckets = new Set<string>();
   for (const theme of completedThemes) {
@@ -119,11 +124,21 @@ export const computeBadgesFromDb = (
     if (!bucket || seenBuckets.has(bucket)) continue;
     seenBuckets.add(bucket);
     const meta = getBucketMeta(bucket);
-    badges.push({ id: `bucket-${bucket}`, emoji: meta.emoji, label: meta.badgeLabel });
+    badges.push({
+      id: `bucket-${bucket}`,
+      emoji: meta.emoji,
+      label: meta.badgeLabel,
+      description: `Awarded for exploring the "${bucket}" life skill for the first time.`,
+    });
   }
   for (const tier of STREAK_TIERS) {
     if (bestStreak >= tier.days) {
-      badges.push({ id: `streak-${tier.days}`, emoji: tier.emoji, label: tier.label });
+      badges.push({
+        id: `streak-${tier.days}`,
+        emoji: tier.emoji,
+        label: tier.label,
+        description: `Awarded for listening on ${tier.days} days in a row.`,
+      });
     }
   }
   return badges;
