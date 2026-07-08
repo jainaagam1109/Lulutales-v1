@@ -82,7 +82,7 @@ export const createPersonalisedStory = async (input: {
 }): Promise<Story> => {
   const { data, error } = await supabase
     .from("stories")
-    .insert({ ...input, is_featured: false })
+    .insert({ ...input, is_featured: false, bucket_key: resolveBucket(input.theme) })
     .select()
     .single();
   if (error) throw error;

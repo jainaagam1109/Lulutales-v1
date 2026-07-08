@@ -121,6 +121,7 @@ const AdminUpload = () => {
         .insert({
           title: title.trim(),
           theme: theme.trim() || null,
+          bucket_key: resolveBucket(theme.trim() || null),
           thumbnail,
           age_group: ageGroup.trim() || null,
           description: summary.trim() || null,
