@@ -70,7 +70,7 @@ export const StoryCard = ({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1">
-            {story.theme && <TagChip label={story.theme} />}
+            {(() => { const l = bucketCardName(story); return l && <TagChip label={l} />; })()}
             {badge && <TagChip label={badge.label} variant={badge.variant} />}
           </div>
           <div className="mt-1 truncate text-sm font-bold text-foreground">{story.title}</div>
@@ -119,7 +119,7 @@ export const StoryCard = ({
       ) : (
         <div className="flex min-w-0 flex-1 flex-col space-y-1 p-3">
           <div className="flex flex-wrap items-center gap-1">
-            {story.theme && <TagChip label={story.theme} />}
+            {(() => { const l = bucketCardName(story); return l && <TagChip label={l} />; })()}
             {badge && <TagChip label={badge.label} variant={badge.variant} />}
           </div>
           <div className="line-clamp-2 min-h-[2.25rem] text-xs font-bold leading-snug text-foreground">{story.title}</div>
