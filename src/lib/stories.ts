@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/events";
+import { resolveBucket } from "@/lib/themeCatalog";
 import type { Tables, Json } from "@/integrations/supabase/types";
 
 export type Story = Tables<"stories">;
