@@ -4,6 +4,13 @@ import { getStoryStatus } from "@/lib/storyStatus";
 import { TagChip } from "./TagChip";
 import { StoryStatusCard } from "./StoryStatusCard";
 import { useThemeBuckets, resolveThemeLabel } from "@/hooks/useThemeBuckets";
+import { BUCKETS, type BucketKey } from "@/lib/themeCatalog";
+
+const bucketCardName = (story: Story): string | null => {
+  const key = (story as any).bucket_key as BucketKey | null | undefined;
+  if (key && BUCKETS[key]) return BUCKETS[key].cardName;
+  return story.theme ?? null;
+};
 
 const formatBadgeFor = (story_type: Story["story_type"]): { label: string; variant: "mint" | "warm" } | null => {
   if (story_type === "personalised_audio") return { label: "🎧 Listen · ~15 min", variant: "mint" };
