@@ -31,7 +31,7 @@ import { createPersonalisedStory } from "@/lib/stories";
 import { trackEvent } from "@/lib/events";
 import { getThemeVisual } from "@/lib/themeEmoji";
 import { supabase } from "@/integrations/supabase/client";
-import { getThemeOptions, CUSTOM_THEME_VALUE } from "@/lib/themeOptions";
+import { getThemeOptions, CUSTOM_THEME_VALUE } from "@/lib/themeCatalog";
 
 type Props = {
   storyType: "personalised_audio" | "bedtime_text";
