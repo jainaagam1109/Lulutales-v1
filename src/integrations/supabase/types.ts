@@ -245,6 +245,7 @@ export type Database = {
       stories: {
         Row: {
           age_group: string | null
+          bucket_key: string | null
           child_profile_id: string | null
           created_at: string
           description: string | null
@@ -264,6 +265,7 @@ export type Database = {
         }
         Insert: {
           age_group?: string | null
+          bucket_key?: string | null
           child_profile_id?: string | null
           created_at?: string
           description?: string | null
@@ -283,6 +285,7 @@ export type Database = {
         }
         Update: {
           age_group?: string | null
+          bucket_key?: string | null
           child_profile_id?: string | null
           created_at?: string
           description?: string | null

@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/events";
+import { resolveBucket } from "@/lib/themeCatalog";
 import type { Tables, Json } from "@/integrations/supabase/types";
 
 export type Story = Tables<"stories">;
@@ -81,7 +82,7 @@ export const createPersonalisedStory = async (input: {
 }): Promise<Story> => {
   const { data, error } = await supabase
     .from("stories")
-    .insert({ ...input, is_featured: false })
+    .insert({ ...input, is_featured: false, bucket_key: resolveBucket(input.theme) })
     .select()
     .single();
   if (error) throw error;

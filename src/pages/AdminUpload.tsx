@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveBucket } from "@/lib/themeCatalog";
 import { PhoneShell } from "@/components/PhoneShell";
 import { toast } from "sonner";
 import { Upload, X } from "lucide-react";
@@ -120,6 +121,7 @@ const AdminUpload = () => {
         .insert({
           title: title.trim(),
           theme: theme.trim() || null,
+          bucket_key: resolveBucket(theme.trim() || null),
           thumbnail,
           age_group: ageGroup.trim() || null,
           description: summary.trim() || null,
