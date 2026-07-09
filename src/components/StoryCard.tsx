@@ -3,7 +3,6 @@ import type { Story } from "@/lib/stories";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { TagChip } from "./TagChip";
 import { StoryStatusCard } from "./StoryStatusCard";
-import { useThemeBuckets, resolveThemeLabel } from "@/hooks/useThemeBuckets";
 import { BUCKETS, type BucketKey } from "@/lib/themeCatalog";
 
 const bucketCardName = (story: Story): string | null => {
@@ -82,8 +81,6 @@ export const StoryCard = ({
   // Type 3 = character-universe stories. Detected via universe_id.
   const isType3 = !!(story as any).universe_id;
   const characterName = isType3 ? (universeName ?? null) : null;
-  const themeBuckets = useThemeBuckets();
-  const themeLabel = isType3 ? resolveThemeLabel(themeBuckets, story.theme) : story.theme;
 
   const tileBg = TILE_TINTS[hashId(story.id) % TILE_TINTS.length];
 
@@ -109,9 +106,9 @@ export const StoryCard = ({
           <div className="line-clamp-2 min-h-[2.25rem] text-xs font-bold leading-snug text-foreground">
             {story.title}
           </div>
-          {(themeLabel || badge) && (
+          {(bucketCardName(story) || badge) && (
             <div className="flex flex-wrap items-center gap-1 pt-0.5">
-              {themeLabel && <TagChip label={themeLabel} />}
+              {bucketCardName(story) && <TagChip label={bucketCardName(story)!} />}
               {badge && <TagChip label={badge.label} variant={badge.variant} />}
             </div>
           )}
