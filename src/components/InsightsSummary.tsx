@@ -8,9 +8,8 @@ import {
   fetchBestStreak,
   fetchScreenTimeSeconds,
   fetchActiveDaysLast7,
-  computeBadgesFromDb,
+  fetchBadgeProgress,
 } from "@/lib/analytics";
-import { useThemeBuckets } from "@/hooks/useThemeBuckets";
 import { cn } from "@/lib/utils";
 
 interface InsightsSummaryProps {
