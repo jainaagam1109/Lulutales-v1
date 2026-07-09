@@ -122,7 +122,7 @@ const Insights = () => {
             <div className="space-y-3">
               {bucketBars.map((b) => (
                 <div key={b.bucket}>
-                  <div className="mb-1 text-xs font-bold text-foreground">{b.bucket}</div>
+                  <div className="mb-1 text-xs font-bold text-foreground">{b.label}</div>
                   <div className="mb-1 text-[11px] text-muted-foreground">
                     {b.storyCount} {b.storyCount === 1 ? "story" : "stories"}
                   </div>

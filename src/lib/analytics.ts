@@ -185,71 +185,105 @@ export const fetchActiveDaysLast7 = async (
   return { active: days.filter(Boolean).length, days };
 };
 
+import { BUCKETS, type BucketKey } from "@/lib/themeCatalog";
+
 export type BucketBar = {
-  bucket: string;
+  bucket: BucketKey;
+  label: string;
   storyCount: number;
   pct: number;
 };
 
-const aggregateBuckets = async (
-  profileId: string,
-  sinceIso: string | null
-): Promise<{ bucket: string; storyCount: number }[]> => {
-  let q = supabase
+// Group completed stories by stories.bucket_key. Returns every bucket with ≥1 completed story.
+export const fetchBucketBreakdown = async (profileId: string): Promise<BucketBar[]> => {
+  const { data: events } = await supabase
     .from("story_analytics")
-    .select("story_id, created_at")
+    .select("story_id")
     .eq("profile_id", profileId)
     .eq("event_type", "complete");
-  if (sinceIso) q = q.gte("created_at", sinceIso);
-  const { data: events } = await q;
   if (!events || events.length === 0) return [];
 
   const uniqueStoryIds = Array.from(new Set(events.map((e: any) => e.story_id)));
-  const { data: stories } = await supabase
+  const { data: stories } = await (supabase as any)
     .from("stories")
-    .select("id, theme")
+    .select("id, bucket_key")
     .in("id", uniqueStoryIds);
   if (!stories) return [];
 
-  const themeByStoryId = new Map<string, string>();
+  const agg = new Map<BucketKey, Set<string>>();
   for (const s of stories as any[]) {
-    if (s.theme) themeByStoryId.set(s.id, String(s.theme));
-  }
-
-  const buckets = await loadBuckets();
-  const agg = new Map<string, Set<string>>();
-  for (const sid of uniqueStoryIds) {
-    const theme = themeByStoryId.get(sid);
-    if (!theme) continue;
-    const bucket = buckets.get(theme.trim().toLowerCase());
-    if (!bucket) continue;
-    let cur = agg.get(bucket);
+    const k = s.bucket_key as BucketKey | null;
+    if (!k || !BUCKETS[k]) continue;
+    let cur = agg.get(k);
     if (!cur) {
       cur = new Set();
-      agg.set(bucket, cur);
+      agg.set(k, cur);
     }
-    cur.add(sid);
+    cur.add(s.id);
   }
 
-  return Array.from(agg.entries())
+  const ranked = Array.from(agg.entries())
     .map(([bucket, ids]) => ({ bucket, storyCount: ids.size }))
     .filter((r) => r.storyCount > 0)
     .sort((a, b) => b.storyCount - a.storyCount);
-};
-
-export const fetchBucketBreakdown = async (profileId: string): Promise<BucketBar[]> => {
-  const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
-  let ranked = await aggregateBuckets(profileId, since);
-  if (ranked.length === 0) {
-    ranked = await aggregateBuckets(profileId, null);
-  }
-  ranked = ranked.slice(0, 4);
   if (ranked.length === 0) return [];
+
   const top = ranked[0].storyCount;
   return ranked.map((r) => ({
     bucket: r.bucket,
+    label: BUCKETS[r.bucket].fullName,
     storyCount: r.storyCount,
     pct: Math.max(8, Math.round((r.storyCount / top) * 100)),
   }));
+};
+
+export type BucketBadgeProgress = {
+  bucket: BucketKey;
+  bucketName: string;
+  storyCount: number;
+  tiers: { label: string; threshold: number; earned: boolean }[];
+};
+
+const BADGE_THRESHOLDS = [1, 3, 5] as const;
+
+// For each of the 13 buckets, count distinct completed stories (across all story types)
+// and report which of the 3 tier badges are earned at 1 / 3 / 5 distinct stories.
+export const fetchBadgeProgress = async (profileId: string): Promise<BucketBadgeProgress[]> => {
+  const { data: events } = await supabase
+    .from("story_analytics")
+    .select("story_id")
+    .eq("profile_id", profileId)
+    .eq("event_type", "complete");
+
+  const counts = new Map<BucketKey, Set<string>>();
+  for (const k of Object.keys(BUCKETS) as BucketKey[]) counts.set(k, new Set());
+
+  const uniqueStoryIds = Array.from(new Set((events ?? []).map((e: any) => e.story_id)));
+  if (uniqueStoryIds.length > 0) {
+    const { data: stories } = await (supabase as any)
+      .from("stories")
+      .select("id, bucket_key")
+      .in("id", uniqueStoryIds);
+    for (const s of (stories ?? []) as any[]) {
+      const k = s.bucket_key as BucketKey | null;
+      if (!k || !BUCKETS[k]) continue;
+      counts.get(k)!.add(s.id);
+    }
+  }
+
+  return (Object.keys(BUCKETS) as BucketKey[]).map((k) => {
+    const def = BUCKETS[k];
+    const c = counts.get(k)!.size;
+    return {
+      bucket: k,
+      bucketName: def.fullName,
+      storyCount: c,
+      tiers: def.badges.map((label, i) => ({
+        label,
+        threshold: BADGE_THRESHOLDS[i],
+        earned: c >= BADGE_THRESHOLDS[i],
+      })),
+    };
+  });
 };
 
