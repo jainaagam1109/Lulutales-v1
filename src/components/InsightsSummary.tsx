@@ -208,11 +208,26 @@ export const InsightsSummary = ({ profileId, variant = "card", childName }: Insi
     queryFn: () => fetchActiveDaysLast7(profileId!),
     enabled,
   });
-  const themeBuckets = useThemeBuckets();
-  const badges = useMemo(
-    () => computeBadgesFromDb(storiesListened, completedThemes, bestStreak, themeBuckets),
-    [storiesListened, completedThemes, bestStreak, themeBuckets]
-  );
+  const { data: badgeProgress = [] } = useQuery({
+    queryKey: ["analytics-badge-progress", profileId],
+    queryFn: () => fetchBadgeProgress(profileId!),
+    enabled,
+  });
+  const badges = useMemo(() => {
+    const out: { id: string; emoji: string; label: string; description: string }[] = [];
+    for (const bp of badgeProgress) {
+      bp.tiers.forEach((t, i) => {
+        if (!t.earned) return;
+        out.push({
+          id: `${bp.bucket}-${t.threshold}`,
+          emoji: ["🥉", "🥈", "🥇"][i] ?? "🏅",
+          label: t.label,
+          description: `Awarded for finishing ${t.threshold} ${t.threshold === 1 ? "story" : "stories"} in ${bp.bucketName}.`,
+        });
+      });
+    }
+    return out;
+  }, [badgeProgress]);
 
   const INITIAL_BADGES = 4;
   const showSeeAll = badges.length > INITIAL_BADGES && !showAllBadges;
