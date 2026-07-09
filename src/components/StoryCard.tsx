@@ -106,9 +106,9 @@ export const StoryCard = ({
           <div className="line-clamp-2 min-h-[2.25rem] text-xs font-bold leading-snug text-foreground">
             {story.title}
           </div>
-          {(themeLabel || badge) && (
+          {(bucketCardName(story) || badge) && (
             <div className="flex flex-wrap items-center gap-1 pt-0.5">
-              {themeLabel && <TagChip label={themeLabel} />}
+              {bucketCardName(story) && <TagChip label={bucketCardName(story)!} />}
               {badge && <TagChip label={badge.label} variant={badge.variant} />}
             </div>
           )}
