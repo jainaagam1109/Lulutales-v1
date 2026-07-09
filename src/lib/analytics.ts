@@ -100,7 +100,6 @@ const STREAK_TIERS = [
   { days: 100, emoji: "👑", label: "100-day streak" },
 ];
 
-import { loadBuckets } from "@/hooks/useThemeBuckets";
 import { getBucketMeta } from "./bucketConfig";
 
 export const computeBadgesFromDb = (
