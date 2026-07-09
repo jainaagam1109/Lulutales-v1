@@ -3,7 +3,6 @@ import type { Story } from "@/lib/stories";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { TagChip } from "./TagChip";
 import { StoryStatusCard } from "./StoryStatusCard";
-import { useThemeBuckets, resolveThemeLabel } from "@/hooks/useThemeBuckets";
 import { BUCKETS, type BucketKey } from "@/lib/themeCatalog";
 
 const bucketCardName = (story: Story): string | null => {
