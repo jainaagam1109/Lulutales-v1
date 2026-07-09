@@ -81,8 +81,6 @@ export const StoryCard = ({
   // Type 3 = character-universe stories. Detected via universe_id.
   const isType3 = !!(story as any).universe_id;
   const characterName = isType3 ? (universeName ?? null) : null;
-  const themeBuckets = useThemeBuckets();
-  const themeLabel = isType3 ? resolveThemeLabel(themeBuckets, story.theme) : story.theme;
 
   const tileBg = TILE_TINTS[hashId(story.id) % TILE_TINTS.length];
 
