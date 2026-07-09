@@ -198,14 +198,14 @@ export function getThemeOptions(age: number | string): ThemeOption[] {
 // Order matters: first matching rule wins. Add new keywords here as new phrasings appear.
 export const BUCKET_KEYWORDS: Array<{ bucket: BucketKey; keywords: string[] }> = [
   { bucket: "B1", keywords: ["sleep", "bedtime", "goodnight", "rest", "screen time at night", "stress and rest"] },
-  { bucket: "B2", keywords: ["food", "eating", "nutrition", "lunchbox", "vegetable", "fruit", "body"] },
+  { bucket: "B2", keywords: ["food", "eating", "nutrition", "lunchbox", "vegetable", "fruit", "body", "healthy"] },
   { bucket: "B3", keywords: ["curio", "naming the world", "sensory", "science", "discover", "invention", "how things work", "nature"] },
   { bucket: "B4", keywords: ["sharing", "turn-taking", "turn taking", "waiting", "togetherness", "joining", "not always first", "credit", "cooperat"] },
   { bucket: "B5", keywords: ["empath", "kindness", "kind", "comfort", "gentle", "inclusion", "include", "noticing feelings", "softening the guard", "across difference"] },
   { bucket: "B6", keywords: ["big feeling", "calm down", "disappoint", "managing 'no'", "jealous", "jealousy", "missing someone", "grief", "loss", "anger", "lonely", "worry"] },
   { bucket: "B7a", keywords: ["brave", "bravery", "courage", "fear", "scared", "fright", "standing up", "peer pressure", "bully", "moral courage"] },
   { bucket: "B7b", keywords: ["persever", "persist", "patience", "patient", "try again", "frustration", "resilien", "setback", "instant skill", "finish"] },
-  { bucket: "B8", keywords: ["honest", "honesty", "integrity", "truth", "lying", "lie", "promise", "loyal", "cheat", "own up", "confess"] },
+  { bucket: "B8", keywords: ["honest", "honesty", "integrity", "truth", "lying", "lie", "promise", "loyal", "cheat", "own up", "confess", "right thing"] },
   { bucket: "B9", keywords: ["autonomy", "do-it-myself", "do it myself", "self-worth", "self worth", "identity", "becoming yourself", "own value", "agency", "saying what you want", "asking for help"] },
   { bucket: "B10", keywords: ["responsib", "helping", "helper", "contribution", "trusted", "level-headed", "leadership", "pet care", "chore"] },
   { bucket: "B11", keywords: ["fairness", "fair", "unfair", "justice", "climate", "environment", "waste", "gender", "stereotype", "activism", "moral dilemma"] },
