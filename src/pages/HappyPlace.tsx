@@ -428,7 +428,7 @@ const HappyPlace = () => {
               aria-label="Filter by bucket"
               className="flex-1 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground focus:border-primary focus:outline-none"
             >
-              <option value="">All buckets</option>
+              <option value="">All themes</option>
               {allBucketOptions.map((b) => (
                 <option key={b.key} value={b.key}>{b.fullName}</option>
               ))}
