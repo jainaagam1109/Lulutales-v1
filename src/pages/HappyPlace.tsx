@@ -14,6 +14,7 @@ import { StoryWorldsRow } from "@/components/StoryWorldsRow";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { fetchCompletedThemes } from "@/lib/analytics";
 import { sortStories } from "@/lib/sortStories";
+import { BUCKETS, type BucketKey } from "@/lib/themeCatalog";
 
 type MadeForFormat = "all" | "audio" | "text" | "saved";
 
@@ -213,27 +214,23 @@ const HappyPlace = () => {
   );
 
   const [allAgeFilter, setAllAgeFilter] = useState<string>("");
-  const [allThemeFilter, setAllThemeFilter] = useState<string>("");
+  const [allBucketFilter, setAllBucketFilter] = useState<BucketKey | "">("");
 
   const allAgeOptions = useMemo(() => {
     const s = new Set<string>();
     storyRoom.forEach((x) => x.age_group && s.add(String(x.age_group)));
     return Array.from(s).sort();
   }, [storyRoom]);
-  const allThemeOptions = useMemo(() => {
-    const s = new Set<string>();
-    storyRoom.forEach((x) => x.theme && s.add(String(x.theme)));
-    return Array.from(s).sort();
-  }, [storyRoom]);
+  const allBucketOptions = useMemo(() => Object.values(BUCKETS), []);
 
   const storyRoomFiltered = useMemo(
     () =>
       storyRoom.filter(
         (s) =>
           (!allAgeFilter || String(s.age_group ?? "") === allAgeFilter) &&
-          (!allThemeFilter || String(s.theme ?? "") === allThemeFilter)
+          (!allBucketFilter || s.bucket_key === allBucketFilter)
       ),
-    [storyRoom, allAgeFilter, allThemeFilter]
+    [storyRoom, allAgeFilter, allBucketFilter]
   );
 
   const storyRoomSorted = useMemo(
@@ -426,14 +423,14 @@ const HappyPlace = () => {
               ))}
             </select>
             <select
-              value={allThemeFilter}
-              onChange={(e) => setAllThemeFilter(e.target.value)}
-              aria-label="Filter by theme"
+              value={allBucketFilter}
+              onChange={(e) => setAllBucketFilter(e.target.value as BucketKey | "")}
+              aria-label="Filter by bucket"
               className="flex-1 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground focus:border-primary focus:outline-none"
             >
-              <option value="">All themes</option>
-              {allThemeOptions.map((t) => (
-                <option key={t} value={t}>{t}</option>
+              <option value="">All buckets</option>
+              {allBucketOptions.map((b) => (
+                <option key={b.key} value={b.key}>{b.fullName}</option>
               ))}
             </select>
           </div>
