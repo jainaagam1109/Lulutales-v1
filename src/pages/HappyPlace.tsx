@@ -434,7 +434,20 @@ const HappyPlace = () => {
               ))}
             </select>
           </div>
-          <Row stories={storyRoomSorted} emptyVariant="coming-soon" universesMap={universesMap} />
+          {storyRoomSorted.length === 0 ? (
+            <div className="flex h-32 items-center justify-center rounded-2xl border border-dashed border-border bg-card/60 text-center text-[11px] font-semibold text-muted-foreground">
+              Coming soon
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              {storyRoomSorted.map((s) => {
+                const universeName = universesMap?.get((s as any).universe_id) ?? null;
+                return (
+                  <StoryCard key={s.id} story={s} universeName={universeName} />
+                );
+              })}
+            </div>
+          )}
         </section>
 
 
