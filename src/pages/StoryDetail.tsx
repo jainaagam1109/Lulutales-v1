@@ -94,7 +94,7 @@ const StoryDetail = () => {
                   onClick={() => setShowFullSummary((v) => !v)}
                   className="mt-1 text-[11px] font-semibold text-primary-deep"
                 >
-                  {showFullSummary ? "Show less" : "Read more"}
+                {showFullSummary ? "Show less" : "Read full story summary"}
                 </button>
               )}
             </div>
