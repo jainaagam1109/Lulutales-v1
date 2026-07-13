@@ -84,7 +84,7 @@ const SelectProfile = () => {
             </button>
           </div>
         )}
-      </div>
+      </main>
     </PhoneShell>
   );
 };
