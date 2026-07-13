@@ -273,7 +273,8 @@ const Auth = () => {
             </button>
           </>
         )}
-      </div>
+      </main>
+
     </PhoneShell>
   );
 };
