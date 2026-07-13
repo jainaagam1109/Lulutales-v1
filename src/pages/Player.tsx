@@ -501,14 +501,14 @@ const Player = () => {
     return (
       <PhoneShell>
         <PageHeader backTo={id ? `/story/${id}` : "/"} />
-        <div className="flex-1 overflow-y-auto px-6 pb-24">
+        <main className="flex-1 overflow-y-auto px-6 pb-24">
 
           <div className="mt-20 text-center">
             <div className="text-5xl">🤔</div>
             <h2 className="mt-3 text-lg font-extrabold text-foreground">Episode not found</h2>
             <p className="mt-1 text-sm text-muted-foreground">This story doesn't have an episode {epNum}.</p>
           </div>
-        </div>
+        </main>
       </PhoneShell>
     );
   }
