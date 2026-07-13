@@ -516,7 +516,7 @@ const Player = () => {
   return (
     <PhoneShell>
       <PageHeader backTo={id ? `/story/${id}` : "/"} />
-      <div className="flex-1 overflow-y-auto px-6 pb-24">
+      <main className="flex-1 overflow-y-auto px-6 pb-24">
 
         <div className="mx-auto mb-6 flex h-64 w-64 items-center justify-center rounded-3xl bg-gradient-card text-8xl shadow-soft">
           {story?.thumbnail ?? "📖"}
