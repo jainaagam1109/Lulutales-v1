@@ -164,7 +164,7 @@ const Onboarding = () => {
 
   return (
     <PhoneShell>
-      <div className="relative flex-1 overflow-y-auto px-6 pb-10 pt-12">
+      <main className="relative flex-1 overflow-y-auto px-6 pb-10 pt-12">
         {isAddMode && (
           <button
             type="button"
