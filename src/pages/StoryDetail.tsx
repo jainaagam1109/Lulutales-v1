@@ -166,7 +166,7 @@ const StoryDetail = () => {
             <StoryStatusCard story={story} variant="row" />
           </div>
         )}
-      </div>
+      </main>
     </PhoneShell>
   );
 };
