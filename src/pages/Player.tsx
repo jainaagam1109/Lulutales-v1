@@ -633,7 +633,7 @@ const Player = () => {
             </div>
           </div>
         )}
-      </div>
+      </main>
     </PhoneShell>
   );
 };
