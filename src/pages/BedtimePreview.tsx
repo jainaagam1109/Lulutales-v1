@@ -39,7 +39,7 @@ const BedtimePreview = () => {
         </div>
       </PageHeader>
 
-      <div className="flex flex-1 flex-col overflow-y-auto px-5 pb-6">
+      <main className="flex flex-1 flex-col overflow-y-auto px-5 pb-6">
         {story?.theme && <TagChip label={story.theme} />}
         <h1 className="mt-2 text-2xl font-extrabold text-foreground">{displayTitle}</h1>
 
@@ -65,7 +65,7 @@ const BedtimePreview = () => {
             Read the story <ArrowRight className="h-4 w-4" />
           </button>
         </div>
-      </div>
+      </main>
     </PhoneShell>
   );
 };

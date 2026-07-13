@@ -50,7 +50,7 @@ const SelectProfile = () => {
 
   return (
     <PhoneShell>
-      <div className="flex-1 px-6 pb-10 pt-12">
+      <main className="flex-1 px-6 pb-10 pt-12">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-extrabold text-foreground">Who's listening?</h1>
           <p className="mt-1 text-sm text-muted-foreground">Pick a child profile</p>
@@ -84,7 +84,7 @@ const SelectProfile = () => {
             </button>
           </div>
         )}
-      </div>
+      </main>
     </PhoneShell>
   );
 };

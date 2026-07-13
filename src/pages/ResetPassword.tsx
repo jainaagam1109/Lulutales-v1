@@ -48,7 +48,7 @@ const ResetPassword = () => {
 
   return (
     <PhoneShell>
-      <div className="flex-1 px-6 pb-10 pt-12">
+      <main className="flex-1 px-6 pb-10 pt-12">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-3xl bg-secondary text-3xl">
             🔒
@@ -96,7 +96,7 @@ const ResetPassword = () => {
             </button>
           </>
         )}
-      </div>
+      </main>
     </PhoneShell>
   );
 };

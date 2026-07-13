@@ -56,7 +56,7 @@ const StoryDetail = () => {
         </div>
       </PageHeader>
 
-      <div className="flex-1 overflow-y-auto px-5 pb-6">
+      <main className="flex-1 overflow-y-auto px-5 pb-6">
         {story.theme && <TagChip label={story.theme} />}
         <h1 className="mt-2 text-2xl font-extrabold text-foreground">{story.title}</h1>
         {story.age_group && (
@@ -166,7 +166,7 @@ const StoryDetail = () => {
             <StoryStatusCard story={story} variant="row" />
           </div>
         )}
-      </div>
+      </main>
     </PhoneShell>
   );
 };
