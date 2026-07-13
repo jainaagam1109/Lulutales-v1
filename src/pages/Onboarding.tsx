@@ -234,7 +234,7 @@ const Onboarding = () => {
         >
           {loading ? "Saving…" : isAddMode ? "Add child →" : "Continue →"}
         </button>
-      </div>
+      </main>
     </PhoneShell>
   );
 };
