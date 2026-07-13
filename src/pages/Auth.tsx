@@ -146,7 +146,7 @@ const Auth = () => {
 
   const submitLabel = mode === "signin" ? "Login" : mode === "signup" ? "Create account" : "Send reset link";
   const subtitle =
-    mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password";
+    mode === "signin" ? "Expert-crafted personalized stories that helps your kid grow" : mode === "signup" ? "Create your account" : "Reset your password";
 
   return (
     <PhoneShell>
@@ -155,7 +155,7 @@ const Auth = () => {
           <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-3xl bg-secondary text-3xl">
             🎙️
           </div>
-          <h1 className="text-2xl font-extrabold text-foreground">LuluTales — Personalized Bedtime Stories for Kids</h1>
+          <h1 className="text-2xl font-extrabold text-foreground">LuluTales</h1>
           <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
         </div>
 
