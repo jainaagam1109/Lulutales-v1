@@ -96,7 +96,7 @@ const ResetPassword = () => {
             </button>
           </>
         )}
-      </div>
+      </main>
     </PhoneShell>
   );
 };
