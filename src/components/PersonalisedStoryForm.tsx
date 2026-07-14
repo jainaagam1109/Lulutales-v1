@@ -132,12 +132,14 @@ const resolveChoice = (choice: string, custom: string) =>
 
 export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-hub" }: Props) => {
   const nav = useNavigate();
+  const location = useLocation();
   const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
+  const [format, setFormat] = useState<"personalised_audio" | "bedtime_text">(storyType);
 
   useEffect(() => {
     if (!profileId) {
       toast.info("Tell us about your child to create personalised stories.");
-      nav("/onboarding", { replace: true });
+      nav(`/onboarding?next=${encodeURIComponent(location.pathname)}`, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
