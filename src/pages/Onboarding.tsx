@@ -165,17 +165,15 @@ const Onboarding = () => {
 
   return (
     <PhoneShell>
-      <main className="relative flex-1 overflow-y-auto px-6 pb-10 pt-12">
-        {isAddMode && (
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={() => nav("/profile")}
-            className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground hover:text-primary-deep"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
+      <main className="relative flex-1 overflow-y-auto px-6 pt-12 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+        <button
+          type="button"
+          aria-label={isAddMode ? "Close" : "Skip"}
+          onClick={() => nav(isAddMode ? "/profiles" : "/")}
+          className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground hover:text-primary-deep"
+        >
+          <X className="h-4 w-4" />
+        </button>
         <div className="mb-8 text-center">
           <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-3xl bg-secondary text-3xl">
             🎙️
@@ -227,7 +225,12 @@ const Onboarding = () => {
           </FieldLabel>
           <Select value={gender} onChange={setGender} options={GENDERS} placeholder="Select gender" />
         </div>
+      </main>
 
+      <div
+        className="border-t border-border bg-card px-6 pt-3"
+        style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+      >
         <button
           onClick={submit}
           disabled={loading}
@@ -235,7 +238,7 @@ const Onboarding = () => {
         >
           {loading ? "Saving…" : isAddMode ? "Add child →" : "Continue →"}
         </button>
-      </main>
+      </div>
     </PhoneShell>
   );
 };
