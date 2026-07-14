@@ -395,7 +395,9 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         <button onClick={() => nav(backTo)} className="mb-3 flex items-center gap-1 text-xs text-primary-deep">
           <ChevronLeft className="h-4 w-4" /> Back
         </button>
-        <h1 className="text-xl font-extrabold text-foreground">{pageTitle}</h1>
+        <h1 className="text-xl font-extrabold text-foreground">
+          {format === "personalised_audio" ? "Audio story" : "Bedtime story"}
+        </h1>
         <p className="mt-1 text-xs text-muted-foreground">
           Tell us a little about {childName} — only the basics are required. Anything you add helps us
           make the story feel personal.
