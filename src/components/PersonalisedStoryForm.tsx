@@ -427,8 +427,14 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           </div>
         ) : (
           <>
-            {/* Basic details */}
-            <Section title="Basic details" subtitle="The essentials we need to begin." defaultOpen>
+            {/* About child */}
+            <Section
+              title={`About ${childName}`}
+              subtitle={[form.name.trim() || "—", form.age.trim() || "—", form.gender]
+                .filter(Boolean)
+                .join(" · ")}
+              defaultOpen={false}
+            >
               <div>
                 <FieldLabel tooltip="Your child's first name — used to personalise the story.">Name</FieldLabel>
                 <TextInput
@@ -462,6 +468,24 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                   onChange={(v) => set("gender", v)}
                   options={GENDERS}
                   placeholder="Select gender"
+                />
+              </div>
+            </Section>
+
+            {/* Story format */}
+            <Section title="Story format" subtitle="How the story reaches your child." defaultOpen>
+              <div>
+                <FieldLabel tooltip="Audio is narrated for your child to listen to alone. Bedtime is text for you to read aloud together.">
+                  Format
+                </FieldLabel>
+                <Select
+                  value={format}
+                  onChange={(v) => setFormat(v as "personalised_audio" | "bedtime_text")}
+                  options={[
+                    { label: "Generate audio story", value: "personalised_audio" },
+                    { label: "Generate bedtime story", value: "bedtime_text" },
+                  ]}
+                  placeholder="Select format"
                 />
               </div>
               <div>
