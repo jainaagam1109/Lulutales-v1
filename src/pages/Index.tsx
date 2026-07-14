@@ -113,7 +113,7 @@ const Index = () => {
   if (!session) return <Navigate to="/auth" replace />;
 
   const hasChild = !!activeProfile;
-  const goCreate = () => nav(hasChild ? "/magic-hub" : "/onboarding");
+  const goCreate = () => nav(hasChild ? "/magic-hub" : "/onboarding?next=%2Fmagic-hub%2Faudio");
 
   // ---------- titles ----------
   const title = "Welcome to LuluTales ✨";
