@@ -310,7 +310,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
       });
 
       trackEvent("story_requested", {
-        story_type: storyType,
+        story_type: format,
         theme: form.theme.trim(),
         occasion: form.occasion.trim() || null,
         language: isHindiEligible(form.age) ? form.language : "english",
