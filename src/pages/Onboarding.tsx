@@ -44,6 +44,7 @@ const Onboarding = () => {
   const qc = useQueryClient();
   const isAddMode =
     location.pathname === "/add-child" || searchParams.get("mode") === "add";
+  const next = searchParams.get("next");
   const { session, loading: authLoading } = useAuth();
   const [name, setName] = useState("");
   const [age, setAge] = useState<string>("");
