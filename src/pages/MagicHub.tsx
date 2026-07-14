@@ -22,7 +22,7 @@ const MagicHub = () => {
 
   const goPersonalised = (path: string) => {
     if (!profileId) {
-      nav("/onboarding");
+      nav(`/onboarding?next=${encodeURIComponent(path)}`);
       return;
     }
     nav(path);
