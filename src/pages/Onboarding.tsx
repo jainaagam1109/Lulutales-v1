@@ -153,7 +153,7 @@ const Onboarding = () => {
     await qc.invalidateQueries();
     setLoading(false);
     if (!isAddMode) {
-      nav("/", { replace: true });
+      nav(next ?? "/", { replace: true });
     } else {
       toast.success(`${data.name} added`);
       nav("/profiles");
