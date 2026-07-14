@@ -288,7 +288,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         title: `${form.name.trim() || "Your child"}'s ${form.theme.trim()} Story`,
         theme: form.theme.trim(),
         description: null,
-        story_type: storyType,
+        story_type: format,
         age_group: form.age || null,
         child_profile_id: profileId,
         thumbnail: getThemeVisual(form.theme.trim()).emoji,
