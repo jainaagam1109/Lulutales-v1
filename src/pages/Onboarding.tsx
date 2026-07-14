@@ -74,7 +74,7 @@ const Onboarding = () => {
         localStorage.setItem("lulutales_profile_id", first.id);
         localStorage.setItem("lulutales_child_name", first.name);
         localStorage.setItem("lulutales_child_age", String(first.age));
-        nav("/", { replace: true });
+        nav(next ?? "/", { replace: true });
       }
     })();
   }, [session, authLoading, nav, isAddMode]);
