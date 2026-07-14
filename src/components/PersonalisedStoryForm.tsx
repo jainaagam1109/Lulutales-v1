@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -132,12 +132,14 @@ const resolveChoice = (choice: string, custom: string) =>
 
 export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-hub" }: Props) => {
   const nav = useNavigate();
+  const location = useLocation();
   const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
+  const [format, setFormat] = useState<"personalised_audio" | "bedtime_text">(storyType);
 
   useEffect(() => {
     if (!profileId) {
       toast.info("Tell us about your child to create personalised stories.");
-      nav("/onboarding", { replace: true });
+      nav(`/onboarding?next=${encodeURIComponent(location.pathname)}`, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -286,7 +288,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         title: `${form.name.trim() || "Your child"}'s ${form.theme.trim()} Story`,
         theme: form.theme.trim(),
         description: null,
-        story_type: storyType,
+        story_type: format,
         age_group: form.age || null,
         child_profile_id: profileId,
         thumbnail: getThemeVisual(form.theme.trim()).emoji,
@@ -308,7 +310,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
       });
 
       trackEvent("story_requested", {
-        story_type: storyType,
+        story_type: format,
         theme: form.theme.trim(),
         occasion: form.occasion.trim() || null,
         language: isHindiEligible(form.age) ? form.language : "english",
@@ -393,7 +395,9 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         <button onClick={() => nav(backTo)} className="mb-3 flex items-center gap-1 text-xs text-primary-deep">
           <ChevronLeft className="h-4 w-4" /> Back
         </button>
-        <h1 className="text-xl font-extrabold text-foreground">{pageTitle}</h1>
+        <h1 className="text-xl font-extrabold text-foreground">
+          {format === "personalised_audio" ? "Audio story" : "Bedtime story"}
+        </h1>
         <p className="mt-1 text-xs text-muted-foreground">
           Tell us a little about {childName} — only the basics are required. Anything you add helps us
           make the story feel personal.
@@ -423,8 +427,14 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           </div>
         ) : (
           <>
-            {/* Basic details */}
-            <Section title="Basic details" subtitle="The essentials we need to begin." defaultOpen>
+            {/* About child */}
+            <Section
+              title={`About ${childName}`}
+              subtitle={[form.name.trim() || "—", form.age.trim() || "—", form.gender]
+                .filter(Boolean)
+                .join(" · ")}
+              defaultOpen={false}
+            >
               <div>
                 <FieldLabel tooltip="Your child's first name — used to personalise the story.">Name</FieldLabel>
                 <TextInput
@@ -458,6 +468,24 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                   onChange={(v) => set("gender", v)}
                   options={GENDERS}
                   placeholder="Select gender"
+                />
+              </div>
+            </Section>
+
+            {/* Story format */}
+            <Section title="Story format" subtitle="How the story reaches your child." defaultOpen>
+              <div>
+                <FieldLabel tooltip="Audio is narrated for your child to listen to alone. Bedtime is text for you to read aloud together.">
+                  Format
+                </FieldLabel>
+                <Select
+                  value={format}
+                  onChange={(v) => setFormat(v as "personalised_audio" | "bedtime_text")}
+                  options={[
+                    { label: "Generate audio story", value: "personalised_audio" },
+                    { label: "Generate bedtime story", value: "bedtime_text" },
+                  ]}
+                  placeholder="Select format"
                 />
               </div>
               <div>
