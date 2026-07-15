@@ -366,6 +366,7 @@ const Player = () => {
     let timer: ReturnType<typeof setTimeout> | null = null;
     let heardFlag = false;
     let completedFlag = false;
+    let startedFlag = false;
     let maxPosition = 0;
     let logging = false;
 
