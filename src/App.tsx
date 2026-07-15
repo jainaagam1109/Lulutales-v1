@@ -21,6 +21,7 @@ import Admin from "./pages/Admin";
 import AdminUpload from "./pages/AdminUpload";
 import AdminHealth from "./pages/AdminHealth";
 import { RequireAdmin } from "@/components/RequireAdmin";
+import { RouteTracker } from "@/components/RouteTracker";
 
 import Insights from "./pages/Insights";
 import MagicHub from "./pages/MagicHub";
@@ -40,6 +41,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <RouteTracker />
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
