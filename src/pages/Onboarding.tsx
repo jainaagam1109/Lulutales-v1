@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { loadActiveProfileForUser } from "@/lib/activeProfile";
 import { trackEvent } from "@/lib/events";
+import { track } from "@/lib/track";
 import {
   FieldLabel,
   TextInput,
@@ -152,6 +153,7 @@ const Onboarding = () => {
     }
     await qc.invalidateQueries();
     setLoading(false);
+    void track("profile_created", { profile_id: data.id, age: data.age, is_add: isAddMode });
     if (!isAddMode) {
       nav(next ?? "/", { replace: true });
     } else {
