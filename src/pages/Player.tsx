@@ -428,6 +428,7 @@ const Player = () => {
     };
 
     const onPlay = () => {
+      if (!startedFlag) { startedFlag = true; void tryLog("start"); }
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
         heardFlag = true;
