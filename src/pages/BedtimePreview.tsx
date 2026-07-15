@@ -40,7 +40,11 @@ const BedtimePreview = () => {
       </PageHeader>
 
       <main className="flex flex-1 flex-col overflow-y-auto px-5 pb-6">
-        {story?.theme && <TagChip label={story.theme} />}
+        {story?.theme && (
+          <div>
+            <TagChip label={story.theme} />
+          </div>
+        )}
         <h1 className="mt-2 text-2xl font-extrabold text-foreground">{displayTitle}</h1>
 
         <h2 className="mt-6 text-[11px] font-semibold text-muted-foreground">
