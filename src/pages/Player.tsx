@@ -370,7 +370,7 @@ const Player = () => {
     let maxPosition = 0;
     let logging = false;
 
-    const tryLog = async (eventType: "play" | "complete") => {
+    const tryLog = async (eventType: "play" | "complete" | "start") => {
       if (logging) return;
       logging = true;
 
