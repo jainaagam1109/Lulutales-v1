@@ -6,6 +6,7 @@ import { fetchStory, fetchEpisodes } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
 import { PageHeader } from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
+import { getSessionId } from "@/lib/track";
 import { cleanEpisodeTitle } from "@/lib/episodeTitle";
 import {
   getActiveProfileId,

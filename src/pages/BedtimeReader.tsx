@@ -5,6 +5,7 @@ import { ChevronLeft, Sun, Moon } from "lucide-react";
 import { fetchStory } from "@/lib/stories";
 import { parseBedtimeStory } from "@/lib/parseBedtimeStory";
 import { supabase } from "@/integrations/supabase/client";
+import { getSessionId } from "@/lib/track";
 
 const SIZES = [16, 18, 20];
 
@@ -65,6 +66,7 @@ const BedtimeReader = () => {
           episode_id: null,
           event_type: "complete",
           source: "bedtime",
+          session_id: getSessionId(),
           position_seconds: 0,
           duration_seconds: durationSeconds,
         } as any).then(() => {});
