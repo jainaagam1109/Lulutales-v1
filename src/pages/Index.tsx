@@ -198,16 +198,11 @@ const Index = () => {
             Freshly curated for you
           </h2>
         </div>
-        <p className="mb-1 text-xs text-muted-foreground">
+        <p className="mb-2 text-xs text-muted-foreground">
           {childName
-            ? `New stories added just for ${childName}, updated regularly.`
-            : "New stories added just for your child, updated regularly."}
+            ? `Made just for ${childName} — private to this profile, updated regularly.`
+            : "Made just for your child — private to this profile, updated regularly."}
         </p>
-        {childName && (
-          <p className="mb-2 text-[11px] text-muted-foreground">
-            Made just for {childName} — only visible on this profile.
-          </p>
-        )}
         <div className="grid grid-cols-2 gap-3">
           {ready.map((s) => (
             <StoryCard key={s.id} story={s} universeName={nameFor(s)} />
