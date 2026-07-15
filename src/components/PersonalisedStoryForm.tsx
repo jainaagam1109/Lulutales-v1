@@ -29,6 +29,7 @@ import {
 } from "@/components/StoryFormFields";
 import { createPersonalisedStory } from "@/lib/stories";
 import { trackEvent } from "@/lib/events";
+import { track } from "@/lib/track";
 import { getThemeVisual } from "@/lib/themeEmoji";
 import { supabase } from "@/integrations/supabase/client";
 import { getThemeOptions, CUSTOM_THEME_VALUE } from "@/lib/themeCatalog";
@@ -345,6 +346,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
 
 
       toast.success("Story request saved! We'll generate it shortly.");
+      void track("story_requested", { story_id: created.id, story_type: storyType });
       nav(`/generating/${created.id}`);
     } catch (e: any) {
       console.error("[PersonalisedStoryForm] save failed", e);
