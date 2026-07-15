@@ -29,13 +29,13 @@ export const track = async (
     const userId = data.session?.user?.id ?? null;
     if (!userId) return;
     const profileId = localStorage.getItem("lulutales_profile_id");
-    await supabase.from("app_events").insert({
+    await (supabase as any).from("app_events").insert({
       user_id: userId,
       profile_id: profileId,
       event_name: eventName,
       properties,
       session_id: localStorage.getItem(SESSION_KEY) ?? "unknown",
-    } as never);
+    } as any);
   } catch (err) {
     if (import.meta.env.DEV) console.warn("track failed:", eventName, err);
   }
