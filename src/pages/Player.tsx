@@ -420,6 +420,7 @@ const Player = () => {
           episode_id: current.id,
           event_type: eventType,
           source: "audio",
+          session_id: getSessionId(),
           position_seconds: Math.floor(a.currentTime),
           duration_seconds: durationSeconds,
         } as any)
