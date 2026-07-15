@@ -6,6 +6,7 @@ import { fetchStory, fetchEpisodes } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
 import { PageHeader } from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
+import { getSessionId } from "@/lib/track";
 import { cleanEpisodeTitle } from "@/lib/episodeTitle";
 import {
   getActiveProfileId,
@@ -365,10 +366,11 @@ const Player = () => {
     let timer: ReturnType<typeof setTimeout> | null = null;
     let heardFlag = false;
     let completedFlag = false;
+    let startedFlag = false;
     let maxPosition = 0;
     let logging = false;
 
-    const tryLog = async (eventType: "play" | "complete") => {
+    const tryLog = async (eventType: "play" | "complete" | "start") => {
       if (logging) return;
       logging = true;
 
@@ -418,6 +420,7 @@ const Player = () => {
           episode_id: current.id,
           event_type: eventType,
           source: "audio",
+          session_id: getSessionId(),
           position_seconds: Math.floor(a.currentTime),
           duration_seconds: durationSeconds,
         } as any)
@@ -425,6 +428,7 @@ const Player = () => {
     };
 
     const onPlay = () => {
+      if (!startedFlag) { startedFlag = true; void tryLog("start"); }
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
         heardFlag = true;
