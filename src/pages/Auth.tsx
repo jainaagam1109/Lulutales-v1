@@ -144,9 +144,12 @@ const Auth = () => {
 
   const google = async () => {
     setBusy(true);
+    const googleRedirect = nextPath
+      ? `${window.location.origin}/auth?next=${encodeURIComponent(nextPath)}`
+      : window.location.origin;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: googleRedirect },
     });
     if (error) {
       setBusy(false);
