@@ -51,17 +51,25 @@ function friendlySignUpError(rawMessage: string): string {
 
 const Auth = () => {
   const nav = useNavigate();
+  const [searchParams] = useSearchParams();
   const { session, loading } = useAuth();
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  // When we detect the email belongs to a Google account, highlight that button.
   const [suggestGoogle, setSuggestGoogle] = useState(false);
 
+  // Preserve `?next=` so OAuth consent (or any deep link) returns after sign-in.
+  // Only accept same-origin relative paths.
+  const nextPath = useMemo(() => {
+    const raw = searchParams.get("next");
+    if (!raw) return null;
+    return raw.startsWith("/") && !raw.startsWith("//") ? raw : null;
+  }, [searchParams]);
+
   useEffect(() => {
-    if (!loading && session) nav("/", { replace: true });
-  }, [session, loading, nav]);
+    if (!loading && session) nav(nextPath ?? "/", { replace: true });
+  }, [session, loading, nav, nextPath]);
 
   // Clear the Google hint whenever the user edits the email.
   useEffect(() => {
