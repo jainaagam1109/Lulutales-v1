@@ -113,10 +113,13 @@ const Auth = () => {
     }
 
     // signup
+    const signupRedirect = nextPath
+      ? `${window.location.origin}/auth?next=${encodeURIComponent(nextPath)}`
+      : window.location.origin;
     const { data, error } = await supabase.auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
-      options: { emailRedirectTo: window.location.origin },
+      options: { emailRedirectTo: signupRedirect },
     });
 
     // Supabase hides "user already exists" on signup: it returns either an
