@@ -31,6 +31,7 @@ import Generating from "./pages/Generating";
 import BedtimeReader from "./pages/BedtimeReader";
 import BedtimePreview from "./pages/BedtimePreview";
 import NotFound from "./pages/NotFound";
+import OAuthConsent from "./pages/OAuthConsent";
 
 const queryClient = new QueryClient();
 
