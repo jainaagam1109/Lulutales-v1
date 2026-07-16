@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,17 +51,25 @@ function friendlySignUpError(rawMessage: string): string {
 
 const Auth = () => {
   const nav = useNavigate();
+  const [searchParams] = useSearchParams();
   const { session, loading } = useAuth();
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  // When we detect the email belongs to a Google account, highlight that button.
   const [suggestGoogle, setSuggestGoogle] = useState(false);
 
+  // Preserve `?next=` so OAuth consent (or any deep link) returns after sign-in.
+  // Only accept same-origin relative paths.
+  const nextPath = useMemo(() => {
+    const raw = searchParams.get("next");
+    if (!raw) return null;
+    return raw.startsWith("/") && !raw.startsWith("//") ? raw : null;
+  }, [searchParams]);
+
   useEffect(() => {
-    if (!loading && session) nav("/", { replace: true });
-  }, [session, loading, nav]);
+    if (!loading && session) nav(nextPath ?? "/", { replace: true });
+  }, [session, loading, nav, nextPath]);
 
   // Clear the Google hint whenever the user edits the email.
   useEffect(() => {
@@ -105,10 +113,13 @@ const Auth = () => {
     }
 
     // signup
+    const signupRedirect = nextPath
+      ? `${window.location.origin}/auth?next=${encodeURIComponent(nextPath)}`
+      : window.location.origin;
     const { data, error } = await supabase.auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
-      options: { emailRedirectTo: window.location.origin },
+      options: { emailRedirectTo: signupRedirect },
     });
 
     // Supabase hides "user already exists" on signup: it returns either an
@@ -133,9 +144,12 @@ const Auth = () => {
 
   const google = async () => {
     setBusy(true);
+    const googleRedirect = nextPath
+      ? `${window.location.origin}/auth?next=${encodeURIComponent(nextPath)}`
+      : window.location.origin;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: googleRedirect },
     });
     if (error) {
       setBusy(false);

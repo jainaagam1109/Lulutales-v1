@@ -31,6 +31,7 @@ import Generating from "./pages/Generating";
 import BedtimeReader from "./pages/BedtimeReader";
 import BedtimePreview from "./pages/BedtimePreview";
 import NotFound from "./pages/NotFound";
+import OAuthConsent from "./pages/OAuthConsent";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
           <RouteTracker />
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/oauth/consent" element={<OAuthConsent />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
             <Route path="/add-child" element={<RequireAuth><Onboarding /></RequireAuth>} />
