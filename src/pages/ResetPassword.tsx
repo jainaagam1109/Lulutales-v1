@@ -36,7 +36,7 @@ const ResetPassword = () => {
 
   const submit = async () => {
     const parsed = schema.safeParse({ password, confirm });
-    if (!parsed.success) return toast.error(parsed.error.errors[0].message);
+    if (!parsed.success) return toast.error(parsed.error.issues[0].message);
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
     setBusy(false);
