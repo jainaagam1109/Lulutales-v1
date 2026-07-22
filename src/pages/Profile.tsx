@@ -200,7 +200,9 @@ const Profile = () => {
           <Row icon={BarChart3} label="View Insights" onClick={() => nav("/insights")} />
           <Row icon={Users} label="Kids' profiles" onClick={() => nav("/profiles")} />
           <Row icon={Share2} label="Share app" sub="Copies link to clipboard" onClick={handleShare} />
-          <Row icon={Mail} label="Contact us" sub="jainaagam1109@gmail.com" onClick={() => (window.location.href = "mailto:jainaagam1109@gmail.com")} />
+          <Row icon={Mail} label="Contact us" sub="hello@lulutales.in" onClick={() => {
+            navigator.clipboard.writeText("hello@lulutales.in").then(() => toast.success("Email copied")).catch(() => toast.error("Could not copy"));
+          }} />
           <Row icon={LogOut} label="Log out" onClick={handleSignOut} danger />
         </section>
       </main>
