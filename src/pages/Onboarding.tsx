@@ -101,7 +101,7 @@ const Onboarding = () => {
     const ageNum = Number(age);
     const parsed = schema.safeParse({ name, age: ageNum });
     if (!parsed.success) {
-      toast.error(parsed.error.errors[0].message);
+      toast.error(parsed.error.issues[0].message);
       return;
     }
     setLoading(true);

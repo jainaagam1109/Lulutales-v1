@@ -79,7 +79,7 @@ const Auth = () => {
   const submit = async () => {
     if (mode === "forgot") {
       const parsed = emailOnlySchema.safeParse({ email });
-      if (!parsed.success) return toast.error(parsed.error.errors[0].message);
+      if (!parsed.success) return toast.error(parsed.error.issues[0].message);
       setBusy(true);
       const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
         redirectTo: `${window.location.origin}/reset-password`,
@@ -92,7 +92,7 @@ const Auth = () => {
     }
 
     const parsed = schema.safeParse({ email, password });
-    if (!parsed.success) return toast.error(parsed.error.errors[0].message);
+    if (!parsed.success) return toast.error(parsed.error.issues[0].message);
     setBusy(true);
     setSuggestGoogle(false);
 
