@@ -294,6 +294,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         age_group: form.age || null,
         child_profile_id: profileId,
         thumbnail: getThemeVisual(form.theme.trim()).emoji,
+        episode_mode: format === "personalised_audio" ? episodeMode : "multi",
         generation_params: {
           name: form.name.trim(),
           age: form.age.trim(),
