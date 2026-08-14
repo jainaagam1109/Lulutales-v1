@@ -50,6 +50,7 @@ const Onboarding = () => {
   const [name, setName] = useState("");
   const [age, setAge] = useState<string>("");
   const [gender, setGender] = useState<string>("");
+  const [companion, setCompanion] = useState<string>("");
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
 
