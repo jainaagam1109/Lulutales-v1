@@ -30,6 +30,7 @@ type Kid = {
   family_members: string | null;
   family_address_terms: string | null;
   sibling_age: number | null;
+  companion: string | null;
   status: "active" | "inactive" | "deleted";
 };
 
@@ -137,7 +138,7 @@ const KidsProfiles = () => {
     const { data } = await (supabase as any)
       .from("child_profiles")
       .select(
-        "id, name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, status"
+        "id, name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, companion, status"
       )
       .eq("user_id", user.id)
       .neq("status", "deleted")
@@ -184,6 +185,7 @@ const KidsProfiles = () => {
       family_members: editForm.family_members?.trim() || null,
       family_address_terms: serializeAddressTerms(editTerms) || null,
       sibling_age: Number.isFinite(siblingNum) ? siblingNum : null,
+      companion: editForm.companion?.trim() || null,
     };
     const { error } = await (supabase as any).from("child_profiles").update(updateData).eq("id", id);
     if (error) return toast.error("Failed to save profile");
@@ -419,6 +421,20 @@ const KidsProfiles = () => {
                       }
                       placeholder="e.g. 3"
                     />
+                  </div>
+                  <div>
+                    <FieldLabel optional>Companion</FieldLabel>
+                    <TextInput
+                      value={editForm.companion ?? ""}
+                      onChange={(e) => setEditForm((f) => ({ ...f, companion: e.target.value }))}
+                      placeholder="e.g. Bruno the dog"
+                      maxLength={80}
+                    />
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      A favourite toy, a pet, a plant — anything your child is attached to right now. You can
+                      name it (e.g. "Bruno the dog" or "Mr Carrot, a stuffed rabbit"). Leave blank and we'll
+                      invent one.
+                    </p>
                   </div>
                   <div>
                     <FieldLabel tooltip="Helps us make the story feel more personal and familiar.">

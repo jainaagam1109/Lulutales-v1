@@ -79,10 +79,17 @@ export const createPersonalisedStory = async (input: {
   child_profile_id: string;
   thumbnail?: string;
   generation_params?: Json | null;
+  episode_mode?: "single" | "multi";
 }): Promise<Story> => {
+  const { episode_mode, ...rest } = input;
   const { data, error } = await supabase
     .from("stories")
-    .insert({ ...input, is_featured: false, bucket_key: resolveBucket(input.theme) })
+    .insert({
+      ...rest,
+      is_featured: false,
+      bucket_key: resolveBucket(input.theme),
+      episode_mode: episode_mode ?? "multi",
+    } as any)
     .select()
     .single();
   if (error) throw error;
