@@ -138,6 +138,7 @@ const Onboarding = () => {
         name: name.trim(),
         age: ageNum,
         gender: gender || null,
+        companion: companion.trim() || null,
         user_id: session.user.id,
         status: hasActive ? "inactive" : "active",
       })
