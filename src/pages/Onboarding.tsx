@@ -223,11 +223,25 @@ const Onboarding = () => {
           )}
         </div>
 
-        <div className="mb-8">
+        <div className="mb-4">
           <FieldLabel optional tooltip="So we use the right pronouns in the story.">
             Gender
           </FieldLabel>
           <Select value={gender} onChange={setGender} options={GENDERS} placeholder="Select gender" />
+        </div>
+
+        <div className="mb-8">
+          <FieldLabel optional>Companion</FieldLabel>
+          <TextInput
+            value={companion}
+            onChange={(e) => setCompanion(e.target.value)}
+            placeholder="e.g. Bruno the dog"
+            maxLength={80}
+          />
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            A favourite toy, a pet, a plant — anything your child is attached to right now. You can name it
+            (e.g. "Bruno the dog" or "Mr Carrot, a stuffed rabbit"). Leave blank and we'll invent one.
+          </p>
         </div>
       </main>
 
