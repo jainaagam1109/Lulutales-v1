@@ -492,6 +492,42 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                   placeholder="Select format"
                 />
               </div>
+              {format === "personalised_audio" && (
+                <div>
+                  <FieldLabel tooltip="Choose whether the story arrives as a series of short episodes or as one complete story.">
+                    Episode format
+                  </FieldLabel>
+                  <div className="flex gap-2">
+                    {([
+                      {
+                        value: "multi" as const,
+                        label: "Multiple episodes",
+                        description: "Five short episodes — one a night",
+                      },
+                      {
+                        value: "single" as const,
+                        label: "One single story",
+                        description: "The whole story in one sitting",
+                      },
+                    ]).map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => setEpisodeMode(opt.value)}
+                        aria-pressed={episodeMode === opt.value}
+                        className={`flex-1 rounded-xl border px-3 py-2.5 text-left transition-colors ${
+                          episodeMode === opt.value
+                            ? "border-primary bg-secondary/60"
+                            : "border-border bg-card hover:border-primary/40"
+                        }`}
+                      >
+                        <div className="text-sm font-bold text-foreground">{opt.label}</div>
+                        <div className="mt-0.5 text-[11px] text-muted-foreground">{opt.description}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div>
                 <FieldLabel tooltip="Choose the language the story will be written in.">Language</FieldLabel>
                 <div className="flex gap-2">
