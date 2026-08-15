@@ -23,6 +23,9 @@ import {
   AddressTerm,
   parseAddressTerms,
   serializeAddressTerms,
+  CompanionFields,
+  splitCompanion,
+  joinCompanion,
   isLettersOnly,
   isNumeric,
   ValidationState,
@@ -90,6 +93,8 @@ type FormState = {
   home_type_custom: string;
   family_members: string;
   sibling_age: string;
+  companion_name: string;
+  companion_what: string;
   address_terms: AddressTerm[];
   theme: string;
   occasion: string;
@@ -109,6 +114,8 @@ const emptyForm: FormState = {
   home_type_custom: "",
   family_members: "",
   sibling_age: "",
+  companion_name: "",
+  companion_what: "",
   address_terms: [],
   theme: "",
   occasion: "",
@@ -184,7 +191,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         const { data, error } = await supabase
           .from("child_profiles")
           .select(
-            "name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, last_theme, last_occasion"
+            "name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, companion, last_theme, last_occasion"
           )
           .eq("id", profileId)
           .maybeSingle();
@@ -222,6 +229,8 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           home_type_custom: home.custom,
           family_members: data.family_members ?? "",
           sibling_age: (data as any).sibling_age != null ? String((data as any).sibling_age) : "",
+          companion_name: splitCompanion((data as any).companion).name,
+          companion_what: splitCompanion((data as any).companion).what,
           address_terms: parseAddressTerms(data.family_address_terms ?? ""),
           theme: "",
           occasion: (data as any).last_occasion ?? "",
@@ -331,6 +340,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         family_members: form.family_members.trim() || null,
         family_address_terms,
         sibling_age: form.sibling_age ? Number(form.sibling_age) : null,
+        companion: joinCompanion(form.companion_name, form.companion_what),
       };
       if (updateProfile) {
         payload.name = form.name.trim();
@@ -615,6 +625,14 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                   placeholder="e.g. 3"
                 />
               </div>
+              <CompanionFields
+                name={form.companion_name}
+                what={form.companion_what}
+                onChange={(next) => {
+                  set("companion_name", next.name);
+                  set("companion_what", next.what);
+                }}
+              />
               <div>
                 <FieldLabel tooltip="Helps us make the story feel more personal and familiar.">
                   Family address terms
