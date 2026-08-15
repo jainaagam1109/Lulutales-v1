@@ -17,6 +17,8 @@ import {
   isLettersOnly,
   isNumeric,
   ValidationState,
+  CompanionFields,
+  joinCompanion,
 } from "@/components/StoryFormFields";
 
 const GENDERS = [
@@ -50,7 +52,7 @@ const Onboarding = () => {
   const [name, setName] = useState("");
   const [age, setAge] = useState<string>("");
   const [gender, setGender] = useState<string>("");
-  const [companion, setCompanion] = useState<string>("");
+  const [companion, setCompanion] = useState<{ name: string; what: string }>({ name: "", what: "" });
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
 
@@ -138,7 +140,7 @@ const Onboarding = () => {
         name: name.trim(),
         age: ageNum,
         gender: gender || null,
-        companion: companion.trim() || null,
+        companion: joinCompanion(companion.name, companion.what),
         user_id: session.user.id,
         status: hasActive ? "inactive" : "active",
       })
@@ -231,17 +233,11 @@ const Onboarding = () => {
         </div>
 
         <div className="mb-8">
-          <FieldLabel optional>Companion</FieldLabel>
-          <TextInput
-            value={companion}
-            onChange={(e) => setCompanion(e.target.value)}
-            placeholder="e.g. Bruno the dog"
-            maxLength={80}
+          <CompanionFields
+            name={companion.name}
+            what={companion.what}
+            onChange={setCompanion}
           />
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            A favourite toy, a pet, a plant — anything your child is attached to right now. You can name it
-            (e.g. "Bruno the dog" or "Mr Carrot, a stuffed rabbit"). Leave blank and we'll invent one.
-          </p>
         </div>
       </main>
 

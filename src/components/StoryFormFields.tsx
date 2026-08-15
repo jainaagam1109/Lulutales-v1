@@ -330,3 +330,55 @@ export const AddressTermsEditor = ({
     </div>
   );
 };
+
+/* ---------- Companion (single column, two inputs) ---------- */
+export const COMPANION_TOOLTIP =
+  "Every story gives your child a companion for the adventure. Tell us the one they're actually attached to — a favourite toy, a pet, even a plant — and we'll write that one into the story instead of inventing something. Give its name (e.g. Bruno) and what it is (e.g. a dog). Leave both blank and we'll invent a companion for you.";
+
+export const splitCompanion = (raw?: string | null): { name: string; what: string } => {
+  const s = (raw ?? "").trim();
+  if (!s) return { name: "", what: "" };
+  const i = s.indexOf(",");
+  if (i === -1) return { name: s, what: "" };
+  return { name: s.slice(0, i).trim(), what: s.slice(i + 1).trim() };
+};
+
+export const joinCompanion = (name: string, what: string): string | null => {
+  const n = (name ?? "").trim();
+  const w = (what ?? "").trim();
+  if (n && w) return `${n}, ${w}`;
+  return n || w || null;
+};
+
+export const CompanionFields = ({
+  name,
+  what,
+  onChange,
+}: {
+  name: string;
+  what: string;
+  onChange: (next: { name: string; what: string }) => void;
+}) => (
+  <div className="space-y-3">
+    <div>
+      <FieldLabel optional tooltip={COMPANION_TOOLTIP}>
+        Companion's name
+      </FieldLabel>
+      <TextInput
+        value={name}
+        onChange={(e) => onChange({ name: e.target.value, what })}
+        placeholder="e.g. Bruno"
+        maxLength={40}
+      />
+    </div>
+    <div>
+      <FieldLabel optional>What is it?</FieldLabel>
+      <TextInput
+        value={what}
+        onChange={(e) => onChange({ name, what: e.target.value })}
+        placeholder="e.g. a dog"
+        maxLength={60}
+      />
+    </div>
+  </div>
+);
