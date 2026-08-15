@@ -14,6 +14,9 @@ import {
   FieldLabel,
   Select,
   type AddressTerm,
+  CompanionFields,
+  splitCompanion,
+  joinCompanion,
 } from "@/components/StoryFormFields";
 import { softDeleteProfile, loadActiveProfileForUser } from "@/lib/activeProfile";
 import { useQueryClient } from "@tanstack/react-query";
