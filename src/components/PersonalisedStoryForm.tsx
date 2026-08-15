@@ -188,7 +188,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
     }
     (async () => {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from("child_profiles")
           .select(
             "name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, companion, last_theme, last_occasion"
