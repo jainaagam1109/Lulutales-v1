@@ -422,20 +422,13 @@ const KidsProfiles = () => {
                       placeholder="e.g. 3"
                     />
                   </div>
-                  <div>
-                    <FieldLabel optional>Companion</FieldLabel>
-                    <TextInput
-                      value={editForm.companion ?? ""}
-                      onChange={(e) => setEditForm((f) => ({ ...f, companion: e.target.value }))}
-                      placeholder="e.g. Bruno the dog"
-                      maxLength={80}
-                    />
-                    <p className="mt-1 text-[11px] text-muted-foreground">
-                      A favourite toy, a pet, a plant — anything your child is attached to right now. You can
-                      name it (e.g. "Bruno the dog" or "Mr Carrot, a stuffed rabbit"). Leave blank and we'll
-                      invent one.
-                    </p>
-                  </div>
+                  <CompanionFields
+                    name={splitCompanion(editForm.companion).name}
+                    what={splitCompanion(editForm.companion).what}
+                    onChange={(next) =>
+                      setEditForm((f) => ({ ...f, companion: joinCompanion(next.name, next.what) ?? "" }))
+                    }
+                  />
                   <div>
                     <FieldLabel tooltip="Helps us make the story feel more personal and familiar.">
                       Family address terms
