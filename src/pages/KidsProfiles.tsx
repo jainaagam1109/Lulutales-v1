@@ -133,6 +133,7 @@ const KidsProfiles = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Kid>>({});
   const [editTerms, setEditTerms] = useState<AddressTerm[]>([]);
+  const [editCompanion, setEditCompanion] = useState<{ name: string; what: string }>({ name: "", what: "" });
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -159,12 +160,14 @@ const KidsProfiles = () => {
     setEditingId(k.id);
     setEditForm({ ...k });
     setEditTerms(parseAddressTerms(k.family_address_terms ?? ""));
+    setEditCompanion(splitCompanion(k.companion));
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditForm({});
     setEditTerms([]);
+    setEditCompanion({ name: "", what: "" });
   };
 
   const saveKid = async (id: string) => {
@@ -188,7 +191,7 @@ const KidsProfiles = () => {
       family_members: editForm.family_members?.trim() || null,
       family_address_terms: serializeAddressTerms(editTerms) || null,
       sibling_age: Number.isFinite(siblingNum) ? siblingNum : null,
-      companion: editForm.companion?.trim() || null,
+      companion: joinCompanion(editCompanion.name, editCompanion.what),
     };
     const { error } = await (supabase as any).from("child_profiles").update(updateData).eq("id", id);
     if (error) return toast.error("Failed to save profile");
@@ -426,11 +429,9 @@ const KidsProfiles = () => {
                     />
                   </div>
                   <CompanionFields
-                    name={splitCompanion(editForm.companion).name}
-                    what={splitCompanion(editForm.companion).what}
-                    onChange={(next) =>
-                      setEditForm((f) => ({ ...f, companion: joinCompanion(next.name, next.what) ?? "" }))
-                    }
+                    name={editCompanion.name}
+                    what={editCompanion.what}
+                    onChange={setEditCompanion}
                   />
                   <div>
                     <FieldLabel tooltip="Helps us make the story feel more personal and familiar.">
