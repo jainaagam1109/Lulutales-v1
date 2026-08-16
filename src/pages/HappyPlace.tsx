@@ -9,7 +9,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { SectionHeader } from "@/components/SectionHeader";
 import { PageHeader } from "@/components/PageHeader";
 import { TagChip } from "@/components/TagChip";
-import { StoryCard } from "@/components/StoryCard";
+import { StoryCard, storyLanguage } from "@/components/StoryCard";
 import { StoryWorldsRow } from "@/components/StoryWorldsRow";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { fetchCompletedThemes } from "@/lib/analytics";
@@ -215,6 +215,7 @@ const HappyPlace = () => {
 
   const [allAgeFilter, setAllAgeFilter] = useState<string>("");
   const [allBucketFilter, setAllBucketFilter] = useState<BucketKey | "">("");
+  const [allLanguageFilter, setAllLanguageFilter] = useState<"" | "english" | "hindi">("");
 
   const allAgeOptions = useMemo(() => {
     const s = new Set<string>();
@@ -228,9 +229,10 @@ const HappyPlace = () => {
       storyRoom.filter(
         (s) =>
           (!allAgeFilter || String(s.age_group ?? "") === allAgeFilter) &&
-          (!allBucketFilter || s.bucket_key === allBucketFilter)
+          (!allBucketFilter || s.bucket_key === allBucketFilter) &&
+          (!allLanguageFilter || storyLanguage(s) === allLanguageFilter)
       ),
-    [storyRoom, allAgeFilter, allBucketFilter]
+    [storyRoom, allAgeFilter, allBucketFilter, allLanguageFilter]
   );
 
   const storyRoomSorted = useMemo(
@@ -432,6 +434,16 @@ const HappyPlace = () => {
               {allBucketOptions.map((b) => (
                 <option key={b.key} value={b.key}>{b.fullName}</option>
               ))}
+            </select>
+            <select
+              value={allLanguageFilter}
+              onChange={(e) => setAllLanguageFilter(e.target.value as "" | "english" | "hindi")}
+              aria-label="Filter by language"
+              className="flex-1 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground focus:border-primary focus:outline-none"
+            >
+              <option value="">All languages</option>
+              <option value="english">English</option>
+              <option value="hindi">हिंदी</option>
             </select>
           </div>
           {storyRoomSorted.length === 0 ? (

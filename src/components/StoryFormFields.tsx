@@ -382,3 +382,332 @@ export const CompanionFields = ({
     </div>
   </div>
 );
+
+/* ================= Family members block (v2) ================= */
+
+export const FAMILY_RELATIONS = [
+  "Mother",
+  "Father",
+  "Elder brother",
+  "Younger brother",
+  "Elder sister",
+  "Younger sister",
+  "Uncle",
+  "Aunt",
+  "Cousin",
+  "Grandfather",
+  "Grandmother",
+  "Teacher",
+  "Friend",
+  "Other",
+] as const;
+
+export const AGE_RELATIONS = new Set([
+  "Elder brother",
+  "Younger brother",
+  "Elder sister",
+  "Younger sister",
+  "Cousin",
+  "Friend",
+]);
+
+export const RELATION_AGE_OPTIONS = [
+  { label: "Baby — not talking yet", value: "baby" },
+  { label: "Toddler, 1–2 years", value: "toddler" },
+  { label: "3–4 years", value: "young_child" },
+  { label: "5+ years", value: "older_child" },
+];
+
+export type FamilyRow = {
+  relation: string;
+  relation_custom?: string;
+  term: string;
+  age?: string;
+};
+
+export const DEFAULT_FAMILY_ROWS: FamilyRow[] = [
+  { relation: "Mother", term: "Mummy" },
+  { relation: "Father", term: "Papa" },
+];
+
+export const parseFamilyRows = (raw?: string | null): FamilyRow[] => {
+  const s = (raw ?? "").trim();
+  if (!s) return [];
+  if (s.startsWith("[")) {
+    try {
+      const arr = JSON.parse(s);
+      if (Array.isArray(arr)) {
+        return arr
+          .filter((x) => x && typeof x === "object")
+          .map((x: any) => ({
+            relation: String(x.relation ?? ""),
+            relation_custom: x.relation_custom ? String(x.relation_custom) : undefined,
+            term: String(x.term ?? ""),
+            age: x.age ? String(x.age) : undefined,
+          }))
+          .slice(0, 10);
+      }
+    } catch {
+      /* fall through */
+    }
+  }
+  // legacy "Relation: Term" list
+  return parseAddressTerms(s).map((t) => {
+    const match = FAMILY_RELATIONS.find(
+      (r) => r.toLowerCase() === t.relation.trim().toLowerCase()
+    );
+    return match && match !== "Other"
+      ? { relation: match, term: t.term }
+      : { relation: t.relation ? "Other" : "", relation_custom: t.relation || undefined, term: t.term };
+  });
+};
+
+export const serializeFamilyRows = (rows: FamilyRow[]): string => {
+  const clean = rows
+    .filter((r) => r.relation.trim() && r.term.trim() && (r.relation !== "Other" || (r.relation_custom ?? "").trim()))
+    .map((r) => ({
+      relation: r.relation === "Other" ? (r.relation_custom ?? "").trim() : r.relation,
+      relation_type: r.relation,
+      term: r.term.trim(),
+      ...(r.age ? { age: r.age } : {}),
+    }));
+  return clean.length ? JSON.stringify(clean) : "";
+};
+
+export const isFamilyRowComplete = (r: FamilyRow) =>
+  !!r.relation.trim() && !!r.term.trim() && (r.relation !== "Other" || !!(r.relation_custom ?? "").trim());
+
+/** Best-effort conversion of legacy free-text family members + sibling age. */
+const LEGACY_MAP: { words: string[]; relation: string }[] = [
+  { words: ["mother", "mom", "mum", "mummy", "maa", "amma"], relation: "Mother" },
+  { words: ["father", "dad", "papa", "daddy", "appa"], relation: "Father" },
+  { words: ["elder sister", "big sister", "didi"], relation: "Elder sister" },
+  { words: ["younger sister", "little sister"], relation: "Younger sister" },
+  { words: ["sister", "behen"], relation: "Younger sister" },
+  { words: ["elder brother", "big brother", "bhaiya", "bhai"], relation: "Elder brother" },
+  { words: ["younger brother", "little brother"], relation: "Younger brother" },
+  { words: ["brother"], relation: "Younger brother" },
+  { words: ["grandmother", "grandma", "dadi", "nani"], relation: "Grandmother" },
+  { words: ["grandfather", "grandpa", "dada", "nana"], relation: "Grandfather" },
+  { words: ["uncle", "chacha", "mama"], relation: "Uncle" },
+  { words: ["aunt", "aunty", "chachi", "mami"], relation: "Aunt" },
+  { words: ["cousin"], relation: "Cousin" },
+  { words: ["friend"], relation: "Friend" },
+  { words: ["teacher"], relation: "Teacher" },
+];
+
+const SIBLING_RELATIONS = new Set([
+  "Elder brother",
+  "Younger brother",
+  "Elder sister",
+  "Younger sister",
+]);
+
+export const convertLegacyFamily = (
+  familyMembers?: string | null,
+  siblingAge?: number | string | null
+): FamilyRow[] => {
+  const text = (familyMembers ?? "").toLowerCase();
+  if (!text.trim()) return [];
+  const found: string[] = [];
+  for (const entry of LEGACY_MAP) {
+    if (entry.words.some((w) => text.includes(w)) && !found.includes(entry.relation)) {
+      found.push(entry.relation);
+    }
+  }
+  const rows: FamilyRow[] = found.slice(0, 10).map((relation) => ({ relation, term: "" }));
+  const n = typeof siblingAge === "string" ? parseInt(siblingAge, 10) : siblingAge ?? NaN;
+  if (Number.isFinite(n)) {
+    const siblings = rows.filter((r) => SIBLING_RELATIONS.has(r.relation));
+    if (siblings.length === 1) {
+      const num = Number(n);
+      siblings[0].age =
+        num <= 0 ? "baby" : num <= 2 ? "toddler" : num <= 4 ? "young_child" : "older_child";
+    }
+  }
+  return rows;
+};
+
+export const FamilyMembersEditor = ({
+  value,
+  onChange,
+  max = 10,
+}: {
+  value: FamilyRow[];
+  onChange: (next: FamilyRow[]) => void;
+  max?: number;
+}) => {
+  const rows = value.length === 0 ? [{ relation: "", term: "" } as FamilyRow] : value;
+
+  useEffect(() => {
+    if (value.length === 0) onChange([{ relation: "", term: "" }]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const update = (i: number, patch: Partial<FamilyRow>) =>
+    onChange(rows.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
+  const remove = (i: number) => onChange(rows.filter((_, idx) => idx !== i));
+  const add = () => {
+    if (rows.length >= max) return;
+    onChange([...rows, { relation: "", term: "" }]);
+  };
+
+  const takenAt = (i: number) =>
+    new Set(
+      rows
+        .filter((r, idx) => idx !== i && r.relation && r.relation !== "Other")
+        .map((r) => r.relation)
+    );
+
+  return (
+    <div className="space-y-3">
+      {rows.map((row, i) => {
+        const taken = takenAt(i);
+        const options = FAMILY_RELATIONS.filter((r) => r === "Other" || r === row.relation || !taken.has(r)).map(
+          (r) => ({ label: r, value: r })
+        );
+        return (
+          <div key={i} className="rounded-xl border border-border/70 bg-background/40 p-2.5">
+            <div className="flex items-start gap-2">
+              <div className="flex-1 space-y-2">
+                <Select
+                  value={row.relation}
+                  onChange={(v) =>
+                    update(i, {
+                      relation: v,
+                      relation_custom: v === "Other" ? row.relation_custom ?? "" : undefined,
+                      age: AGE_RELATIONS.has(v) ? row.age : undefined,
+                    })
+                  }
+                  options={options}
+                  placeholder="Select relation"
+                />
+                {row.relation === "Other" && (
+                  <input
+                    value={row.relation_custom ?? ""}
+                    onChange={(e) => update(i, { relation_custom: e.target.value })}
+                    placeholder="Relation (e.g. Neighbour)"
+                    maxLength={40}
+                    className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none"
+                  />
+                )}
+                <input
+                  value={row.term}
+                  onChange={(e) => update(i, { term: e.target.value })}
+                  placeholder="Called (e.g. Mummy)"
+                  maxLength={40}
+                  className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none"
+                />
+                {AGE_RELATIONS.has(row.relation) && (
+                  <div>
+                    <div className="mb-1 text-[10px] font-semibold text-muted-foreground">
+                      How old are they? <span className="font-normal">(optional)</span>
+                    </div>
+                    <Select
+                      value={row.age ?? ""}
+                      onChange={(v) => update(i, { age: v || undefined })}
+                      options={RELATION_AGE_OPTIONS}
+                      placeholder="Select age"
+                    />
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => remove(i)}
+                disabled={rows.length === 1}
+                className="mt-1.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30"
+                aria-label="Remove"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        );
+      })}
+      {rows.length < max && (
+        <button
+          type="button"
+          onClick={add}
+          className="flex items-center gap-1 text-[11px] font-bold text-primary-deep"
+        >
+          <Plus className="h-3.5 w-3.5" /> Add another ({rows.length}/{max})
+        </button>
+      )}
+    </div>
+  );
+};
+
+/* ---------- Companion v2: name + kind dropdown ---------- */
+
+export const COMPANION_KIND_TOOLTIP =
+  "The companion is the sidekick who shares the adventure and provides the story's funniest moment.";
+
+export const COMPANION_KINDS = [
+  "A pet",
+  "A soft toy or doll",
+  "A friend",
+  "A cousin or sibling",
+  "An imaginary friend",
+  "Something else",
+];
+
+export const splitCompanionKind = (what?: string | null): { kind: string; kindOther: string } => {
+  const w = (what ?? "").trim();
+  if (!w) return { kind: "", kindOther: "" };
+  const match = COMPANION_KINDS.find((k) => k.toLowerCase() === w.toLowerCase());
+  if (match) return { kind: match, kindOther: "" };
+  return { kind: "Something else", kindOther: w };
+};
+
+export const companionWhat = (kind: string, kindOther: string): string => {
+  if (kind === "Something else") return kindOther.trim();
+  return kind.trim();
+};
+
+export const CompanionFieldsV2 = ({
+  name,
+  kind,
+  kindOther,
+  onChange,
+}: {
+  name: string;
+  kind: string;
+  kindOther: string;
+  onChange: (next: { name: string; kind: string; kindOther: string }) => void;
+}) => (
+  <div className="space-y-3">
+    <div>
+      <FieldLabel optional tooltip={COMPANION_TOOLTIP}>
+        Companion's name
+      </FieldLabel>
+      <TextInput
+        value={name}
+        onChange={(e) => onChange({ name: e.target.value, kind, kindOther })}
+        placeholder="e.g. Bruno"
+        maxLength={40}
+      />
+    </div>
+    <div>
+      <FieldLabel optional tooltip={COMPANION_KIND_TOOLTIP}>
+        What kind of companion is it?
+      </FieldLabel>
+      <Select
+        value={kind}
+        onChange={(v) => onChange({ name, kind: v, kindOther: v === "Something else" ? kindOther : "" })}
+        options={COMPANION_KINDS.map((k) => ({ label: k, value: k }))}
+        placeholder="Select a companion type"
+      />
+      {kind === "Something else" && (
+        <div className="mt-2">
+          <TextInput
+            value={kindOther}
+            onChange={(e) => onChange({ name, kind, kindOther: e.target.value })}
+            placeholder="Tell us what it is…"
+            maxLength={60}
+          />
+        </div>
+      )}
+    </div>
+  </div>
+);

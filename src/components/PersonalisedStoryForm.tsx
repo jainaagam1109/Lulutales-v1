@@ -16,15 +16,21 @@ import { PhoneShell } from "@/components/PhoneShell";
 import { FloatingMiniPlayer } from "@/components/FloatingMiniPlayer";
 import {
   FieldLabel,
+  InfoTooltip,
   TextInput,
   Select,
   Section,
-  AddressTermsEditor,
-  AddressTerm,
-  parseAddressTerms,
-  serializeAddressTerms,
-  CompanionFields,
+  FamilyMembersEditor,
+  FamilyRow,
+  parseFamilyRows,
+  serializeFamilyRows,
+  isFamilyRowComplete,
+  convertLegacyFamily,
+  DEFAULT_FAMILY_ROWS,
+  CompanionFieldsV2,
   splitCompanion,
+  splitCompanionKind,
+  companionWhat,
   joinCompanion,
   isLettersOnly,
   isNumeric,
@@ -75,8 +81,8 @@ function personalitiesForAge(ageStr: string) {
 
 const HOME_TYPES = [
   { label: "Apartment", value: "Apartment" },
-  { label: "Independent House", value: "Independent House" },
-  { label: "Gated Society", value: "Gated Society" },
+  { label: "Independent house", value: "Independent House" },
+  { label: "Gated society", value: "Gated Society" },
   { label: "Other", value: "Other" },
 ];
 
@@ -91,11 +97,10 @@ type FormState = {
   personality_custom: string;
   home_type_choice: string;
   home_type_custom: string;
-  family_members: string;
-  sibling_age: string;
   companion_name: string;
-  companion_what: string;
-  address_terms: AddressTerm[];
+  companion_kind: string;
+  companion_kind_other: string;
+  family_rows: FamilyRow[];
   theme: string;
   occasion: string;
   language: "english" | "hindi";
@@ -112,11 +117,10 @@ const emptyForm: FormState = {
   personality_custom: "",
   home_type_choice: "",
   home_type_custom: "",
-  family_members: "",
-  sibling_age: "",
   companion_name: "",
-  companion_what: "",
-  address_terms: [],
+  companion_kind: "",
+  companion_kind_other: "",
+  family_rows: DEFAULT_FAMILY_ROWS.map((r) => ({ ...r })),
   theme: "",
   occasion: "",
   language: "english",
@@ -143,7 +147,9 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
   const location = useLocation();
   const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
   const [format, setFormat] = useState<"personalised_audio" | "bedtime_text">(storyType);
-  const [episodeMode, setEpisodeMode] = useState<"single" | "multi">("multi");
+  const [episodeMode, setEpisodeMode] = useState<"single" | "multi">("single");
+  const [familyNote, setFamilyNote] = useState(false);
+  const [envNote, setEnvNote] = useState(false);
 
   useEffect(() => {
     if (!profileId) {
@@ -216,6 +222,16 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           age: data.age != null ? String(data.age) : "",
           gender: data.gender ?? "",
         };
+        const isReturning = !!(data as any).family_address_terms || !!(data as any).family_members;
+        let rows: FamilyRow[] = parseFamilyRows((data as any).family_address_terms ?? "");
+        if (rows.length === 0) {
+          rows = convertLegacyFamily((data as any).family_members, (data as any).sibling_age);
+        }
+        if (rows.length === 0 && !isReturning) rows = DEFAULT_FAMILY_ROWS.map((r) => ({ ...r }));
+        setFamilyNote(isReturning && rows.length === 0);
+        setEnvNote(isReturning && (!(data as any).city || !(data as any).home_type));
+        const comp = splitCompanion((data as any).companion);
+        const compKind = splitCompanionKind(comp.what);
         setForm({
           name: data.name ?? "",
           age: data.age != null ? String(data.age) : "",
@@ -227,11 +243,10 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           personality_custom: personality.custom,
           home_type_choice: home.choice,
           home_type_custom: home.custom,
-          family_members: data.family_members ?? "",
-          sibling_age: (data as any).sibling_age != null ? String((data as any).sibling_age) : "",
-          companion_name: splitCompanion((data as any).companion).name,
-          companion_what: splitCompanion((data as any).companion).what,
-          address_terms: parseAddressTerms(data.family_address_terms ?? ""),
+          companion_name: comp.name,
+          companion_kind: compKind.kind,
+          companion_kind_other: compKind.kindOther,
+          family_rows: rows,
           theme: "",
           occasion: (data as any).last_occasion ?? "",
           language: "english",
@@ -291,7 +306,11 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
     if (!profileId) return;
     const personality = resolveChoice(form.personality_choice, form.personality_custom);
     const home_type = resolveChoice(form.home_type_choice, form.home_type_custom);
-    const family_address_terms = serializeAddressTerms(form.address_terms);
+    const family_address_terms = serializeFamilyRows(form.family_rows);
+    const companion = joinCompanion(
+      form.companion_name,
+      companionWhat(form.companion_kind, form.companion_kind_other)
+    );
 
     setSubmitting(true);
     try {
@@ -303,7 +322,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         age_group: form.age || null,
         child_profile_id: profileId,
         thumbnail: getThemeVisual(form.theme.trim()).emoji,
-        episode_mode: format === "personalised_audio" ? episodeMode : "multi",
+        episode_mode: format === "personalised_audio" ? episodeMode : "single",
         generation_params: {
           name: form.name.trim(),
           age: form.age.trim(),
@@ -312,9 +331,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           city: form.city.trim(),
           personality,
           home_type,
-          family_members: form.family_members.trim(),
           family_address_terms,
-          sibling_age: form.sibling_age.trim() || null,
           theme: form.theme.trim(),
           occasion: form.occasion.trim() || null,
           language: isHindiEligible(form.age) ? form.language : "english",
@@ -337,10 +354,8 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         personality,
         home_type,
         city: form.city.trim() || null,
-        family_members: form.family_members.trim() || null,
         family_address_terms,
-        sibling_age: form.sibling_age ? Number(form.sibling_age) : null,
-        companion: joinCompanion(form.companion_name, form.companion_what),
+        companion,
       };
       if (updateProfile) {
         payload.name = form.name.trim();
@@ -373,7 +388,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
       toast.error("Please complete onboarding first.");
       return;
     }
-    setTouched((t) => ({ ...t, name: true, age: true, theme: true }));
+    setTouched((t) => ({ ...t, name: true, age: true, theme: true, family: true, city: true, home: true }));
     if (!form.name.trim() || !isLettersOnly(form.name)) {
       toast.error("Please enter a valid name (letters only).");
       return;
@@ -389,6 +404,18 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
     }
     if (!form.theme.trim()) {
       toast.error("Please add a theme for the story.");
+      return;
+    }
+    if (!form.family_rows.some(isFamilyRowComplete)) {
+      toast.error("Please add at least one person so we can make the story feel like home.");
+      return;
+    }
+    if (!form.city.trim()) {
+      toast.error("Which city is home?");
+      return;
+    }
+    if (!resolveChoice(form.home_type_choice, form.home_type_custom)) {
+      toast.error("What kind of home do you live in?");
       return;
     }
 
@@ -494,30 +521,33 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                 </FieldLabel>
                 <Select
                   value={format}
-                  onChange={(v) => setFormat(v as "personalised_audio" | "bedtime_text")}
+                  onChange={(v) => {
+                    setFormat(v as "personalised_audio" | "bedtime_text");
+                    setEpisodeMode("single");
+                  }}
                   options={[
                     { label: "Generate audio story", value: "personalised_audio" },
-                    { label: "Generate bedtime story", value: "bedtime_text" },
+                    { label: "Generate text story", value: "bedtime_text" },
                   ]}
                   placeholder="Select format"
                 />
               </div>
               {format === "personalised_audio" && (
                 <div>
-                  <FieldLabel tooltip="Choose whether the story arrives as a series of short episodes or as one complete story.">
-                    Episode format
+                  <FieldLabel tooltip="Both options create one complete story. Choose whether your child hears it all at once or in shorter parts.">
+                    How should the story be delivered?
                   </FieldLabel>
                   <div className="flex gap-2">
                     {([
                       {
-                        value: "multi" as const,
-                        label: "Multiple episodes",
-                        description: "Five short episodes — one a night",
+                        value: "single" as const,
+                        label: "One continuous story",
+                        description: "The full story in one go",
                       },
                       {
-                        value: "single" as const,
-                        label: "One single story",
-                        description: "The whole story in one sitting",
+                        value: "multi" as const,
+                        label: "Broken into shorter episodes",
+                        description: "Shorter parts, easier for younger listeners to stay with",
                       },
                     ]).map((opt) => (
                       <button
@@ -575,8 +605,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
             <Section
               title="Family context"
               subtitle="Make the story feel like home."
-              optional
-              defaultOpen={false}
+              defaultOpen
             >
               <div>
                 <FieldLabel tooltip="This gives a quick overview. You can add more details about family members below.">
@@ -602,68 +631,59 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                 )}
               </div>
               <div>
-                <FieldLabel tooltip="The people who appear around your child every day.">
-                  Family members
-                </FieldLabel>
-                <TextInput
-                  value={form.family_members}
-                  onChange={(e) => set("family_members", e.target.value)}
-                  placeholder="e.g. Father, Mother, Grandparents"
-                />
-              </div>
-              <div>
-                <FieldLabel
-                  optional
-                  tooltip="If your child has a sibling, their age helps us write a more realistic family dynamic."
-                >
-                  Sibling's age
-                </FieldLabel>
-                <TextInput
-                  value={form.sibling_age}
-                  onChange={(e) => set("sibling_age", e.target.value)}
-                  inputMode="numeric"
-                  placeholder="e.g. 3"
-                />
-              </div>
-              <CompanionFields
-                name={form.companion_name}
-                what={form.companion_what}
-                onChange={(next) => {
-                  set("companion_name", next.name);
-                  set("companion_what", next.what);
-                }}
-              />
-              <div>
                 <FieldLabel tooltip="Helps us make the story feel more personal and familiar.">
-                  Family address terms
+                  Family members and what {childName} calls them
                 </FieldLabel>
                 <p className="-mt-1 mb-2 text-[11px] text-muted-foreground">
-                  e.g. Mother → Mummy, Father → Papa, Dog → Doggo
+                  e.g. Mother → Mummy · Elder sister → Didi
                 </p>
-                <AddressTermsEditor
-                  value={form.address_terms}
-                  onChange={(next) => set("address_terms", next)}
+                {familyNote && (
+                  <p className="mb-2 rounded-xl bg-secondary/40 px-3 py-2 text-[11px] text-muted-foreground">
+                    We've made stories a bit more personal — take a moment to tell us who's in {childName}'s world.
+                  </p>
+                )}
+                <FamilyMembersEditor
+                  value={form.family_rows}
+                  onChange={(next) => set("family_rows", next)}
                 />
+                {touched.family && !form.family_rows.some(isFamilyRowComplete) && (
+                  <p className="mt-2 text-[11px] text-destructive">
+                    Please add at least one person so we can make the story feel like home.
+                  </p>
+                )}
               </div>
+              <CompanionFieldsV2
+                name={form.companion_name}
+                kind={form.companion_kind}
+                kindOther={form.companion_kind_other}
+                onChange={(next) => {
+                  set("companion_name", next.name);
+                  set("companion_kind", next.kind);
+                  set("companion_kind_other", next.kindOther);
+                }}
+              />
             </Section>
 
-            {/* Environment */}
-            <Section
-              title="Environment"
-              subtitle="Where the world of the story lives."
-              optional
-              defaultOpen={false}
-            >
+            {/* Home */}
+            <Section title="Home" subtitle="Where the world of the story lives." defaultOpen>
+              {envNote && (
+                <p className="rounded-xl bg-secondary/40 px-3 py-2 text-[11px] text-muted-foreground">
+                  We've made stories a bit more personal — tell us where {childName} calls home.
+                </p>
+              )}
               <div>
                 <FieldLabel tooltip="Adds local flavour and familiar places.">City</FieldLabel>
                 <TextInput
                   value={form.city}
                   onChange={(e) => set("city", e.target.value)}
+                  onBlur={() => markTouched("city")}
                   placeholder="e.g. Bengaluru"
+                  state={touched.city && !form.city.trim() ? "error" : "untouched"}
+                  errorMessage="Which city is home?"
                 />
               </div>
               <div>
-                <FieldLabel tooltip="So the setting feels like your child's everyday world." optional>
+                <FieldLabel tooltip="So the setting feels like your child's everyday world.">
                   Home type
                 </FieldLabel>
                 <Select
@@ -674,7 +694,11 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                   }}
                   options={HOME_TYPES}
                   placeholder="Select home type"
+                  state={touched.home && !form.home_type_choice ? "error" : "untouched"}
                 />
+                {touched.home && !form.home_type_choice && (
+                  <p className="mt-1 text-[11px] text-destructive">What kind of home do you live in?</p>
+                )}
                 {form.home_type_choice === "Other" && (
                   <div className="mt-2">
                     <TextInput
@@ -686,6 +710,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                 )}
               </div>
             </Section>
+
 
             {/* Personality & Story */}
             <Section title="Personality & story" subtitle="What makes this story uniquely theirs." defaultOpen>
