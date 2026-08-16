@@ -372,11 +372,13 @@ export const CompanionFields = ({
       />
     </div>
     <div>
-      <FieldLabel optional>What is it?</FieldLabel>
+      <FieldLabel optional tooltip={COMPANION_KIND_TOOLTIP}>
+        What kind of companion is it?
+      </FieldLabel>
       <TextInput
         value={what}
         onChange={(e) => onChange({ name, what: e.target.value })}
-        placeholder="e.g. a dog"
+        placeholder="e.g. a rubber duck, a golden retriever, a money plant"
         maxLength={60}
       />
     </div>
@@ -638,76 +640,7 @@ export const FamilyMembersEditor = ({
   );
 };
 
-/* ---------- Companion v2: name + kind dropdown ---------- */
+/* ---------- Companion kind tooltip ---------- */
 
 export const COMPANION_KIND_TOOLTIP =
   "The companion is the sidekick who shares the adventure and provides the story's funniest moment.";
-
-export const COMPANION_KINDS = [
-  "A pet",
-  "A soft toy or doll",
-  "A friend",
-  "A cousin or sibling",
-  "An imaginary friend",
-  "Something else",
-];
-
-export const splitCompanionKind = (what?: string | null): { kind: string; kindOther: string } => {
-  const w = (what ?? "").trim();
-  if (!w) return { kind: "", kindOther: "" };
-  const match = COMPANION_KINDS.find((k) => k.toLowerCase() === w.toLowerCase());
-  if (match) return { kind: match, kindOther: "" };
-  return { kind: "Something else", kindOther: w };
-};
-
-export const companionWhat = (kind: string, kindOther: string): string => {
-  if (kind === "Something else") return kindOther.trim();
-  return kind.trim();
-};
-
-export const CompanionFieldsV2 = ({
-  name,
-  kind,
-  kindOther,
-  onChange,
-}: {
-  name: string;
-  kind: string;
-  kindOther: string;
-  onChange: (next: { name: string; kind: string; kindOther: string }) => void;
-}) => (
-  <div className="space-y-3">
-    <div>
-      <FieldLabel optional tooltip={COMPANION_TOOLTIP}>
-        Companion's name
-      </FieldLabel>
-      <TextInput
-        value={name}
-        onChange={(e) => onChange({ name: e.target.value, kind, kindOther })}
-        placeholder="e.g. Bruno"
-        maxLength={40}
-      />
-    </div>
-    <div>
-      <FieldLabel optional tooltip={COMPANION_KIND_TOOLTIP}>
-        What kind of companion is it?
-      </FieldLabel>
-      <Select
-        value={kind}
-        onChange={(v) => onChange({ name, kind: v, kindOther: v === "Something else" ? kindOther : "" })}
-        options={COMPANION_KINDS.map((k) => ({ label: k, value: k }))}
-        placeholder="Select a companion type"
-      />
-      {kind === "Something else" && (
-        <div className="mt-2">
-          <TextInput
-            value={kindOther}
-            onChange={(e) => onChange({ name, kind, kindOther: e.target.value })}
-            placeholder="Tell us what it is…"
-            maxLength={60}
-          />
-        </div>
-      )}
-    </div>
-  </div>
-);
