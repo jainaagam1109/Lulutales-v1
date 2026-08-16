@@ -581,8 +581,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
             <Section
               title="Family context"
               subtitle="Make the story feel like home."
-              optional
-              defaultOpen={false}
+              defaultOpen
             >
               <div>
                 <FieldLabel tooltip="This gives a quick overview. You can add more details about family members below.">
@@ -608,48 +607,83 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                 )}
               </div>
               <div>
-                <FieldLabel tooltip="The people who appear around your child every day.">
-                  Family members
-                </FieldLabel>
-                <TextInput
-                  value={form.family_members}
-                  onChange={(e) => set("family_members", e.target.value)}
-                  placeholder="e.g. Father, Mother, Grandparents"
-                />
-              </div>
-              <div>
-                <FieldLabel
-                  optional
-                  tooltip="If your child has a sibling, their age helps us write a more realistic family dynamic."
-                >
-                  Sibling's age
-                </FieldLabel>
-                <TextInput
-                  value={form.sibling_age}
-                  onChange={(e) => set("sibling_age", e.target.value)}
-                  inputMode="numeric"
-                  placeholder="e.g. 3"
-                />
-              </div>
-              <CompanionFields
-                name={form.companion_name}
-                what={form.companion_what}
-                onChange={(next) => {
-                  set("companion_name", next.name);
-                  set("companion_what", next.what);
-                }}
-              />
-              <div>
                 <FieldLabel tooltip="Helps us make the story feel more personal and familiar.">
-                  Family address terms
+                  Family members and what {childName} calls them
                 </FieldLabel>
                 <p className="-mt-1 mb-2 text-[11px] text-muted-foreground">
-                  e.g. Mother → Mummy, Father → Papa, Dog → Doggo
+                  e.g. Mother → Mummy · Elder sister → Didi
                 </p>
-                <AddressTermsEditor
-                  value={form.address_terms}
-                  onChange={(next) => set("address_terms", next)}
+                {familyNote && (
+                  <p className="mb-2 rounded-xl bg-secondary/40 px-3 py-2 text-[11px] text-muted-foreground">
+                    We've made stories a bit more personal — take a moment to tell us who's in {childName}'s world.
+                  </p>
+                )}
+                <FamilyMembersEditor
+                  value={form.family_rows}
+                  onChange={(next) => set("family_rows", next)}
                 />
+                {touched.family && !form.family_rows.some(isFamilyRowComplete) && (
+                  <p className="mt-2 text-[11px] text-destructive">
+                    Please add at least one person so we can make the story feel like home.
+                  </p>
+                )}
+              </div>
+              <CompanionFieldsV2
+                name={form.companion_name}
+                kind={form.companion_kind}
+                kindOther={form.companion_kind_other}
+                onChange={(next) => {
+                  set("companion_name", next.name);
+                  set("companion_kind", next.kind);
+                  set("companion_kind_other", next.kindOther);
+                }}
+              />
+            </Section>
+
+            {/* Home */}
+            <Section title="Home" subtitle="Where the world of the story lives." defaultOpen>
+              {envNote && (
+                <p className="rounded-xl bg-secondary/40 px-3 py-2 text-[11px] text-muted-foreground">
+                  We've made stories a bit more personal — tell us where {childName} calls home.
+                </p>
+              )}
+              <div>
+                <FieldLabel tooltip="Adds local flavour and familiar places.">City</FieldLabel>
+                <TextInput
+                  value={form.city}
+                  onChange={(e) => set("city", e.target.value)}
+                  onBlur={() => markTouched("city")}
+                  placeholder="e.g. Bengaluru"
+                  state={touched.city && !form.city.trim() ? "error" : "untouched"}
+                  errorMessage="Which city is home?"
+                />
+              </div>
+              <div>
+                <FieldLabel tooltip="So the setting feels like your child's everyday world.">
+                  Home type
+                </FieldLabel>
+                <Select
+                  value={form.home_type_choice}
+                  onChange={(v) => {
+                    set("home_type_choice", v);
+                    if (v !== "Other") set("home_type_custom", "");
+                  }}
+                  options={HOME_TYPES}
+                  placeholder="Select home type"
+                  state={touched.home && !form.home_type_choice ? "error" : "untouched"}
+                />
+                {touched.home && !form.home_type_choice && (
+                  <p className="mt-1 text-[11px] text-destructive">What kind of home do you live in?</p>
+                )}
+                {form.home_type_choice === "Other" && (
+                  <div className="mt-2">
+                    <TextInput
+                      value={form.home_type_custom}
+                      onChange={(e) => set("home_type_custom", e.target.value)}
+                      placeholder="Tell us more…"
+                    />
+                  </div>
+                )}
               </div>
             </Section>
 
