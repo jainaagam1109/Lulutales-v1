@@ -81,7 +81,7 @@ export const StoryCard = ({
   const to = story.story_type === "bedtime_text" ? `/bedtime/${story.id}` : `/story/${story.id}`;
   const state = { from: location.pathname };
 
-  const badge = formatBadgeFor(story.story_type);
+  const badge = formatBadgeFor(story);
 
   if (variant === "row") {
     return (
