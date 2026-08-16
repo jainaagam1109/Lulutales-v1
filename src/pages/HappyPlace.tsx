@@ -9,7 +9,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { SectionHeader } from "@/components/SectionHeader";
 import { PageHeader } from "@/components/PageHeader";
 import { TagChip } from "@/components/TagChip";
-import { StoryCard } from "@/components/StoryCard";
+import { StoryCard, storyLanguage } from "@/components/StoryCard";
 import { StoryWorldsRow } from "@/components/StoryWorldsRow";
 import { getStoryStatus } from "@/lib/storyStatus";
 import { fetchCompletedThemes } from "@/lib/analytics";

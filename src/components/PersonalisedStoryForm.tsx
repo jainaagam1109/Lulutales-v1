@@ -81,8 +81,8 @@ function personalitiesForAge(ageStr: string) {
 
 const HOME_TYPES = [
   { label: "Apartment", value: "Apartment" },
-  { label: "Independent House", value: "Independent House" },
-  { label: "Gated Society", value: "Gated Society" },
+  { label: "Independent house", value: "Independent House" },
+  { label: "Gated society", value: "Gated Society" },
   { label: "Other", value: "Other" },
 ];
 
