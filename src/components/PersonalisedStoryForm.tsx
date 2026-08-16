@@ -97,7 +97,6 @@ type FormState = {
   home_type_custom: string;
   companion_name: string;
   companion_kind: string;
-  companion_kind_other: string;
   family_rows: FamilyRow[];
   theme: string;
   occasion: string;
@@ -117,7 +116,6 @@ const emptyForm: FormState = {
   home_type_custom: "",
   companion_name: "",
   companion_kind: "",
-  companion_kind_other: "",
   family_rows: DEFAULT_FAMILY_ROWS.map((r) => ({ ...r })),
   theme: "",
   occasion: "",
@@ -229,7 +227,6 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         setFamilyNote(isReturning && rows.length === 0);
         setEnvNote(isReturning && (!(data as any).city || !(data as any).home_type));
         const comp = splitCompanion((data as any).companion);
-        const compKind = splitCompanionKind(comp.what);
         setForm({
           name: data.name ?? "",
           age: data.age != null ? String(data.age) : "",
@@ -242,8 +239,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           home_type_choice: home.choice,
           home_type_custom: home.custom,
           companion_name: comp.name,
-          companion_kind: compKind.kind,
-          companion_kind_other: compKind.kindOther,
+          companion_kind: comp.what,
           family_rows: rows,
           theme: "",
           occasion: (data as any).last_occasion ?? "",
@@ -305,10 +301,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
     const personality = resolveChoice(form.personality_choice, form.personality_custom);
     const home_type = resolveChoice(form.home_type_choice, form.home_type_custom);
     const family_address_terms = serializeFamilyRows(form.family_rows);
-    const companion = joinCompanion(
-      form.companion_name,
-      companionWhat(form.companion_kind, form.companion_kind_other)
-    );
+    const companion = joinCompanion(form.companion_name, form.companion_kind);
 
     setSubmitting(true);
     try {
@@ -650,14 +643,12 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                   </p>
                 )}
               </div>
-              <CompanionFieldsV2
+              <CompanionFields
                 name={form.companion_name}
-                kind={form.companion_kind}
-                kindOther={form.companion_kind_other}
+                what={form.companion_kind}
                 onChange={(next) => {
                   set("companion_name", next.name);
-                  set("companion_kind", next.kind);
-                  set("companion_kind_other", next.kindOther);
+                  set("companion_kind", next.what);
                 }}
               />
             </Section>
