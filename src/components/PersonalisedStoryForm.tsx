@@ -97,11 +97,10 @@ type FormState = {
   personality_custom: string;
   home_type_choice: string;
   home_type_custom: string;
-  family_members: string;
-  sibling_age: string;
   companion_name: string;
-  companion_what: string;
-  address_terms: AddressTerm[];
+  companion_kind: string;
+  companion_kind_other: string;
+  family_rows: FamilyRow[];
   theme: string;
   occasion: string;
   language: "english" | "hindi";
@@ -118,11 +117,10 @@ const emptyForm: FormState = {
   personality_custom: "",
   home_type_choice: "",
   home_type_custom: "",
-  family_members: "",
-  sibling_age: "",
   companion_name: "",
-  companion_what: "",
-  address_terms: [],
+  companion_kind: "",
+  companion_kind_other: "",
+  family_rows: DEFAULT_FAMILY_ROWS.map((r) => ({ ...r })),
   theme: "",
   occasion: "",
   language: "english",
