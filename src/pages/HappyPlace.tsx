@@ -215,6 +215,7 @@ const HappyPlace = () => {
 
   const [allAgeFilter, setAllAgeFilter] = useState<string>("");
   const [allBucketFilter, setAllBucketFilter] = useState<BucketKey | "">("");
+  const [allLanguageFilter, setAllLanguageFilter] = useState<"" | "english" | "hindi">("");
 
   const allAgeOptions = useMemo(() => {
     const s = new Set<string>();
@@ -228,9 +229,10 @@ const HappyPlace = () => {
       storyRoom.filter(
         (s) =>
           (!allAgeFilter || String(s.age_group ?? "") === allAgeFilter) &&
-          (!allBucketFilter || s.bucket_key === allBucketFilter)
+          (!allBucketFilter || s.bucket_key === allBucketFilter) &&
+          (!allLanguageFilter || storyLanguage(s) === allLanguageFilter)
       ),
-    [storyRoom, allAgeFilter, allBucketFilter]
+    [storyRoom, allAgeFilter, allBucketFilter, allLanguageFilter]
   );
 
   const storyRoomSorted = useMemo(
