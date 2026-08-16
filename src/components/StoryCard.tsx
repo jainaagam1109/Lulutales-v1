@@ -97,6 +97,7 @@ export const StoryCard = ({
           <div className="flex flex-wrap items-center gap-1">
             {(() => { const l = bucketCardName(story); return l && <TagChip label={l} />; })()}
             {badge && <TagChip label={badge.label} variant={badge.variant} />}
+            <span className="inline-block rounded-full border border-border bg-muted/60 px-2 py-0.5 text-[9px] font-semibold text-muted-foreground">{languageLabel(story)}</span>
           </div>
           <div className="mt-1 truncate text-sm font-bold text-foreground">{story.title}</div>
         </div>
@@ -136,6 +137,7 @@ export const StoryCard = ({
             <div className="flex flex-wrap items-center gap-1 pt-0.5">
               {bucketCardName(story) && <TagChip label={bucketCardName(story)!} />}
               {badge && <TagChip label={badge.label} variant={badge.variant} />}
+            <span className="inline-block rounded-full border border-border bg-muted/60 px-2 py-0.5 text-[9px] font-semibold text-muted-foreground">{languageLabel(story)}</span>
             </div>
           )}
         </div>
@@ -144,6 +146,7 @@ export const StoryCard = ({
           <div className="flex flex-wrap items-center gap-1">
             {(() => { const l = bucketCardName(story); return l && <TagChip label={l} />; })()}
             {badge && <TagChip label={badge.label} variant={badge.variant} />}
+            <span className="inline-block rounded-full border border-border bg-muted/60 px-2 py-0.5 text-[9px] font-semibold text-muted-foreground">{languageLabel(story)}</span>
           </div>
           <div className="line-clamp-2 min-h-[2.25rem] text-xs font-bold leading-snug text-foreground">{story.title}</div>
         </div>
