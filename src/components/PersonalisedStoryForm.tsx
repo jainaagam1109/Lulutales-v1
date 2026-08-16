@@ -379,7 +379,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
       toast.error("Please complete onboarding first.");
       return;
     }
-    setTouched((t) => ({ ...t, name: true, age: true, theme: true }));
+    setTouched((t) => ({ ...t, name: true, age: true, theme: true, family: true, city: true, home: true }));
     if (!form.name.trim() || !isLettersOnly(form.name)) {
       toast.error("Please enter a valid name (letters only).");
       return;
@@ -395,6 +395,18 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
     }
     if (!form.theme.trim()) {
       toast.error("Please add a theme for the story.");
+      return;
+    }
+    if (!form.family_rows.some(isFamilyRowComplete)) {
+      toast.error("Please add at least one person so we can make the story feel like home.");
+      return;
+    }
+    if (!form.city.trim()) {
+      toast.error("Which city is home?");
+      return;
+    }
+    if (!resolveChoice(form.home_type_choice, form.home_type_custom)) {
+      toast.error("What kind of home do you live in?");
       return;
     }
 
