@@ -297,7 +297,11 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
     if (!profileId) return;
     const personality = resolveChoice(form.personality_choice, form.personality_custom);
     const home_type = resolveChoice(form.home_type_choice, form.home_type_custom);
-    const family_address_terms = serializeAddressTerms(form.address_terms);
+    const family_address_terms = serializeFamilyRows(form.family_rows);
+    const companion = joinCompanion(
+      form.companion_name,
+      companionWhat(form.companion_kind, form.companion_kind_other)
+    );
 
     setSubmitting(true);
     try {
@@ -309,7 +313,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         age_group: form.age || null,
         child_profile_id: profileId,
         thumbnail: getThemeVisual(form.theme.trim()).emoji,
-        episode_mode: format === "personalised_audio" ? episodeMode : "multi",
+        episode_mode: format === "personalised_audio" ? episodeMode : "single",
         generation_params: {
           name: form.name.trim(),
           age: form.age.trim(),
@@ -318,9 +322,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           city: form.city.trim(),
           personality,
           home_type,
-          family_members: form.family_members.trim(),
           family_address_terms,
-          sibling_age: form.sibling_age.trim() || null,
           theme: form.theme.trim(),
           occasion: form.occasion.trim() || null,
           language: isHindiEligible(form.age) ? form.language : "english",
@@ -343,10 +345,8 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         personality,
         home_type,
         city: form.city.trim() || null,
-        family_members: form.family_members.trim() || null,
         family_address_terms,
-        sibling_age: form.sibling_age ? Number(form.sibling_age) : null,
-        companion: joinCompanion(form.companion_name, form.companion_what),
+        companion,
       };
       if (updateProfile) {
         payload.name = form.name.trim();
