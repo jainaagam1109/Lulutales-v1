@@ -653,45 +653,6 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
               </div>
             </Section>
 
-            {/* Environment */}
-            <Section
-              title="Environment"
-              subtitle="Where the world of the story lives."
-              optional
-              defaultOpen={false}
-            >
-              <div>
-                <FieldLabel tooltip="Adds local flavour and familiar places.">City</FieldLabel>
-                <TextInput
-                  value={form.city}
-                  onChange={(e) => set("city", e.target.value)}
-                  placeholder="e.g. Bengaluru"
-                />
-              </div>
-              <div>
-                <FieldLabel tooltip="So the setting feels like your child's everyday world." optional>
-                  Home type
-                </FieldLabel>
-                <Select
-                  value={form.home_type_choice}
-                  onChange={(v) => {
-                    set("home_type_choice", v);
-                    if (v !== "Other") set("home_type_custom", "");
-                  }}
-                  options={HOME_TYPES}
-                  placeholder="Select home type"
-                />
-                {form.home_type_choice === "Other" && (
-                  <div className="mt-2">
-                    <TextInput
-                      value={form.home_type_custom}
-                      onChange={(e) => set("home_type_custom", e.target.value)}
-                      placeholder="Tell us more…"
-                    />
-                  </div>
-                )}
-              </div>
-            </Section>
 
             {/* Personality & Story */}
             <Section title="Personality & story" subtitle="What makes this story uniquely theirs." defaultOpen>
