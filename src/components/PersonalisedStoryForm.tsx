@@ -222,6 +222,16 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           age: data.age != null ? String(data.age) : "",
           gender: data.gender ?? "",
         };
+        const isReturning = !!(data as any).family_address_terms || !!(data as any).family_members;
+        let rows: FamilyRow[] = parseFamilyRows((data as any).family_address_terms ?? "");
+        if (rows.length === 0) {
+          rows = convertLegacyFamily((data as any).family_members, (data as any).sibling_age);
+        }
+        if (rows.length === 0 && !isReturning) rows = DEFAULT_FAMILY_ROWS.map((r) => ({ ...r }));
+        setFamilyNote(isReturning && rows.length === 0);
+        setEnvNote(isReturning && (!(data as any).city || !(data as any).home_type));
+        const comp = splitCompanion((data as any).companion);
+        const compKind = splitCompanionKind(comp.what);
         setForm({
           name: data.name ?? "",
           age: data.age != null ? String(data.age) : "",
@@ -233,11 +243,10 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           personality_custom: personality.custom,
           home_type_choice: home.choice,
           home_type_custom: home.custom,
-          family_members: data.family_members ?? "",
-          sibling_age: (data as any).sibling_age != null ? String((data as any).sibling_age) : "",
-          companion_name: splitCompanion((data as any).companion).name,
-          companion_what: splitCompanion((data as any).companion).what,
-          address_terms: parseAddressTerms(data.family_address_terms ?? ""),
+          companion_name: comp.name,
+          companion_kind: compKind.kind,
+          companion_kind_other: compKind.kindOther,
+          family_rows: rows,
           theme: "",
           occasion: (data as any).last_occasion ?? "",
           language: "english",
