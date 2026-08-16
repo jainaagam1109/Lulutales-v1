@@ -149,7 +149,9 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
   const location = useLocation();
   const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
   const [format, setFormat] = useState<"personalised_audio" | "bedtime_text">(storyType);
-  const [episodeMode, setEpisodeMode] = useState<"single" | "multi">("multi");
+  const [episodeMode, setEpisodeMode] = useState<"single" | "multi">("single");
+  const [familyNote, setFamilyNote] = useState(false);
+  const [envNote, setEnvNote] = useState(false);
 
   useEffect(() => {
     if (!profileId) {
