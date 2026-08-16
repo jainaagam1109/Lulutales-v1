@@ -500,30 +500,33 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                 </FieldLabel>
                 <Select
                   value={format}
-                  onChange={(v) => setFormat(v as "personalised_audio" | "bedtime_text")}
+                  onChange={(v) => {
+                    setFormat(v as "personalised_audio" | "bedtime_text");
+                    setEpisodeMode("single");
+                  }}
                   options={[
                     { label: "Generate audio story", value: "personalised_audio" },
-                    { label: "Generate bedtime story", value: "bedtime_text" },
+                    { label: "Generate text story", value: "bedtime_text" },
                   ]}
                   placeholder="Select format"
                 />
               </div>
               {format === "personalised_audio" && (
                 <div>
-                  <FieldLabel tooltip="Choose whether the story arrives as a series of short episodes or as one complete story.">
-                    Episode format
+                  <FieldLabel tooltip="Both options create one complete story. Choose whether your child hears it all at once or in shorter parts.">
+                    How should the story be delivered?
                   </FieldLabel>
                   <div className="flex gap-2">
                     {([
                       {
-                        value: "multi" as const,
-                        label: "Multiple episodes",
-                        description: "Five short episodes — one a night",
+                        value: "single" as const,
+                        label: "One continuous story",
+                        description: "The full story in one go",
                       },
                       {
-                        value: "single" as const,
-                        label: "One single story",
-                        description: "The whole story in one sitting",
+                        value: "multi" as const,
+                        label: "Broken into shorter episodes",
+                        description: "Shorter parts, easier for younger listeners to stay with",
                       },
                     ]).map((opt) => (
                       <button
