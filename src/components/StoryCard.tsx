@@ -11,12 +11,38 @@ const bucketCardName = (story: Story): string | null => {
   return story.theme ?? null;
 };
 
-const formatBadgeFor = (story_type: Story["story_type"]): { label: string; variant: "mint" | "warm" } | null => {
-  if (story_type === "personalised_audio") return { label: "🎧 Listen · ~15 min", variant: "mint" };
-  if (story_type === "pre_recorded") return { label: "🎧 Listen", variant: "mint" };
-  if (story_type === "bedtime_text") return { label: "📖 Read aloud · ~5 min", variant: "warm" };
+/**
+ * Real audio duration in seconds, if the backend stored one.
+ * Never estimated and never derived from generation time.
+ */
+const realDurationSeconds = (story: Story): number | null => {
+  const s = story as any;
+  const candidates = [s.episode_duration_seconds, s.duration_seconds, s.duration, s.audio_duration];
+  for (const c of candidates) {
+    const n = typeof c === "string" ? Number(c) : c;
+    if (typeof n === "number" && Number.isFinite(n) && n > 0) return n;
+  }
   return null;
 };
+
+const formatBadgeFor = (story: Story): { label: string; variant: "mint" | "warm" } | null => {
+  const t = story.story_type;
+  if (t === "bedtime_text") return { label: "📖 Read aloud", variant: "warm" };
+  if (t === "personalised_audio" || t === "pre_recorded") {
+    const secs = realDurationSeconds(story);
+    const mins = secs ? Math.max(1, Math.round(secs / 60)) : null;
+    return { label: mins ? `🎧 Listen · ~${mins} min` : "🎧 Listen", variant: "mint" };
+  }
+  return null;
+};
+
+export const storyLanguage = (story: Story): "english" | "hindi" => {
+  const gp = (story as any).generation_params;
+  const lang = gp && typeof gp === "object" ? String(gp.language ?? "").toLowerCase() : "";
+  return lang === "hindi" ? "hindi" : "english";
+};
+
+const languageLabel = (story: Story) => (storyLanguage(story) === "hindi" ? "हिंदी" : "English");
 
 const TILE_TINTS = [
   "hsl(var(--tag-warm-bg))",
