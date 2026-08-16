@@ -433,6 +433,16 @@ const HappyPlace = () => {
                 <option key={b.key} value={b.key}>{b.fullName}</option>
               ))}
             </select>
+            <select
+              value={allLanguageFilter}
+              onChange={(e) => setAllLanguageFilter(e.target.value as "" | "english" | "hindi")}
+              aria-label="Filter by language"
+              className="flex-1 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground focus:border-primary focus:outline-none"
+            >
+              <option value="">All languages</option>
+              <option value="english">English</option>
+              <option value="hindi">हिंदी</option>
+            </select>
           </div>
           {storyRoomSorted.length === 0 ? (
             <div className="flex h-32 items-center justify-center rounded-2xl border border-dashed border-border bg-card/60 text-center text-[11px] font-semibold text-muted-foreground">
