@@ -372,11 +372,13 @@ export const CompanionFields = ({
       />
     </div>
     <div>
-      <FieldLabel optional>What is it?</FieldLabel>
+      <FieldLabel optional tooltip={COMPANION_KIND_TOOLTIP}>
+        What kind of companion is it?
+      </FieldLabel>
       <TextInput
         value={what}
         onChange={(e) => onChange({ name, what: e.target.value })}
-        placeholder="e.g. a dog"
+        placeholder="e.g. a rubber duck, a golden retriever, a money plant"
         maxLength={60}
       />
     </div>
