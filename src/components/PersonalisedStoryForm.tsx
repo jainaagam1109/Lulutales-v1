@@ -429,7 +429,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           <ChevronLeft className="h-4 w-4" /> Back
         </button>
         <h1 className="text-xl font-extrabold text-foreground">
-          {format === "personalised_audio" ? "Audio story" : "Bedtime story"}
+          {format === "personalised_audio" ? "Audio story" : "Read-aloud story"}
         </h1>
         <p className="mt-1 text-xs text-muted-foreground">
           Tell us a little about {childName} — only the basics are required. Anything you add helps us
@@ -519,7 +519,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                   }}
                   options={[
                     { label: "Generate audio story", value: "personalised_audio" },
-                    { label: "Generate text story", value: "bedtime_text" },
+                    { label: "Generate read-aloud story", value: "bedtime_text" },
                   ]}
                   placeholder="Select format"
                 />
