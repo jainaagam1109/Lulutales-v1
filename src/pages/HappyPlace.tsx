@@ -183,12 +183,12 @@ const HappyPlace = () => {
     s.title.trim().toLowerCase() === "story" ||
     s.title.trim() === "[Story title]";
 
-  // Include in-progress / failed stories so users see status; only hide stories
-  // we shouldn't display at all (titleless garbage).
+  // Only show stories that will actually render as a card.
   const visible = (s: Story) => {
     const status = getStoryStatus(s);
     if (status === "ready") return !isFailed(s);
-    return true;
+    if (status === "preparing") return true;
+    return false; // stale / lang_age_failed are hidden entirely
   };
 
   const personalised = useMemo(
@@ -246,21 +246,23 @@ const HappyPlace = () => {
     [storyRoomFiltered, childAge, playCounts, completedThemes]
   );
 
+  const savedVisible = useMemo(() => savedStories.filter(isRenderable), [savedStories]);
+
   const madeForChild = useMemo(() => {
     if (madeForFormat === "saved") {
-      return [...savedStories].sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+      return [...savedVisible].sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
     }
     const merged: Story[] = [];
     if (madeForFormat === "all" || madeForFormat === "audio") merged.push(...personalised);
     if (madeForFormat === "all" || madeForFormat === "text") merged.push(...bedtime);
     return merged.sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
-  }, [personalised, bedtime, madeForFormat, savedStories]);
+  }, [personalised, bedtime, madeForFormat, savedVisible]);
 
   const madeForCounts = {
     all: personalised.length + bedtime.length,
     audio: personalised.length,
     text: bedtime.length,
-    saved: savedStories.length,
+    saved: savedVisible.length,
   };
 
   const formatLabels: Record<MadeForFormat, string> = {
