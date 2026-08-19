@@ -333,7 +333,7 @@ export const AddressTermsEditor = ({
 
 /* ---------- Companion (single column, two inputs) ---------- */
 export const COMPANION_TOOLTIP =
-  "Every story gives your child a companion for the adventure. Tell us the one they're actually attached to — a favourite toy, a pet, even a plant — and we'll write that one into the story instead of inventing something. Give its name (e.g. Bruno) and what it is (e.g. a dog). Leave both blank and we'll invent a companion for you.";
+  "Every story gives your child a companion for the adventure. Tell us the one they're actually attached to — a favourite toy, a blanket, even a plant — and we'll write that one into the story instead of inventing something. Give its name (e.g. Nutty) and what it is (e.g. a stuffed squirrel). Have a pet? Add them in the family section above instead. Leave both blank and we'll invent a companion for you.";
 
 export const splitCompanion = (raw?: string | null): { name: string; what: string } => {
   const s = (raw ?? "").trim();
@@ -367,7 +367,7 @@ export const CompanionFields = ({
       <TextInput
         value={name}
         onChange={(e) => onChange({ name: e.target.value, what })}
-        placeholder="e.g. Bruno"
+        placeholder="e.g. Nutty"
         maxLength={40}
       />
     </div>
@@ -378,7 +378,7 @@ export const CompanionFields = ({
       <TextInput
         value={what}
         onChange={(e) => onChange({ name, what: e.target.value })}
-        placeholder="e.g. a rubber duck, a golden retriever, a money plant"
+        placeholder="e.g. a rubber duck, a soft blanket, a money plant"
         maxLength={60}
       />
     </div>
@@ -401,6 +401,7 @@ export const FAMILY_RELATIONS = [
   "Grandmother",
   "Teacher",
   "Friend",
+  "Pet",
   "Other",
 ] as const;
 
@@ -441,12 +442,33 @@ export const parseFamilyRows = (raw?: string | null): FamilyRow[] => {
       if (Array.isArray(arr)) {
         return arr
           .filter((x) => x && typeof x === "object")
-          .map((x: any) => ({
-            relation: String(x.relation ?? ""),
-            relation_custom: x.relation_custom ? String(x.relation_custom) : undefined,
-            term: String(x.term ?? ""),
-            age: x.age ? String(x.age) : undefined,
-          }))
+          .map((x: any) => {
+            const rel = String(x.relation ?? "");
+            const relType = String(x.relation_type ?? "");
+            const known = (FAMILY_RELATIONS as readonly string[]).includes(relType);
+            if (known && relType === "Pet") {
+              const inner = rel.match(/^Pet\s*\((.*)\)\s*$/);
+              return {
+                relation: "Pet",
+                relation_custom: inner ? inner[1].trim() : x.relation_custom ? String(x.relation_custom) : undefined,
+                term: String(x.term ?? ""),
+              } as FamilyRow;
+            }
+            if (known && relType === "Other") {
+              return {
+                relation: "Other",
+                relation_custom: rel || (x.relation_custom ? String(x.relation_custom) : undefined),
+                term: String(x.term ?? ""),
+                age: x.age ? String(x.age) : undefined,
+              } as FamilyRow;
+            }
+            return {
+              relation: known ? relType : rel,
+              relation_custom: x.relation_custom ? String(x.relation_custom) : undefined,
+              term: String(x.term ?? ""),
+              age: x.age ? String(x.age) : undefined,
+            } as FamilyRow;
+          })
           .slice(0, 10);
       }
     } catch {
@@ -467,12 +489,17 @@ export const parseFamilyRows = (raw?: string | null): FamilyRow[] => {
 export const serializeFamilyRows = (rows: FamilyRow[]): string => {
   const clean = rows
     .filter((r) => r.relation.trim() && r.term.trim() && (r.relation !== "Other" || (r.relation_custom ?? "").trim()))
-    .map((r) => ({
-      relation: r.relation === "Other" ? (r.relation_custom ?? "").trim() : r.relation,
-      relation_type: r.relation,
-      term: r.term.trim(),
-      ...(r.age ? { age: r.age } : {}),
-    }));
+    .map((r) => {
+      const custom = (r.relation_custom ?? "").trim();
+      const relation =
+        r.relation === "Other" ? custom : r.relation === "Pet" ? (custom ? `Pet (${custom})` : "Pet") : r.relation;
+      return {
+        relation,
+        relation_type: r.relation,
+        term: r.term.trim(),
+        ...(r.age ? { age: r.age } : {}),
+      };
+    });
   return clean.length ? JSON.stringify(clean) : "";
 };
 
