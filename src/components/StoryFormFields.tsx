@@ -584,7 +584,7 @@ export const FamilyMembersEditor = ({
   const takenAt = (i: number) =>
     new Set(
       rows
-        .filter((r, idx) => idx !== i && r.relation && r.relation !== "Other")
+        .filter((r, idx) => idx !== i && r.relation && r.relation !== "Other" && r.relation !== "Pet")
         .map((r) => r.relation)
     );
 
@@ -592,9 +592,10 @@ export const FamilyMembersEditor = ({
     <div className="space-y-3">
       {rows.map((row, i) => {
         const taken = takenAt(i);
-        const options = FAMILY_RELATIONS.filter((r) => r === "Other" || r === row.relation || !taken.has(r)).map(
-          (r) => ({ label: r, value: r })
-        );
+        const options = FAMILY_RELATIONS.filter(
+          (r) => r === "Other" || r === "Pet" || r === row.relation || !taken.has(r)
+        ).map((r) => ({ label: r, value: r }));
+        const isPet = row.relation === "Pet";
         return (
           <div key={i} className="rounded-xl border border-border/70 bg-background/40 p-2.5">
             <div className="flex items-start gap-2">
@@ -604,7 +605,8 @@ export const FamilyMembersEditor = ({
                   onChange={(v) =>
                     update(i, {
                       relation: v,
-                      relation_custom: v === "Other" ? row.relation_custom ?? "" : undefined,
+                      relation_custom:
+                        v === "Other" || v === "Pet" ? row.relation_custom ?? "" : undefined,
                       age: AGE_RELATIONS.has(v) ? row.age : undefined,
                     })
                   }
@@ -623,10 +625,20 @@ export const FamilyMembersEditor = ({
                 <input
                   value={row.term}
                   onChange={(e) => update(i, { term: e.target.value })}
-                  placeholder="Called (e.g. Mummy)"
+                  placeholder={isPet ? "Pet's name (e.g. Bruno)" : "Called (e.g. Mummy)"}
+                  aria-label={isPet ? "Pet's name" : "Called"}
                   maxLength={40}
                   className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none"
                 />
+                {isPet && (
+                  <input
+                    value={row.relation_custom ?? ""}
+                    onChange={(e) => update(i, { relation_custom: e.target.value })}
+                    placeholder="What kind? (e.g. a dog, a cat, a rabbit)"
+                    maxLength={40}
+                    className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none"
+                  />
+                )}
                 {AGE_RELATIONS.has(row.relation) && (
                   <div>
                     <div className="mb-1 text-[10px] font-semibold text-muted-foreground">
