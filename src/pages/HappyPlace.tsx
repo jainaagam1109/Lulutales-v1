@@ -55,6 +55,11 @@ const CreateCtaCard = () => (
   </Link>
 );
 
+const isRenderable = (s: Story) => {
+  const st = getStoryStatus(s);
+  return st === "ready" || st === "preparing";
+};
+
 const Row = ({
   stories,
   emptyVariant = "create",
@@ -64,7 +69,8 @@ const Row = ({
   emptyVariant?: "create" | "coming-soon";
   universesMap?: Map<string, string>;
 }) => {
-  if (stories.length === 0) {
+  const renderable = stories.filter(isRenderable);
+  if (renderable.length === 0) {
     if (emptyVariant === "coming-soon") {
       return (
         <div className="flex h-32 w-44 flex-shrink-0 items-center justify-center rounded-2xl border border-dashed border-border bg-card/60 text-center text-[11px] font-semibold text-muted-foreground">
@@ -76,7 +82,7 @@ const Row = ({
   }
   return (
     <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
-      {stories.map((s) => {
+      {renderable.map((s) => {
         const universeName = universesMap?.get((s as any).universe_id) ?? null;
         return (
           <div key={s.id} className="w-44 flex-shrink-0">
@@ -177,12 +183,12 @@ const HappyPlace = () => {
     s.title.trim().toLowerCase() === "story" ||
     s.title.trim() === "[Story title]";
 
-  // Include in-progress / failed stories so users see status; only hide stories
-  // we shouldn't display at all (titleless garbage).
+  // Only show stories that will actually render as a card.
   const visible = (s: Story) => {
     const status = getStoryStatus(s);
     if (status === "ready") return !isFailed(s);
-    return true;
+    if (status === "preparing") return true;
+    return false; // stale / lang_age_failed are hidden entirely
   };
 
   const personalised = useMemo(
@@ -240,21 +246,23 @@ const HappyPlace = () => {
     [storyRoomFiltered, childAge, playCounts, completedThemes]
   );
 
+  const savedVisible = useMemo(() => savedStories.filter(isRenderable), [savedStories]);
+
   const madeForChild = useMemo(() => {
     if (madeForFormat === "saved") {
-      return [...savedStories].sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+      return [...savedVisible].sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
     }
     const merged: Story[] = [];
     if (madeForFormat === "all" || madeForFormat === "audio") merged.push(...personalised);
     if (madeForFormat === "all" || madeForFormat === "text") merged.push(...bedtime);
     return merged.sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
-  }, [personalised, bedtime, madeForFormat, savedStories]);
+  }, [personalised, bedtime, madeForFormat, savedVisible]);
 
   const madeForCounts = {
     all: personalised.length + bedtime.length,
     audio: personalised.length,
     text: bedtime.length,
-    saved: savedStories.length,
+    saved: savedVisible.length,
   };
 
   const formatLabels: Record<MadeForFormat, string> = {

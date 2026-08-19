@@ -28,7 +28,7 @@ const BedtimePreview = () => {
   }, [story, nav]);
 
   const parsed = parseBedtimeStory(story?.story_text);
-  const displayTitle = parsed.title ?? story?.title ?? "Bedtime story";
+  const displayTitle = parsed.title ?? story?.title ?? "Read-aloud story";
   const emoji = story?.thumbnail ?? getThemeVisual(story?.theme).emoji;
 
   return (
