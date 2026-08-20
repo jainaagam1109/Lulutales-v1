@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchSavedStories } from "@/lib/stories";
+import { isRenderable } from "@/lib/storyStatus";
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { StoryCard } from "@/components/StoryCard";
@@ -8,6 +9,7 @@ import { PageHeader } from "@/components/PageHeader";
 
 const Library = () => {
   const { data: stories = [], isLoading } = useQuery({ queryKey: ["library"], queryFn: fetchSavedStories });
+  const visibleStories = stories.filter(isRenderable);
 
   return (
     <PhoneShell>
@@ -20,13 +22,13 @@ const Library = () => {
             ))}
           </div>
         )}
-        {!isLoading && stories.length === 0 && (
+        {!isLoading && visibleStories.length === 0 && (
           <div className="mt-12 rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
             No saved stories yet. Tap the bookmark on any story to save it.
           </div>
         )}
         <div className="grid grid-cols-2 gap-3">
-          {stories.map((s) => (
+          {visibleStories.map((s) => (
             <StoryCard key={s.id} story={s} />
           ))}
         </div>

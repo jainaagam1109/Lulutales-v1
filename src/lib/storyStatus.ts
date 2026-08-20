@@ -20,3 +20,8 @@ export const getStoryStatus = (s: StatusInput): StoryStatus => {
   return "stale";
 };
 
+export const isRenderable = (s: Story) => {
+  const st = getStoryStatus(s);
+  return st === "ready" || st === "preparing";
+};
+
