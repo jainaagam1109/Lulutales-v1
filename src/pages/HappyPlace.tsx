@@ -11,7 +11,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { TagChip } from "@/components/TagChip";
 import { StoryCard, storyLanguage } from "@/components/StoryCard";
 import { StoryWorldsRow } from "@/components/StoryWorldsRow";
-import { getStoryStatus } from "@/lib/storyStatus";
+import { getStoryStatus, isRenderable } from "@/lib/storyStatus";
 import { fetchCompletedThemes } from "@/lib/analytics";
 import { sortStories } from "@/lib/sortStories";
 import { BUCKETS, type BucketKey } from "@/lib/themeCatalog";
@@ -55,10 +55,6 @@ const CreateCtaCard = () => (
   </Link>
 );
 
-const isRenderable = (s: Story) => {
-  const st = getStoryStatus(s);
-  return st === "ready" || st === "preparing";
-};
 
 const Row = ({
   stories,
@@ -300,7 +296,7 @@ const HappyPlace = () => {
 
 
       <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] space-y-6">
-        {savedStories.length > 0 && (
+        {savedVisible.length > 0 && (
           <section>
             <SectionHeader title="Favorites" />
             <Row stories={savedStories} universesMap={universesMap} />
