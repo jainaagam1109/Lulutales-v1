@@ -74,6 +74,7 @@ const Player = () => {
   });
 
   const current = episodes?.find((e) => e.episode_number === epNum);
+  const episodeText = (((current as any)?.episode_text as string | null | undefined) ?? "").trim() || null;
   const audioUrl = current?.audio_url ?? null;
   const totalEps = episodes?.length ?? 0;
   const maxEp = episodes && episodes.length > 0 ? Math.max(...episodes.map((e) => e.episode_number)) : 1;
