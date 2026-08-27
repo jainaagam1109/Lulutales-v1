@@ -18,10 +18,12 @@ export type Database = {
         Row: {
           age: number
           city: string | null
+          companion: string | null
           created_at: string
           family_address_terms: string | null
           family_members: string | null
           family_type: string | null
+          favourite_place: string | null
           gender: string | null
           home_type: string | null
           id: string
@@ -37,10 +39,12 @@ export type Database = {
         Insert: {
           age: number
           city?: string | null
+          companion?: string | null
           created_at?: string
           family_address_terms?: string | null
           family_members?: string | null
           family_type?: string | null
+          favourite_place?: string | null
           gender?: string | null
           home_type?: string | null
           id?: string
@@ -56,10 +60,12 @@ export type Database = {
         Update: {
           age?: number
           city?: string | null
+          companion?: string | null
           created_at?: string
           family_address_terms?: string | null
           family_members?: string | null
           family_type?: string | null
+          favourite_place?: string | null
           gender?: string | null
           home_type?: string | null
           id?: string
