@@ -39,7 +39,13 @@ import { trackEvent } from "@/lib/events";
 import { track } from "@/lib/track";
 import { getThemeVisual } from "@/lib/themeEmoji";
 import { supabase } from "@/integrations/supabase/client";
-import { getThemeOptions, CUSTOM_THEME_VALUE } from "@/lib/themeCatalog";
+import {
+  getThemeOptions,
+  CUSTOM_THEME_VALUE,
+  resolveBucket,
+  BUCKETS,
+  THEMES_BY_AGE,
+} from "@/lib/themeCatalog";
 
 type Props = {
   storyType: "personalised_audio" | "bedtime_text";
@@ -97,6 +103,7 @@ type FormState = {
   home_type_custom: string;
   companion_name: string;
   companion_kind: string;
+  favourite_place: string;
   family_rows: FamilyRow[];
   theme: string;
   occasion: string;
@@ -116,6 +123,7 @@ const emptyForm: FormState = {
   home_type_custom: "",
   companion_name: "",
   companion_kind: "",
+  favourite_place: "",
   family_rows: DEFAULT_FAMILY_ROWS.map((r) => ({ ...r })),
   theme: "",
   occasion: "",
