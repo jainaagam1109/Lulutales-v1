@@ -333,6 +333,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           personality,
           home_type,
           family_address_terms,
+          favourite_place: form.favourite_place.trim() || null,
           theme: form.theme.trim(),
           occasion: form.occasion.trim() || null,
           language: isHindiEligible(form.age) ? form.language : "english",
@@ -357,6 +358,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         city: form.city.trim() || null,
         family_address_terms,
         companion,
+        favourite_place: form.favourite_place.trim() || null,
       };
       if (updateProfile) {
         payload.name = form.name.trim();
