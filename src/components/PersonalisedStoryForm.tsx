@@ -172,6 +172,10 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
   const originalProfile = useRef<{ name: string; age: string; gender: string } | null>(null);
   const [themeChoice, setThemeChoice] = useState<string>("");
   const [customTheme, setCustomTheme] = useState<string>("");
+  const [themeMode, setThemeMode] = useState<"list" | "custom">("list");
+  const [debouncedTheme, setDebouncedTheme] = useState<string>("");
+  const [previewDismissed, setPreviewDismissed] = useState(false);
+  const [ageNoteDismissed, setAgeNoteDismissed] = useState(false);
   const themeOptions = useMemo(() => getThemeOptions(form.age), [form.age]);
   const prevAgeRef = useRef<string>("");
   useEffect(() => {
@@ -182,6 +186,36 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
     }
     prevAgeRef.current = form.age;
   }, [form.age]);
+
+  // Debounced preview of which life-skill category a free-text theme lands in.
+  useEffect(() => {
+    if (themeMode !== "custom") return;
+    const t = setTimeout(() => setDebouncedTheme(customTheme.trim()), 300);
+    return () => clearTimeout(t);
+  }, [customTheme, themeMode]);
+
+  const customBucket = useMemo(
+    () => (themeMode === "custom" && debouncedTheme ? resolveBucket(debouncedTheme) : null),
+    [themeMode, debouncedTheme]
+  );
+
+  const bucketFitsAge = useMemo(() => {
+    if (!customBucket) return true;
+    const list = THEMES_BY_AGE[String(parseInt(form.age, 10))] ?? [];
+    if (list.length === 0) return true;
+    return list.some((t) => t.bucket === customBucket);
+  }, [customBucket, form.age]);
+
+  const switchThemeMode = (mode: "list" | "custom") => {
+    if (mode === themeMode) return;
+    setThemeMode(mode);
+    setThemeChoice("");
+    setCustomTheme("");
+    setDebouncedTheme("");
+    setPreviewDismissed(false);
+    setAgeNoteDismissed(false);
+    setForm((f) => ({ ...f, theme: "" }));
+  };
 
   useEffect(() => {
     if (!isHindiEligible(form.age) && form.language === "hindi") {
