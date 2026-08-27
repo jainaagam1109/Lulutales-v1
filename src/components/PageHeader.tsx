@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
-import { ProfileAvatarButton } from "@/components/ProfileAvatarButton";
+import { ProfileAvatarButton, ProfileSwitcherChip } from "@/components/ProfileAvatarButton";
 
 type PageHeaderProps = {
   showBack?: boolean;
@@ -41,7 +41,14 @@ export const PageHeader = ({
         ) : (
           <span aria-hidden className="h-4 w-4" />
         )}
-        {showProfile ? <ProfileAvatarButton /> : <span aria-hidden />}
+        {showProfile ? (
+          <div className="flex items-center gap-2">
+            <ProfileSwitcherChip />
+            <ProfileAvatarButton />
+          </div>
+        ) : (
+          <span aria-hidden />
+        )}
       </div>
 
       {eyebrow && <div className="text-xs text-muted-foreground">{eyebrow}</div>}
