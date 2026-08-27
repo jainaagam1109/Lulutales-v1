@@ -788,54 +788,85 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
               </div>
               <div>
                 <FieldLabel tooltip="What value or lesson should the story teach?">Theme</FieldLabel>
-                {themeOptions.length > 0 ? (
+                <div className="mb-2 flex gap-2">
+                  {([
+                    { value: "list" as const, label: "Pick from list" },
+                    { value: "custom" as const, label: "Write my own" },
+                  ]).map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => switchThemeMode(opt.value)}
+                      aria-pressed={themeMode === opt.value}
+                      className={`flex-1 rounded-xl border px-3 py-2 text-xs font-bold transition-colors ${
+                        themeMode === opt.value
+                          ? "border-primary bg-gradient-primary text-primary-foreground"
+                          : "border-border bg-card text-muted-foreground hover:border-primary/40"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                {themeMode === "list" && themeOptions.length > 0 ? (
                   <>
                     <Select
                       value={themeChoice}
                       onChange={(v) => {
                         setThemeChoice(v);
                         markTouched("theme");
-                        if (v === CUSTOM_THEME_VALUE) {
-                          set("theme", customTheme.trim());
-                        } else {
-                          set("theme", v);
-                        }
+                        set("theme", v);
                       }}
-                      options={[
-                        ...themeOptions,
-                        { label: "Custom (type your own)", value: CUSTOM_THEME_VALUE },
-                      ]}
+                      options={themeOptions}
                       placeholder="Pick a theme"
                       state={themeState}
                     />
-                    {themeChoice === CUSTOM_THEME_VALUE && (
-                      <div className="mt-2">
-                        <TextInput
-                          value={customTheme}
-                          onChange={(e) => {
-                            setCustomTheme(e.target.value);
-                            set("theme", e.target.value);
-                          }}
-                          onBlur={() => markTouched("theme")}
-                          placeholder="e.g. Friendship, Courage, Sharing"
-                          state={themeState}
-                          errorMessage="A short theme helps us start the story."
-                        />
-                      </div>
-                    )}
-                    {themeState === "error" && themeChoice !== CUSTOM_THEME_VALUE && (
+                    {themeState === "error" && (
                       <p className="mt-1 text-[11px] text-destructive">A short theme helps us start the story.</p>
                     )}
                   </>
                 ) : (
-                  <TextInput
-                    value={form.theme}
-                    onChange={(e) => set("theme", e.target.value)}
-                    onBlur={() => markTouched("theme")}
-                    placeholder="e.g. Friendship, Courage, Sharing, Healthy habits"
-                    state={themeState}
-                    errorMessage="A short theme helps us start the story."
-                  />
+                  <>
+                    <TextInput
+                      value={themeMode === "custom" ? customTheme : form.theme}
+                      onChange={(e) => {
+                        setCustomTheme(e.target.value);
+                        set("theme", e.target.value);
+                      }}
+                      onBlur={() => markTouched("theme")}
+                      placeholder="e.g. Friendship, Courage, Sharing, Healthy habits"
+                      state={themeState}
+                      errorMessage="A short theme helps us start the story."
+                    />
+                    {customBucket && !previewDismissed && (
+                      <div className="mt-1.5 flex items-start justify-between gap-2 text-[11px] text-muted-foreground">
+                        <span>Feels like: {BUCKETS[customBucket].cardName}.</span>
+                        <button
+                          type="button"
+                          onClick={() => setPreviewDismissed(true)}
+                          className="font-bold text-primary-deep"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    )}
+                    {customBucket && !bucketFitsAge && !ageNoteDismissed && (
+                      <div className="mt-1.5 flex items-start justify-between gap-2 rounded-xl bg-secondary/40 px-3 py-2 text-[11px] text-muted-foreground">
+                        <span>
+                          This kind of theme is usually explored a bit later — you can still use it if it feels
+                          right for {childName}.
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setAgeNoteDismissed(true)}
+                          className="font-bold text-primary-deep"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
               <div>
