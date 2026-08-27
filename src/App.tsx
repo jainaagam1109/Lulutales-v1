@@ -29,6 +29,7 @@ import AudioStoryForm from "./pages/AudioStoryForm";
 import BedtimeStoryForm from "./pages/BedtimeStoryForm";
 import Generating from "./pages/Generating";
 import BedtimeReader from "./pages/BedtimeReader";
+import EpisodeReader from "./pages/EpisodeReader";
 import BedtimePreview from "./pages/BedtimePreview";
 import NotFound from "./pages/NotFound";
 import OAuthConsent from "./pages/OAuthConsent";
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/story/:id" element={<RequireAuth><StoryDetail /></RequireAuth>} />
             <Route path="/player/:id" element={<RequireAuth><Player /></RequireAuth>} />
             <Route path="/player/:id/:episodeNumber" element={<RequireAuth><Player /></RequireAuth>} />
+            <Route path="/player/:id/:episodeNumber/read" element={<RequireAuth><EpisodeReader /></RequireAuth>} />
             <Route path="/happy-place" element={<RequireAuth><HappyPlace /></RequireAuth>} />
             <Route path="/library" element={<Navigate to="/happy-place" replace />} />
             <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
