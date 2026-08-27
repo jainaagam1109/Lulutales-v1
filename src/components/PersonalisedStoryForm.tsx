@@ -41,7 +41,7 @@ import { getThemeVisual } from "@/lib/themeEmoji";
 import { supabase } from "@/integrations/supabase/client";
 import {
   getThemeOptions,
-  CUSTOM_THEME_VALUE,
+  
   resolveBucket,
   BUCKETS,
   THEMES_BY_AGE,
