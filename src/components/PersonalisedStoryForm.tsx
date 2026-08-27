@@ -201,7 +201,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         const { data, error } = await (supabase as any)
           .from("child_profiles")
           .select(
-            "name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, companion, last_theme, last_occasion"
+            "name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, companion, favourite_place, last_theme, last_occasion"
           )
           .eq("id", profileId)
           .maybeSingle();
@@ -248,6 +248,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           home_type_custom: home.custom,
           companion_name: comp.name,
           companion_kind: comp.what,
+          favourite_place: (data as any).favourite_place ?? "",
           family_rows: rows,
           theme: "",
           occasion: (data as any).last_occasion ?? "",
