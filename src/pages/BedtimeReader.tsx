@@ -112,7 +112,7 @@ const BedtimeReader = () => {
           </article>
         ) : (
           <p className="mx-auto max-w-md pt-10 text-center text-sm" style={{ color: subtle }}>
-            {story ? "This read-aloud story has no text yet." : "Loading…"}
+            {story ? "This story doesn't have text yet." : "Loading…"}
           </p>
         )}
       </main>
