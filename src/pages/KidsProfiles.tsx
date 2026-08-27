@@ -345,6 +345,7 @@ const KidsProfiles = () => {
                       value={editForm.name ?? ""}
                       onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
                       placeholder="e.g. Aanya"
+                      maxLength={30}
                     />
                   </div>
                   <div>
@@ -435,6 +436,21 @@ const KidsProfiles = () => {
                     what={editCompanion.what}
                     onChange={setEditCompanion}
                   />
+                  <div>
+                    <FieldLabel
+                      optional
+                      tooltip="A place your child loves — real or make-believe — that we can bring into the story: the beach, a grandparent's house, the park, even a world they imagine. Leave this blank and we won't force a special place into the story."
+                    >
+                      Favourite place
+                    </FieldLabel>
+                    <TextInput
+                      value={editForm.favourite_place ?? ""}
+                      onChange={(e) => setEditForm((f) => ({ ...f, favourite_place: e.target.value }))}
+                      placeholder="e.g. the beach, Nani's house, the park"
+                      maxLength={60}
+                    />
+                  </div>
+
                   <div>
                     <FieldLabel tooltip="Helps us make the story feel more personal and familiar.">
                       Family address terms
