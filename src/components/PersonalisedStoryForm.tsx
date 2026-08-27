@@ -39,7 +39,13 @@ import { trackEvent } from "@/lib/events";
 import { track } from "@/lib/track";
 import { getThemeVisual } from "@/lib/themeEmoji";
 import { supabase } from "@/integrations/supabase/client";
-import { getThemeOptions, CUSTOM_THEME_VALUE } from "@/lib/themeCatalog";
+import {
+  getThemeOptions,
+  
+  resolveBucket,
+  BUCKETS,
+  THEMES_BY_AGE,
+} from "@/lib/themeCatalog";
 
 type Props = {
   storyType: "personalised_audio" | "bedtime_text";
@@ -97,6 +103,7 @@ type FormState = {
   home_type_custom: string;
   companion_name: string;
   companion_kind: string;
+  favourite_place: string;
   family_rows: FamilyRow[];
   theme: string;
   occasion: string;
@@ -116,6 +123,7 @@ const emptyForm: FormState = {
   home_type_custom: "",
   companion_name: "",
   companion_kind: "",
+  favourite_place: "",
   family_rows: DEFAULT_FAMILY_ROWS.map((r) => ({ ...r })),
   theme: "",
   occasion: "",
@@ -164,6 +172,10 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
   const originalProfile = useRef<{ name: string; age: string; gender: string } | null>(null);
   const [themeChoice, setThemeChoice] = useState<string>("");
   const [customTheme, setCustomTheme] = useState<string>("");
+  const [themeMode, setThemeMode] = useState<"list" | "custom">("list");
+  const [debouncedTheme, setDebouncedTheme] = useState<string>("");
+  const [previewDismissed, setPreviewDismissed] = useState(false);
+  const [ageNoteDismissed, setAgeNoteDismissed] = useState(false);
   const themeOptions = useMemo(() => getThemeOptions(form.age), [form.age]);
   const prevAgeRef = useRef<string>("");
   useEffect(() => {
@@ -174,6 +186,36 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
     }
     prevAgeRef.current = form.age;
   }, [form.age]);
+
+  // Debounced preview of which life-skill category a free-text theme lands in.
+  useEffect(() => {
+    if (themeMode !== "custom") return;
+    const t = setTimeout(() => setDebouncedTheme(customTheme.trim()), 300);
+    return () => clearTimeout(t);
+  }, [customTheme, themeMode]);
+
+  const customBucket = useMemo(
+    () => (themeMode === "custom" && debouncedTheme ? resolveBucket(debouncedTheme) : null),
+    [themeMode, debouncedTheme]
+  );
+
+  const bucketFitsAge = useMemo(() => {
+    if (!customBucket) return true;
+    const list = THEMES_BY_AGE[String(parseInt(form.age, 10))] ?? [];
+    if (list.length === 0) return true;
+    return list.some((t) => t.bucket === customBucket);
+  }, [customBucket, form.age]);
+
+  const switchThemeMode = (mode: "list" | "custom") => {
+    if (mode === themeMode) return;
+    setThemeMode(mode);
+    setThemeChoice("");
+    setCustomTheme("");
+    setDebouncedTheme("");
+    setPreviewDismissed(false);
+    setAgeNoteDismissed(false);
+    setForm((f) => ({ ...f, theme: "" }));
+  };
 
   useEffect(() => {
     if (!isHindiEligible(form.age) && form.language === "hindi") {
@@ -193,7 +235,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         const { data, error } = await (supabase as any)
           .from("child_profiles")
           .select(
-            "name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, companion, last_theme, last_occasion"
+            "name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, companion, favourite_place, last_theme, last_occasion"
           )
           .eq("id", profileId)
           .maybeSingle();
@@ -240,6 +282,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           home_type_custom: home.custom,
           companion_name: comp.name,
           companion_kind: comp.what,
+          favourite_place: (data as any).favourite_place ?? "",
           family_rows: rows,
           theme: "",
           occasion: (data as any).last_occasion ?? "",
@@ -324,6 +367,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
           personality,
           home_type,
           family_address_terms,
+          favourite_place: form.favourite_place.trim() || null,
           theme: form.theme.trim(),
           occasion: form.occasion.trim() || null,
           language: isHindiEligible(form.age) ? form.language : "english",
@@ -348,6 +392,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
         city: form.city.trim() || null,
         family_address_terms,
         companion,
+        favourite_place: form.favourite_place.trim() || null,
       };
       if (updateProfile) {
         payload.name = form.name.trim();
@@ -475,6 +520,7 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                   onChange={(e) => set("name", e.target.value)}
                   onBlur={() => markTouched("name")}
                   placeholder="e.g. Aanya"
+                  maxLength={30}
                   state={nameState}
                   errorMessage="Hmm, this should be letters only 😊"
                 />
@@ -652,6 +698,21 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
                   set("companion_kind", next.what);
                 }}
               />
+              <div>
+                <FieldLabel
+                  optional
+                  tooltip="A place your child loves — real or make-believe — that we can bring into the story: the beach, a grandparent's house, the park, even a world they imagine. Leave this blank and we won't force a special place into the story."
+                >
+                  Favourite place
+                </FieldLabel>
+                <TextInput
+                  value={form.favourite_place}
+                  onChange={(e) => set("favourite_place", e.target.value)}
+                  placeholder="e.g. the beach, Nani's house, the park"
+                  maxLength={60}
+                />
+              </div>
+
             </Section>
 
             {/* Home */}
@@ -727,54 +788,85 @@ export const PersonalisedStoryForm = ({ storyType, pageTitle, backTo = "/magic-h
               </div>
               <div>
                 <FieldLabel tooltip="What value or lesson should the story teach?">Theme</FieldLabel>
-                {themeOptions.length > 0 ? (
+                <div className="mb-2 flex gap-2">
+                  {([
+                    { value: "list" as const, label: "Pick from list" },
+                    { value: "custom" as const, label: "Write my own" },
+                  ]).map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => switchThemeMode(opt.value)}
+                      aria-pressed={themeMode === opt.value}
+                      className={`flex-1 rounded-xl border px-3 py-2 text-xs font-bold transition-colors ${
+                        themeMode === opt.value
+                          ? "border-primary bg-gradient-primary text-primary-foreground"
+                          : "border-border bg-card text-muted-foreground hover:border-primary/40"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                {themeMode === "list" && themeOptions.length > 0 ? (
                   <>
                     <Select
                       value={themeChoice}
                       onChange={(v) => {
                         setThemeChoice(v);
                         markTouched("theme");
-                        if (v === CUSTOM_THEME_VALUE) {
-                          set("theme", customTheme.trim());
-                        } else {
-                          set("theme", v);
-                        }
+                        set("theme", v);
                       }}
-                      options={[
-                        ...themeOptions,
-                        { label: "Custom (type your own)", value: CUSTOM_THEME_VALUE },
-                      ]}
+                      options={themeOptions}
                       placeholder="Pick a theme"
                       state={themeState}
                     />
-                    {themeChoice === CUSTOM_THEME_VALUE && (
-                      <div className="mt-2">
-                        <TextInput
-                          value={customTheme}
-                          onChange={(e) => {
-                            setCustomTheme(e.target.value);
-                            set("theme", e.target.value);
-                          }}
-                          onBlur={() => markTouched("theme")}
-                          placeholder="e.g. Friendship, Courage, Sharing"
-                          state={themeState}
-                          errorMessage="A short theme helps us start the story."
-                        />
-                      </div>
-                    )}
-                    {themeState === "error" && themeChoice !== CUSTOM_THEME_VALUE && (
+                    {themeState === "error" && (
                       <p className="mt-1 text-[11px] text-destructive">A short theme helps us start the story.</p>
                     )}
                   </>
                 ) : (
-                  <TextInput
-                    value={form.theme}
-                    onChange={(e) => set("theme", e.target.value)}
-                    onBlur={() => markTouched("theme")}
-                    placeholder="e.g. Friendship, Courage, Sharing, Healthy habits"
-                    state={themeState}
-                    errorMessage="A short theme helps us start the story."
-                  />
+                  <>
+                    <TextInput
+                      value={themeMode === "custom" ? customTheme : form.theme}
+                      onChange={(e) => {
+                        setCustomTheme(e.target.value);
+                        set("theme", e.target.value);
+                      }}
+                      onBlur={() => markTouched("theme")}
+                      placeholder="e.g. Friendship, Courage, Sharing, Healthy habits"
+                      state={themeState}
+                      errorMessage="A short theme helps us start the story."
+                    />
+                    {customBucket && !previewDismissed && (
+                      <div className="mt-1.5 flex items-start justify-between gap-2 text-[11px] text-muted-foreground">
+                        <span>Feels like: {BUCKETS[customBucket].cardName}.</span>
+                        <button
+                          type="button"
+                          onClick={() => setPreviewDismissed(true)}
+                          className="font-bold text-primary-deep"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    )}
+                    {customBucket && !bucketFitsAge && !ageNoteDismissed && (
+                      <div className="mt-1.5 flex items-start justify-between gap-2 rounded-xl bg-secondary/40 px-3 py-2 text-[11px] text-muted-foreground">
+                        <span>
+                          This kind of theme is usually explored a bit later — you can still use it if it feels
+                          right for {childName}.
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setAgeNoteDismissed(true)}
+                          className="font-bold text-primary-deep"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
               <div>

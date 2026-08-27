@@ -333,7 +333,7 @@ export const AddressTermsEditor = ({
 
 /* ---------- Companion (single column, two inputs) ---------- */
 export const COMPANION_TOOLTIP =
-  "Every story gives your child a companion for the adventure. Tell us the one they're actually attached to — a favourite toy, a blanket, even a plant — and we'll write that one into the story instead of inventing something. Give its name (e.g. Nutty) and what it is (e.g. a stuffed squirrel). Have a pet? Add them in the family section above instead. Leave both blank and we'll invent a companion for you.";
+  "Tell us your child's favourite toy — the one they're actually attached to — and we'll write that one into the story instead of inventing something. Give its name (e.g. Nutty) and what it is (e.g. a stuffed squirrel). Have a pet? Add them in the family section above instead. Leave both blank and we'll invent a toy for you.";
 
 export const splitCompanion = (raw?: string | null): { name: string; what: string } => {
   const s = (raw ?? "").trim();
@@ -362,7 +362,7 @@ export const CompanionFields = ({
   <div className="space-y-3">
     <div>
       <FieldLabel optional tooltip={COMPANION_TOOLTIP}>
-        Companion's name
+        Favourite toy's name
       </FieldLabel>
       <TextInput
         value={name}
@@ -373,7 +373,7 @@ export const CompanionFields = ({
     </div>
     <div>
       <FieldLabel optional tooltip={COMPANION_KIND_TOOLTIP}>
-        What kind of companion is it?
+        What kind of toy is it?
       </FieldLabel>
       <TextInput
         value={what}
@@ -682,4 +682,4 @@ export const FamilyMembersEditor = ({
 /* ---------- Companion kind tooltip ---------- */
 
 export const COMPANION_KIND_TOOLTIP =
-  "The companion is the sidekick who shares the adventure and provides the story's funniest moment.";
+  "The favourite toy is the sidekick who shares the adventure and provides the story's funniest moment.";

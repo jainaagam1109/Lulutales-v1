@@ -34,6 +34,7 @@ type Kid = {
   family_address_terms: string | null;
   sibling_age: number | null;
   companion: string | null;
+  favourite_place: string | null;
   status: "active" | "inactive" | "deleted";
 };
 
@@ -142,7 +143,7 @@ const KidsProfiles = () => {
     const { data } = await (supabase as any)
       .from("child_profiles")
       .select(
-        "id, name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, companion, status"
+        "id, name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, companion, favourite_place, status"
       )
       .eq("user_id", user.id)
       .neq("status", "deleted")
@@ -192,6 +193,7 @@ const KidsProfiles = () => {
       family_address_terms: serializeAddressTerms(editTerms) || null,
       sibling_age: Number.isFinite(siblingNum) ? siblingNum : null,
       companion: joinCompanion(editCompanion.name, editCompanion.what),
+      favourite_place: editForm.favourite_place?.trim() || null,
     };
     const { error } = await (supabase as any).from("child_profiles").update(updateData).eq("id", id);
     if (error) return toast.error("Failed to save profile");
@@ -343,6 +345,7 @@ const KidsProfiles = () => {
                       value={editForm.name ?? ""}
                       onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
                       placeholder="e.g. Aanya"
+                      maxLength={30}
                     />
                   </div>
                   <div>
@@ -433,6 +436,21 @@ const KidsProfiles = () => {
                     what={editCompanion.what}
                     onChange={setEditCompanion}
                   />
+                  <div>
+                    <FieldLabel
+                      optional
+                      tooltip="A place your child loves — real or make-believe — that we can bring into the story: the beach, a grandparent's house, the park, even a world they imagine. Leave this blank and we won't force a special place into the story."
+                    >
+                      Favourite place
+                    </FieldLabel>
+                    <TextInput
+                      value={editForm.favourite_place ?? ""}
+                      onChange={(e) => setEditForm((f) => ({ ...f, favourite_place: e.target.value }))}
+                      placeholder="e.g. the beach, Nani's house, the park"
+                      maxLength={60}
+                    />
+                  </div>
+
                   <div>
                     <FieldLabel tooltip="Helps us make the story feel more personal and familiar.">
                       Family address terms

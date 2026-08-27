@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, Maximize2 } from "lucide-react";
 import { fetchStory, fetchEpisodes } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
 import { PageHeader } from "@/components/PageHeader";
@@ -74,6 +74,7 @@ const Player = () => {
   });
 
   const current = episodes?.find((e) => e.episode_number === epNum);
+  const episodeText = (((current as any)?.episode_text as string | null | undefined) ?? "").trim() || null;
   const audioUrl = current?.audio_url ?? null;
   const totalEps = episodes?.length ?? 0;
   const maxEp = episodes && episodes.length > 0 ? Math.max(...episodes.map((e) => e.episode_number)) : 1;
@@ -522,9 +523,24 @@ const Player = () => {
       <PageHeader backTo={id ? `/story/${id}` : "/"} />
       <main className="flex-1 overflow-y-auto px-6 pb-24">
 
-        <div className="mx-auto mb-6 flex h-64 w-64 items-center justify-center rounded-3xl bg-gradient-card text-8xl shadow-soft">
-          {story?.thumbnail ?? "📖"}
-        </div>
+        {episodeText ? (
+          <div className="relative mx-auto mb-6 h-64 w-full max-w-sm rounded-3xl bg-gradient-card p-4 shadow-soft">
+            <div className="h-full overflow-y-auto pr-8 text-sm leading-relaxed text-foreground whitespace-pre-wrap">
+              {episodeText}
+            </div>
+            <button
+              onClick={() => nav(`/player/${id}/${epNum}/read`)}
+              aria-label="Read full episode text"
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-card/80 text-primary-deep shadow-soft"
+            >
+              <Maximize2 className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="mx-auto mb-6 flex h-64 w-64 items-center justify-center rounded-3xl bg-gradient-card text-8xl shadow-soft">
+            {story?.thumbnail ?? "📖"}
+          </div>
+        )}
 
         <div className="text-center">
           {typeof universeName === "string" && (
