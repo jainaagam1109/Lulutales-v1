@@ -34,6 +34,7 @@ type Kid = {
   family_address_terms: string | null;
   sibling_age: number | null;
   companion: string | null;
+  favourite_place: string | null;
   status: "active" | "inactive" | "deleted";
 };
 
@@ -142,7 +143,7 @@ const KidsProfiles = () => {
     const { data } = await (supabase as any)
       .from("child_profiles")
       .select(
-        "id, name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, companion, status"
+        "id, name, age, gender, family_type, city, personality, home_type, family_members, family_address_terms, sibling_age, companion, favourite_place, status"
       )
       .eq("user_id", user.id)
       .neq("status", "deleted")
@@ -192,6 +193,7 @@ const KidsProfiles = () => {
       family_address_terms: serializeAddressTerms(editTerms) || null,
       sibling_age: Number.isFinite(siblingNum) ? siblingNum : null,
       companion: joinCompanion(editCompanion.name, editCompanion.what),
+      favourite_place: editForm.favourite_place?.trim() || null,
     };
     const { error } = await (supabase as any).from("child_profiles").update(updateData).eq("id", id);
     if (error) return toast.error("Failed to save profile");
