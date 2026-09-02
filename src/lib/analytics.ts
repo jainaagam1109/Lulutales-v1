@@ -10,12 +10,12 @@ const localDateKey = (input: string | Date): string => {
 };
 
 // All-time consecutive-day streak ending today (or yesterday if not heard yet today)
+// "Active on day X" = ANY story_analytics row for this profile on that day.
 export const fetchStreak = async (profileId: string): Promise<number> => {
   const { data } = await supabase
     .from("story_analytics")
     .select("created_at")
-    .eq("profile_id", profileId)
-    .in("event_type", ["play", "complete"]);
+    .eq("profile_id", profileId);
   if (!data || data.length === 0) return 0;
 
   const days = new Set(data.map((r) => localDateKey(r.created_at)));
@@ -29,26 +29,99 @@ export const fetchStreak = async (profileId: string): Promise<number> => {
   return count;
 };
 
+const WORDS_PER_MINUTE = 130;
+
+// Set of story_ids that count as "finished" for this profile.
+// Audio: last episode of the story reached >= 90% via 'progress' pings.
+// Text:  'bedtime' 'complete' row where time on page >= 80% of estimated reading time.
+export const getCompletedStoryIds = async (profileId: string): Promise<Set<string>> => {
+  const finished = new Set<string>();
+
+  // --- Audio ---
+  const { data: progress } = await (supabase as any)
+    .from("story_analytics")
+    .select("episode_id, position_seconds, duration_seconds")
+    .eq("profile_id", profileId)
+    .eq("event_type", "progress");
+
+  const rows = ((progress ?? []) as any[]).filter((r) => r.episode_id);
+  const episodeIds = Array.from(new Set(rows.map((r) => r.episode_id as string)));
+
+  if (episodeIds.length > 0) {
+    const { data: episodes } = await (supabase as any)
+      .from("episodes")
+      .select("id, story_id, episode_number")
+      .in("id", episodeIds);
+
+    const epById = new Map<string, { story_id: string; episode_number: number }>();
+    for (const e of (episodes ?? []) as any[]) {
+      epById.set(e.id, { story_id: e.story_id, episode_number: e.episode_number ?? 0 });
+    }
+
+    // Last episode number per story (from the full episodes list of those stories)
+    const storyIds = Array.from(new Set(Array.from(epById.values()).map((e) => e.story_id)));
+    const lastEpisodeByStory = new Map<string, number>();
+    if (storyIds.length > 0) {
+      const { data: allEps } = await (supabase as any)
+        .from("episodes")
+        .select("story_id, episode_number")
+        .in("story_id", storyIds);
+      for (const e of (allEps ?? []) as any[]) {
+        const n = e.episode_number ?? 0;
+        const cur = lastEpisodeByStory.get(e.story_id);
+        if (cur === undefined || n > cur) lastEpisodeByStory.set(e.story_id, n);
+      }
+    }
+
+    for (const r of rows) {
+      const ep = epById.get(r.episode_id as string);
+      if (!ep) continue;
+      if (lastEpisodeByStory.get(ep.story_id) !== ep.episode_number) continue;
+      const dur = Number(r.duration_seconds ?? 0);
+      const pos = Number(r.position_seconds ?? 0);
+      if (dur > 0 && pos >= 0.9 * dur) finished.add(ep.story_id);
+    }
+  }
+
+  // --- Text (bedtime) ---
+  const { data: bedtime } = await (supabase as any)
+    .from("story_analytics")
+    .select("story_id, duration_seconds")
+    .eq("profile_id", profileId)
+    .eq("event_type", "complete")
+    .eq("source", "bedtime");
+
+  const bedtimeRows = ((bedtime ?? []) as any[]).filter((r) => r.story_id);
+  if (bedtimeRows.length > 0) {
+    const ids = Array.from(new Set(bedtimeRows.map((r) => r.story_id as string)));
+    const { data: stories } = await (supabase as any)
+      .from("stories")
+      .select("id, story_text")
+      .in("id", ids);
+    const textById = new Map<string, string>();
+    for (const s of (stories ?? []) as any[]) textById.set(s.id, s.story_text ?? "");
+
+    for (const r of bedtimeRows) {
+      const text = textById.get(r.story_id as string) ?? "";
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      if (words === 0) continue;
+      const estimated = (words / WORDS_PER_MINUTE) * 60;
+      if (Number(r.duration_seconds ?? 0) >= 0.8 * estimated) finished.add(r.story_id as string);
+    }
+  }
+
+  return finished;
+};
+
 // All-time distinct stories completed
 export const fetchStoriesCompleted = async (profileId: string): Promise<number> => {
-  const { data } = await supabase
-    .from("story_analytics")
-    .select("story_id")
-    .eq("profile_id", profileId)
-    .eq("event_type", "complete");
-  if (!data) return 0;
-  return new Set(data.map((r) => r.story_id)).size;
+  return (await getCompletedStoryIds(profileId)).size;
 };
 
 // All-time distinct themes across completed stories (returns lowercased theme strings)
 export const fetchCompletedThemes = async (profileId: string): Promise<string[]> => {
-  const { data: events } = await supabase
-    .from("story_analytics")
-    .select("story_id")
-    .eq("profile_id", profileId)
-    .eq("event_type", "complete");
-  if (!events || events.length === 0) return [];
-  const storyIds = Array.from(new Set(events.map((r) => r.story_id)));
+  const storyIds = Array.from(await getCompletedStoryIds(profileId));
+  if (storyIds.length === 0) return [];
   const { data: stories } = await supabase
     .from("stories")
     .select("theme")
@@ -60,6 +133,7 @@ export const fetchCompletedThemes = async (profileId: string): Promise<string[]>
   }
   return Array.from(themes);
 };
+
 
 // Best historical streak — needed for streak-tier badges
 export const fetchBestStreak = async (profileId: string): Promise<number> => {
