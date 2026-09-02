@@ -140,9 +140,9 @@ export const fetchBestStreak = async (profileId: string): Promise<number> => {
   const { data } = await supabase
     .from("story_analytics")
     .select("created_at")
-    .eq("profile_id", profileId)
-    .in("event_type", ["play", "complete"]);
+    .eq("profile_id", profileId);
   if (!data || data.length === 0) return 0;
+
 
   const days = Array.from(new Set(data.map((r) => localDateKey(r.created_at)))).sort();
   let best = 0;
