@@ -217,15 +217,34 @@ export const computeBadgesFromDb = (
   return badges;
 };
 
-// Total time spent across all events (play + complete), in seconds.
+// Total real time spent, in seconds: audio = sum of per-episode max position reached;
+// text = sum of elapsed time on bedtime 'complete' rows.
 export const fetchScreenTimeSeconds = async (profileId: string): Promise<number> => {
-  const { data } = await supabase
+  const { data: progress } = await (supabase as any)
+    .from("story_analytics")
+    .select("episode_id, position_seconds")
+    .eq("profile_id", profileId)
+    .eq("event_type", "progress");
+
+  const maxByEpisode = new Map<string, number>();
+  for (const r of ((progress ?? []) as any[])) {
+    if (!r.episode_id) continue;
+    const pos = Number(r.position_seconds ?? 0);
+    const cur = maxByEpisode.get(r.episode_id) ?? 0;
+    if (pos > cur) maxByEpisode.set(r.episode_id, pos);
+  }
+  let total = 0;
+  for (const v of maxByEpisode.values()) total += v;
+
+  const { data: bedtime } = await (supabase as any)
     .from("story_analytics")
     .select("duration_seconds")
     .eq("profile_id", profileId)
-    .in("event_type", ["play", "complete"]);
-  if (!data) return 0;
-  return data.reduce((sum, r: any) => sum + (r.duration_seconds || 0), 0);
+    .eq("event_type", "complete")
+    .eq("source", "bedtime");
+  for (const r of ((bedtime ?? []) as any[])) total += Number(r.duration_seconds ?? 0);
+
+  return total;
 };
 
 // Active days in the rolling last-7-day window (local timezone). Includes today.
@@ -241,8 +260,8 @@ export const fetchActiveDaysLast7 = async (
     .from("story_analytics")
     .select("created_at")
     .eq("profile_id", profileId)
-    .in("event_type", ["play", "complete"])
     .gte("created_at", since.toISOString());
+
 
   const seen = new Set<string>();
   for (const r of data ?? []) seen.add(localDateKey((r as any).created_at));
