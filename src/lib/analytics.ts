@@ -337,16 +337,13 @@ const BADGE_THRESHOLDS = [1, 3, 5] as const;
 // For each of the 13 buckets, count distinct completed stories (across all story types)
 // and report which of the 3 tier badges are earned at 1 / 3 / 5 distinct stories.
 export const fetchBadgeProgress = async (profileId: string): Promise<BucketBadgeProgress[]> => {
-  const { data: events } = await supabase
-    .from("story_analytics")
-    .select("story_id")
-    .eq("profile_id", profileId)
-    .eq("event_type", "complete");
+  const completedIds = await getCompletedStoryIds(profileId);
 
   const counts = new Map<BucketKey, Set<string>>();
   for (const k of Object.keys(BUCKETS) as BucketKey[]) counts.set(k, new Set());
 
-  const uniqueStoryIds = Array.from(new Set((events ?? []).map((e: any) => e.story_id)));
+  const uniqueStoryIds = Array.from(completedIds);
+
   if (uniqueStoryIds.length > 0) {
     const { data: stories } = await (supabase as any)
       .from("stories")
