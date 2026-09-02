@@ -657,6 +657,95 @@ const Player = () => {
           </div>
         )}
       </main>
+
+      {showFullText && episodeText && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col"
+          style={{
+            background: textDark ? "#0F1923" : "#FFFFFF",
+            color: textDark ? "#F5F0E8" : "#1A1612",
+          }}
+        >
+          <button
+            onClick={() => setShowFullText(false)}
+            className="absolute left-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full"
+            style={{
+              color: textDark ? "#F5F0E8" : "#1A1612",
+              background: textDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+            }}
+            aria-label="Close full text"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+
+          <main className="flex-1 overflow-y-auto" style={{ padding: "72px 24px 120px" }}>
+            <div style={{ maxWidth: "640px", margin: "0 auto" }}>
+              {current && (
+                <h1 className="mb-4 text-lg font-extrabold" style={{ color: textDark ? "#F5F0E8" : "#1A1612" }}>
+                  {cleanEpisodeTitle(current.title, story?.title, current.episode_number) ||
+                    `Episode ${current.episode_number}`}
+                </h1>
+              )}
+              <article
+                style={{
+                  fontSize: `${[16, 18, 20][textSizeIdx]}px`,
+                  lineHeight: 1.8,
+                  color: textDark ? "#F5F0E8" : "#1A1612",
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                {episodeText}
+              </article>
+            </div>
+          </main>
+
+          <div
+            className="absolute inset-x-0 bottom-0 flex items-center justify-between px-5 py-3"
+            style={{
+              background: textDark ? "#0F1923" : "#FFFFFF",
+              borderTop: `1px solid ${textDark ? "rgba(245,240,232,0.18)" : "rgba(26,22,18,0.12)"}`,
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setTextSizeIdx((i) => Math.max(0, i - 1))}
+                disabled={textSizeIdx === 0}
+                className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold disabled:opacity-40"
+                style={{
+                  border: `1px solid ${textDark ? "rgba(245,240,232,0.18)" : "rgba(26,22,18,0.12)"}`,
+                  color: textDark ? "#F5F0E8" : "#1A1612",
+                }}
+                aria-label="Decrease font size"
+              >
+                A−
+              </button>
+              <button
+                onClick={() => setTextSizeIdx((i) => Math.min(2, i + 1))}
+                disabled={textSizeIdx === 2}
+                className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold disabled:opacity-40"
+                style={{
+                  border: `1px solid ${textDark ? "rgba(245,240,232,0.18)" : "rgba(26,22,18,0.12)"}`,
+                  color: textDark ? "#F5F0E8" : "#1A1612",
+                }}
+                aria-label="Increase font size"
+              >
+                A+
+              </button>
+            </div>
+            <button
+              onClick={() => setTextDark((d) => !d)}
+              className="flex h-10 w-10 items-center justify-center rounded-full"
+              style={{
+                border: `1px solid ${textDark ? "rgba(245,240,232,0.18)" : "rgba(26,22,18,0.12)"}`,
+                color: textDark ? "#F5F0E8" : "#1A1612",
+              }}
+              aria-label={textDark ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {textDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </button>
+          </div>
+        </div>
+      )}
     </PhoneShell>
   );
 };
