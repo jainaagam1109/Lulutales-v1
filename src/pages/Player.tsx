@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Play, Pause, Maximize2 } from "lucide-react";
+import { ChevronLeft, Play, Pause, Maximize2, Sun, Moon } from "lucide-react";
 import { fetchStory, fetchEpisodes } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
 import { PageHeader } from "@/components/PageHeader";
@@ -85,6 +85,9 @@ const Player = () => {
   const [t, setT] = useState(0);
   const [dur, setDur] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [showFullText, setShowFullText] = useState(false);
+  const [textSizeIdx, setTextSizeIdx] = useState(1);
+  const [textDark, setTextDark] = useState(false);
   const [speed, setSpeed] = useState<number>(() => {
     if (typeof window === "undefined") return 1;
     const pid = localStorage.getItem("lulutales_profile_id");
@@ -529,7 +532,7 @@ const Player = () => {
               {episodeText}
             </div>
             <button
-              onClick={() => nav(`/player/${id}/${epNum}/read`)}
+              onClick={() => setShowFullText(true)}
               aria-label="Read full episode text"
               className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-card/80 text-primary-deep shadow-soft"
             >
