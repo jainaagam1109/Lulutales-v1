@@ -288,18 +288,14 @@ export type BucketBar = {
 
 // Group completed stories by stories.bucket_key. Returns every bucket with ≥1 completed story.
 export const fetchBucketBreakdown = async (profileId: string): Promise<BucketBar[]> => {
-  const { data: events } = await supabase
-    .from("story_analytics")
-    .select("story_id")
-    .eq("profile_id", profileId)
-    .eq("event_type", "complete");
-  if (!events || events.length === 0) return [];
+  const uniqueStoryIds = Array.from(await getCompletedStoryIds(profileId));
+  if (uniqueStoryIds.length === 0) return [];
 
-  const uniqueStoryIds = Array.from(new Set(events.map((e: any) => e.story_id)));
   const { data: stories } = await (supabase as any)
     .from("stories")
     .select("id, bucket_key")
     .in("id", uniqueStoryIds);
+
   if (!stories) return [];
 
   const agg = new Map<BucketKey, Set<string>>();
