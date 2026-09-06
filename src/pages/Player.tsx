@@ -402,6 +402,7 @@ const Player = () => {
         }
         flushServer(true, { completed: true });
         setPlaying(false);
+        void queueRef.current();
       }
     };
     const onVisibility = () => {
