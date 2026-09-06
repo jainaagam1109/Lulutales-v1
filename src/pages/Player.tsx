@@ -99,6 +99,7 @@ const Player = () => {
   const advancesRef = useRef(0);
   const autoStoppedRef = useRef(false);
   const [autoStopped, setAutoStopped] = useState(false);
+  const [runActive, setRunActive] = useState(false);
 
   // ---- cross-story autoplay ------------------------------------------------
   const queueNextStory = useCallback(async () => {
@@ -133,6 +134,7 @@ const Player = () => {
   const stopAutoplay = () => {
     autoStoppedRef.current = true;
     setAutoStopped(true);
+    setRunActive(false);
     setAutoCountdown(null);
     setAutoNext(null);
     setAutoPrompt(false);
@@ -143,6 +145,14 @@ const Player = () => {
     if (story?.id && isAutoplayStory(story.story_type)) markStoryPlayed(story.id);
   }, [story?.id, story?.story_type]);
 
+  // Arrived on a story with no usable audio mid-run: skip to the next candidate.
+  useEffect(() => {
+    if (advancesRef.current === 0 || autoStoppedRef.current) return;
+    if (!episodes || episodes.length === 0) return;
+    if (episodes.some((e) => !!e.audio_url)) return;
+    void queueRef.current();
+  }, [episodes, story?.id]);
+
   // Countdown into the next story.
   useEffect(() => {
     if (autoCountdown === null) return;
@@ -152,6 +162,7 @@ const Player = () => {
       setAutoNext(null);
       if (n) {
         advancesRef.current += 1;
+        setRunActive(true);
         shouldAutoplayRef.current = true;
         markStoryPlayed(n.id);
         nav(`/player/${n.id}/1`, { replace: true });
@@ -798,7 +809,7 @@ const Player = () => {
           </div>
         )}
 
-        {advancesRef.current > 0 && !autoStopped && autoCountdown === null && !autoPrompt && (
+        {runActive && !autoStopped && autoCountdown === null && !autoPrompt && (
           <div className="mt-4 text-center">
             <button
               onClick={stopAutoplay}
