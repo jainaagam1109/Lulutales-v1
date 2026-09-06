@@ -1,8 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, Play, Pause, Maximize2, Sun, Moon } from "lucide-react";
-import { fetchStory, fetchEpisodes } from "@/lib/stories";
+import { fetchStory, fetchEpisodes, type Story } from "@/lib/stories";
+import {
+  AUTOPLAY_MAX_ADVANCES,
+  isAutoplayEnabled,
+  isAutoplayStory,
+  markStoryPlayed,
+  pickNextStory,
+} from "@/lib/autoplayQueue";
+
 import { PhoneShell } from "@/components/PhoneShell";
 import { PageHeader } from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
