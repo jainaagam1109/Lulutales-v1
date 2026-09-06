@@ -715,7 +715,18 @@ const Player = () => {
           <p className="mt-6 text-center text-xs text-muted-foreground">No audio uploaded for this episode yet.</p>
         )}
 
-        {audioUrl && <audio ref={audioRef} src={audioUrl} preload="metadata" className="hidden" />}
+        {audioUrl && (
+          <audio
+            ref={audioRef}
+            src={audioUrl}
+            preload="metadata"
+            className="hidden"
+            onError={() => {
+              // Broken audio during an autoplay run: skip to the next candidate.
+              if (advancesRef.current > 0 && !autoStoppedRef.current) void queueRef.current();
+            }}
+          />
+        )}
 
         {countdown !== null && (
           <div className="mt-6 rounded-2xl border border-border bg-card p-3 text-center shadow-soft">
@@ -736,6 +747,68 @@ const Player = () => {
             </div>
           </div>
         )}
+
+        {autoNext && autoCountdown !== null && (
+          <div className="mt-6 rounded-2xl border border-border bg-card p-3 text-center shadow-soft">
+            <div className="text-xs font-semibold text-foreground">
+              Next story in {autoCountdown}s
+            </div>
+            <div className="mt-0.5 truncate text-[11px] text-muted-foreground">{autoNext.title}</div>
+            <div className="mt-2 flex justify-center gap-2">
+              <button
+                onClick={() => setAutoCountdown(0)}
+                className="rounded-full bg-gradient-primary px-4 py-1.5 text-[11px] font-bold text-primary-foreground shadow-glow"
+              >
+                Play now
+              </button>
+              <button
+                onClick={stopAutoplay}
+                className="rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-semibold text-primary-deep"
+              >
+                Stop autoplay
+              </button>
+            </div>
+          </div>
+        )}
+
+        {autoPrompt && (
+          <div className="mt-6 rounded-2xl border border-border bg-card p-3 text-center shadow-soft">
+            <div className="text-xs font-semibold text-foreground">Still listening?</div>
+            <div className="mt-0.5 text-[11px] text-muted-foreground">
+              We've played a few stories in a row. Keep going?
+            </div>
+            <div className="mt-2 flex justify-center gap-2">
+              <button
+                onClick={() => {
+                  advancesRef.current = 0;
+                  setAutoPrompt(false);
+                  void queueRef.current();
+                }}
+                className="rounded-full bg-gradient-primary px-4 py-1.5 text-[11px] font-bold text-primary-foreground shadow-glow"
+              >
+                Keep going
+              </button>
+              <button
+                onClick={stopAutoplay}
+                className="rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-semibold text-primary-deep"
+              >
+                Stop autoplay
+              </button>
+            </div>
+          </div>
+        )}
+
+        {advancesRef.current > 0 && !autoStopped && autoCountdown === null && !autoPrompt && (
+          <div className="mt-4 text-center">
+            <button
+              onClick={stopAutoplay}
+              className="rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-semibold text-primary-deep"
+            >
+              Stop autoplay
+            </button>
+          </div>
+        )}
+
       </main>
 
       {showFullText && episodeText && (
