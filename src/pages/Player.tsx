@@ -1,8 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, Play, Pause, Maximize2, Sun, Moon } from "lucide-react";
-import { fetchStory, fetchEpisodes } from "@/lib/stories";
+import { fetchStory, fetchEpisodes, type Story } from "@/lib/stories";
+import {
+  AUTOPLAY_MAX_ADVANCES,
+  isAutoplayEnabled,
+  isAutoplayStory,
+  markStoryPlayed,
+  pickNextStory,
+} from "@/lib/autoplayQueue";
+
 import { PhoneShell } from "@/components/PhoneShell";
 import { PageHeader } from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,6 +93,88 @@ const Player = () => {
   const [t, setT] = useState(0);
   const [dur, setDur] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [autoNext, setAutoNext] = useState<Story | null>(null);
+  const [autoCountdown, setAutoCountdown] = useState<number | null>(null);
+  const [autoPrompt, setAutoPrompt] = useState(false);
+  const advancesRef = useRef(0);
+  const autoStoppedRef = useRef(false);
+  const [autoStopped, setAutoStopped] = useState(false);
+  const [runActive, setRunActive] = useState(false);
+
+  // ---- cross-story autoplay ------------------------------------------------
+  const queueNextStory = useCallback(async () => {
+    if (autoStoppedRef.current) return;
+    if (!isAutoplayEnabled()) return;
+    if (!story || !isAutoplayStory(story.story_type)) return;
+    if (advancesRef.current >= AUTOPLAY_MAX_ADVANCES) {
+      setAutoCountdown(null);
+      setAutoNext(null);
+      setAutoPrompt(true);
+      return;
+    }
+    const pid = getActiveProfileId();
+    const ageRaw = typeof window !== "undefined" ? localStorage.getItem("lulutales_child_age") : null;
+    const parsedAge = ageRaw ? parseInt(ageRaw, 10) : NaN;
+    const next = await pickNextStory({
+      profileId: pid,
+      childAge: isFinite(parsedAge) ? parsedAge : null,
+      current: story,
+    });
+    if (!next || autoStoppedRef.current) return;
+    setAutoPrompt(false);
+    setAutoNext(next);
+    setAutoCountdown(5);
+  }, [story]);
+
+  const queueRef = useRef(queueNextStory);
+  useEffect(() => {
+    queueRef.current = queueNextStory;
+  }, [queueNextStory]);
+
+  const stopAutoplay = () => {
+    autoStoppedRef.current = true;
+    setAutoStopped(true);
+    setRunActive(false);
+    setAutoCountdown(null);
+    setAutoNext(null);
+    setAutoPrompt(false);
+  };
+
+  // Remember what has already played in this run.
+  useEffect(() => {
+    if (story?.id && isAutoplayStory(story.story_type)) markStoryPlayed(story.id);
+  }, [story?.id, story?.story_type]);
+
+  // Arrived on a story with no usable audio mid-run: skip to the next candidate.
+  useEffect(() => {
+    if (advancesRef.current === 0 || autoStoppedRef.current) return;
+    if (!episodes || episodes.length === 0) return;
+    if (episodes.some((e) => !!e.audio_url)) return;
+    void queueRef.current();
+  }, [episodes, story?.id]);
+
+  // Countdown into the next story.
+  useEffect(() => {
+    if (autoCountdown === null) return;
+    if (autoCountdown === 0) {
+      const n = autoNext;
+      setAutoCountdown(null);
+      setAutoNext(null);
+      if (n) {
+        advancesRef.current += 1;
+        setRunActive(true);
+        shouldAutoplayRef.current = true;
+        markStoryPlayed(n.id);
+        nav(`/player/${n.id}/1`, { replace: true });
+      }
+      return;
+    }
+    const t = setTimeout(() => setAutoCountdown((c) => (c !== null ? c - 1 : null)), 1000);
+    return () => clearTimeout(t);
+  }, [autoCountdown, autoNext, nav]);
+
+
+
   const [showFullText, setShowFullText] = useState(false);
   const [textSizeIdx, setTextSizeIdx] = useState(1);
   const [textDark, setTextDark] = useState(false);
@@ -323,6 +413,7 @@ const Player = () => {
         }
         flushServer(true, { completed: true });
         setPlaying(false);
+        void queueRef.current();
       }
     };
     const onVisibility = () => {
@@ -635,7 +726,18 @@ const Player = () => {
           <p className="mt-6 text-center text-xs text-muted-foreground">No audio uploaded for this episode yet.</p>
         )}
 
-        {audioUrl && <audio ref={audioRef} src={audioUrl} preload="metadata" className="hidden" />}
+        {audioUrl && (
+          <audio
+            ref={audioRef}
+            src={audioUrl}
+            preload="metadata"
+            className="hidden"
+            onError={() => {
+              // Broken audio during an autoplay run: skip to the next candidate.
+              if (advancesRef.current > 0 && !autoStoppedRef.current) void queueRef.current();
+            }}
+          />
+        )}
 
         {countdown !== null && (
           <div className="mt-6 rounded-2xl border border-border bg-card p-3 text-center shadow-soft">
@@ -656,6 +758,68 @@ const Player = () => {
             </div>
           </div>
         )}
+
+        {autoNext && autoCountdown !== null && (
+          <div className="mt-6 rounded-2xl border border-border bg-card p-3 text-center shadow-soft">
+            <div className="text-xs font-semibold text-foreground">
+              Next story in {autoCountdown}s
+            </div>
+            <div className="mt-0.5 truncate text-[11px] text-muted-foreground">{autoNext.title}</div>
+            <div className="mt-2 flex justify-center gap-2">
+              <button
+                onClick={() => setAutoCountdown(0)}
+                className="rounded-full bg-gradient-primary px-4 py-1.5 text-[11px] font-bold text-primary-foreground shadow-glow"
+              >
+                Play now
+              </button>
+              <button
+                onClick={stopAutoplay}
+                className="rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-semibold text-primary-deep"
+              >
+                Stop autoplay
+              </button>
+            </div>
+          </div>
+        )}
+
+        {autoPrompt && (
+          <div className="mt-6 rounded-2xl border border-border bg-card p-3 text-center shadow-soft">
+            <div className="text-xs font-semibold text-foreground">Still listening?</div>
+            <div className="mt-0.5 text-[11px] text-muted-foreground">
+              We've played a few stories in a row. Keep going?
+            </div>
+            <div className="mt-2 flex justify-center gap-2">
+              <button
+                onClick={() => {
+                  advancesRef.current = 0;
+                  setAutoPrompt(false);
+                  void queueRef.current();
+                }}
+                className="rounded-full bg-gradient-primary px-4 py-1.5 text-[11px] font-bold text-primary-foreground shadow-glow"
+              >
+                Keep going
+              </button>
+              <button
+                onClick={stopAutoplay}
+                className="rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-semibold text-primary-deep"
+              >
+                Stop autoplay
+              </button>
+            </div>
+          </div>
+        )}
+
+        {runActive && !autoStopped && autoCountdown === null && !autoPrompt && (
+          <div className="mt-4 text-center">
+            <button
+              onClick={stopAutoplay}
+              className="rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-semibold text-primary-deep"
+            >
+              Stop autoplay
+            </button>
+          </div>
+        )}
+
       </main>
 
       {showFullText && episodeText && (
