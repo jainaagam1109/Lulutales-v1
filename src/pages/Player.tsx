@@ -100,6 +100,70 @@ const Player = () => {
   const autoStoppedRef = useRef(false);
   const [autoStopped, setAutoStopped] = useState(false);
 
+  // ---- cross-story autoplay ------------------------------------------------
+  const queueNextStory = useCallback(async () => {
+    if (autoStoppedRef.current) return;
+    if (!isAutoplayEnabled()) return;
+    if (!story || !isAutoplayStory(story.story_type)) return;
+    if (advancesRef.current >= AUTOPLAY_MAX_ADVANCES) {
+      setAutoCountdown(null);
+      setAutoNext(null);
+      setAutoPrompt(true);
+      return;
+    }
+    const pid = getActiveProfileId();
+    const ageRaw = typeof window !== "undefined" ? localStorage.getItem("lulutales_child_age") : null;
+    const parsedAge = ageRaw ? parseInt(ageRaw, 10) : NaN;
+    const next = await pickNextStory({
+      profileId: pid,
+      childAge: isFinite(parsedAge) ? parsedAge : null,
+      current: story,
+    });
+    if (!next || autoStoppedRef.current) return;
+    setAutoPrompt(false);
+    setAutoNext(next);
+    setAutoCountdown(5);
+  }, [story]);
+
+  const queueRef = useRef(queueNextStory);
+  useEffect(() => {
+    queueRef.current = queueNextStory;
+  }, [queueNextStory]);
+
+  const stopAutoplay = () => {
+    autoStoppedRef.current = true;
+    setAutoStopped(true);
+    setAutoCountdown(null);
+    setAutoNext(null);
+    setAutoPrompt(false);
+  };
+
+  // Remember what has already played in this run.
+  useEffect(() => {
+    if (story?.id && isAutoplayStory(story.story_type)) markStoryPlayed(story.id);
+  }, [story?.id, story?.story_type]);
+
+  // Countdown into the next story.
+  useEffect(() => {
+    if (autoCountdown === null) return;
+    if (autoCountdown === 0) {
+      const n = autoNext;
+      setAutoCountdown(null);
+      setAutoNext(null);
+      if (n) {
+        advancesRef.current += 1;
+        shouldAutoplayRef.current = true;
+        markStoryPlayed(n.id);
+        nav(`/player/${n.id}/1`, { replace: true });
+      }
+      return;
+    }
+    const t = setTimeout(() => setAutoCountdown((c) => (c !== null ? c - 1 : null)), 1000);
+    return () => clearTimeout(t);
+  }, [autoCountdown, autoNext, nav]);
+
+
+
   const [showFullText, setShowFullText] = useState(false);
   const [textSizeIdx, setTextSizeIdx] = useState(1);
   const [textDark, setTextDark] = useState(false);
