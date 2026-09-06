@@ -93,6 +93,13 @@ const Player = () => {
   const [t, setT] = useState(0);
   const [dur, setDur] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [autoNext, setAutoNext] = useState<Story | null>(null);
+  const [autoCountdown, setAutoCountdown] = useState<number | null>(null);
+  const [autoPrompt, setAutoPrompt] = useState(false);
+  const advancesRef = useRef(0);
+  const autoStoppedRef = useRef(false);
+  const [autoStopped, setAutoStopped] = useState(false);
+
   const [showFullText, setShowFullText] = useState(false);
   const [textSizeIdx, setTextSizeIdx] = useState(1);
   const [textDark, setTextDark] = useState(false);
