@@ -108,7 +108,7 @@ const Generating = () => {
           {stalled
             ? `This is taking longer than expected. We'll notify you when ${childName}'s story is ready.`
             : `This usually takes about ${
-                story?.story_type === "bedtime_text" ? "~4 minutes" : "~15 minutes"
+                story?.story_type === "bedtime_text" ? "~3 minutes" : "~5 minutes"
               }. Head to your Story Worlds and enjoy existing stories while you wait.`}
         </p>
         <button
