@@ -409,33 +409,6 @@ const KidsProfiles = () => {
                       placeholder="e.g. Apartment, Independent House"
                     />
                   </div>
-                  <div>
-                    <FieldLabel tooltip="The people who appear around your child every day.">Family members</FieldLabel>
-                    <TextInput
-                      value={editForm.family_members ?? ""}
-                      onChange={(e) => setEditForm((f) => ({ ...f, family_members: e.target.value }))}
-                      placeholder="e.g. Father, Mother, Grandparents"
-                    />
-                  </div>
-                  <div>
-                    <FieldLabel
-                      optional
-                      tooltip="If your child has a sibling, their age helps us write a more realistic family dynamic."
-                    >
-                      Sibling's age
-                    </FieldLabel>
-                    <TextInput
-                      inputMode="numeric"
-                      value={editForm.sibling_age ?? ""}
-                      onChange={(e) =>
-                        setEditForm((f) => ({
-                          ...f,
-                          sibling_age: e.target.value === "" ? null : (parseInt(e.target.value, 10) as any),
-                        }))
-                      }
-                      placeholder="e.g. 3"
-                    />
-                  </div>
                   <CompanionFields
                     name={editCompanion.name}
                     what={editCompanion.what}
