@@ -162,7 +162,10 @@ const KidsProfiles = () => {
   const startEdit = (k: Kid) => {
     setEditingId(k.id);
     setEditForm({ ...k });
-    setEditTerms(parseAddressTerms(k.family_address_terms ?? ""));
+    let rows = parseFamilyRows(k.family_address_terms ?? "");
+    if (rows.length === 0) rows = convertLegacyFamily(k.family_members, k.sibling_age);
+    if (rows.length === 0) rows = DEFAULT_FAMILY_ROWS.map((r) => ({ ...r }));
+    setEditTerms(rows);
     setEditCompanion(splitCompanion(k.companion));
   };
 
@@ -192,7 +195,7 @@ const KidsProfiles = () => {
       personality: editForm.personality?.trim() || null,
       home_type: editForm.home_type?.trim() || null,
       family_members: editForm.family_members?.trim() || null,
-      family_address_terms: serializeAddressTerms(editTerms) || null,
+      family_address_terms: serializeFamilyRows(editTerms) || null,
       sibling_age: Number.isFinite(siblingNum) ? siblingNum : null,
       companion: joinCompanion(editCompanion.name, editCompanion.what),
       favourite_place: editForm.favourite_place?.trim() || null,
