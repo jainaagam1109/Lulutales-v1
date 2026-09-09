@@ -8,12 +8,14 @@ import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  AddressTermsEditor,
-  parseAddressTerms,
-  serializeAddressTerms,
+  FamilyMembersEditor,
+  parseFamilyRows,
+  serializeFamilyRows,
+  convertLegacyFamily,
+  DEFAULT_FAMILY_ROWS,
+  type FamilyRow,
   FieldLabel,
   Select,
-  type AddressTerm,
   CompanionFields,
   splitCompanion,
   joinCompanion,
@@ -133,7 +135,7 @@ const KidsProfiles = () => {
   const [kids, setKids] = useState<Kid[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Kid>>({});
-  const [editTerms, setEditTerms] = useState<AddressTerm[]>([]);
+  const [editTerms, setEditTerms] = useState<FamilyRow[]>([]);
   const [editCompanion, setEditCompanion] = useState<{ name: string; what: string }>({ name: "", what: "" });
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
