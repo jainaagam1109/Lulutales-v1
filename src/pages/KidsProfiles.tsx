@@ -8,12 +8,14 @@ import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  AddressTermsEditor,
-  parseAddressTerms,
-  serializeAddressTerms,
+  FamilyMembersEditor,
+  parseFamilyRows,
+  serializeFamilyRows,
+  convertLegacyFamily,
+  DEFAULT_FAMILY_ROWS,
+  type FamilyRow,
   FieldLabel,
   Select,
-  type AddressTerm,
   CompanionFields,
   splitCompanion,
   joinCompanion,
@@ -133,7 +135,7 @@ const KidsProfiles = () => {
   const [kids, setKids] = useState<Kid[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<Partial<Kid>>({});
-  const [editTerms, setEditTerms] = useState<AddressTerm[]>([]);
+  const [editTerms, setEditTerms] = useState<FamilyRow[]>([]);
   const [editCompanion, setEditCompanion] = useState<{ name: string; what: string }>({ name: "", what: "" });
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -160,7 +162,10 @@ const KidsProfiles = () => {
   const startEdit = (k: Kid) => {
     setEditingId(k.id);
     setEditForm({ ...k });
-    setEditTerms(parseAddressTerms(k.family_address_terms ?? ""));
+    let rows = parseFamilyRows(k.family_address_terms ?? "");
+    if (rows.length === 0) rows = convertLegacyFamily(k.family_members, k.sibling_age);
+    if (rows.length === 0) rows = DEFAULT_FAMILY_ROWS.map((r) => ({ ...r }));
+    setEditTerms(rows);
     setEditCompanion(splitCompanion(k.companion));
   };
 
@@ -190,7 +195,7 @@ const KidsProfiles = () => {
       personality: editForm.personality?.trim() || null,
       home_type: editForm.home_type?.trim() || null,
       family_members: editForm.family_members?.trim() || null,
-      family_address_terms: serializeAddressTerms(editTerms) || null,
+      family_address_terms: serializeFamilyRows(editTerms) || null,
       sibling_age: Number.isFinite(siblingNum) ? siblingNum : null,
       companion: joinCompanion(editCompanion.name, editCompanion.what),
       favourite_place: editForm.favourite_place?.trim() || null,
@@ -404,33 +409,6 @@ const KidsProfiles = () => {
                       placeholder="e.g. Apartment, Independent House"
                     />
                   </div>
-                  <div>
-                    <FieldLabel tooltip="The people who appear around your child every day.">Family members</FieldLabel>
-                    <TextInput
-                      value={editForm.family_members ?? ""}
-                      onChange={(e) => setEditForm((f) => ({ ...f, family_members: e.target.value }))}
-                      placeholder="e.g. Father, Mother, Grandparents"
-                    />
-                  </div>
-                  <div>
-                    <FieldLabel
-                      optional
-                      tooltip="If your child has a sibling, their age helps us write a more realistic family dynamic."
-                    >
-                      Sibling's age
-                    </FieldLabel>
-                    <TextInput
-                      inputMode="numeric"
-                      value={editForm.sibling_age ?? ""}
-                      onChange={(e) =>
-                        setEditForm((f) => ({
-                          ...f,
-                          sibling_age: e.target.value === "" ? null : (parseInt(e.target.value, 10) as any),
-                        }))
-                      }
-                      placeholder="e.g. 3"
-                    />
-                  </div>
                   <CompanionFields
                     name={editCompanion.name}
                     what={editCompanion.what}
@@ -453,12 +431,12 @@ const KidsProfiles = () => {
 
                   <div>
                     <FieldLabel tooltip="Helps us make the story feel more personal and familiar.">
-                      Family address terms
+                      Family members and what {(editForm.name ?? "").trim() || "your child"} calls them
                     </FieldLabel>
                     <p className="-mt-1 mb-2 text-[11px] text-muted-foreground">
-                      e.g. Mother → Mummy, Father → Papa, Dog → Doggo
+                      e.g. Mother → Mummy · Elder sister → Didi
                     </p>
-                    <AddressTermsEditor value={editTerms} onChange={setEditTerms} />
+                    <FamilyMembersEditor value={editTerms} onChange={setEditTerms} />
                   </div>
 
                   <div className="flex gap-2 pt-1">
