@@ -431,12 +431,12 @@ const KidsProfiles = () => {
 
                   <div>
                     <FieldLabel tooltip="Helps us make the story feel more personal and familiar.">
-                      Family address terms
+                      Family members and what {(editForm.name ?? "").trim() || "your child"} calls them
                     </FieldLabel>
                     <p className="-mt-1 mb-2 text-[11px] text-muted-foreground">
-                      e.g. Mother → Mummy, Father → Papa, Dog → Doggo
+                      e.g. Mother → Mummy · Elder sister → Didi
                     </p>
-                    <AddressTermsEditor value={editTerms} onChange={setEditTerms} />
+                    <FamilyMembersEditor value={editTerms} onChange={setEditTerms} />
                   </div>
 
                   <div className="flex gap-2 pt-1">
