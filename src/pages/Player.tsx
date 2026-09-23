@@ -474,7 +474,7 @@ const Player = () => {
         return;
       }
 
-      const sessionKey = `lulutales_session_${current.id}`;
+      const sessionKey = `lulutales_session_${current.id}_${eventType}`;
       const last = localStorage.getItem(sessionKey);
       if (last && Date.now() - parseInt(last) < 30 * 60 * 1000) {
         logging = false;
