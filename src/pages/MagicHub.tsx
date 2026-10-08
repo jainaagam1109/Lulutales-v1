@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { ChevronRight, Lock, Headphones, Moon, BookOpen } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { PhoneShell } from "@/components/PhoneShell";
-import { LuluLogo } from "@/components/LuluLogo";
 import { BottomNav } from "@/components/BottomNav";
 import { PageHeader } from "@/components/PageHeader";
 import { fetchStoriesForProfile } from "@/lib/stories";
@@ -35,7 +34,7 @@ const MagicHub = () => {
       title: "Generate audio story",
       desc: "Narrated aloud for your child to listen and enjoy on their own.",
       formatHint: "🎧 Press play — no reading needed · ~5–15 min",
-      emoji: <LuluLogo size={32} showWordmark={false} />,
+      emoji: "🎙",
       iconBg: "bg-tag-warm-bg text-tag-warm-fg",
       tag: "Beta",
       tagClass: "bg-tag-warm-bg text-tag-warm-fg border-tag-warm-border",

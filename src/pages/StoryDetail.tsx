@@ -18,7 +18,7 @@ const StoryDetail = () => {
   const nav = useNavigate();
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from;
-  const backTo = from === "/happy-place" ? "/happy-place" : "/";
+  const backTo = from === "/library" || from === "/my-stories" ? from : from === "/happy-place" ? "/my-stories" : "/";
   const { data: story, isLoading } = useQuery({ queryKey: ["story", id], queryFn: () => fetchStory(id) });
 
 

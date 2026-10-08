@@ -30,7 +30,7 @@ const Generating = () => {
 
   useEffect(() => {
     autoRedirectRef.current = setTimeout(() => {
-      nav("/happy-place");
+      nav("/my-stories");
     }, 30000);
     return () => clearAutoRedirect();
   }, [nav]);
@@ -84,7 +84,7 @@ const Generating = () => {
   useEffect(() => {
     if (!showFailure) return;
     clearAutoRedirect();
-    const t = setTimeout(() => nav("/happy-place", { replace: true }), 2000);
+    const t = setTimeout(() => nav("/my-stories", { replace: true }), 2000);
     return () => clearTimeout(t);
   }, [showFailure, nav]);
 
@@ -124,7 +124,7 @@ const Generating = () => {
               nav("/");
               return;
             }
-            nav("/happy-place");
+            nav("/my-stories");
           }}
           className="mt-8 rounded-full border border-border bg-card px-5 py-2 text-xs font-semibold text-primary-deep"
         >
