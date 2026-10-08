@@ -183,7 +183,7 @@ const Onboarding = () => {
           <X className="h-4 w-4" />
         </button>
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-3xl bg-secondary text-3xl">
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center text-3xl">
             <LuluLogo size={48} showWordmark={false} />
           </div>
           <h1 className="text-2xl font-extrabold text-foreground"><LuluLogo /></h1>

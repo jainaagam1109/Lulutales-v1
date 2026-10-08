@@ -104,7 +104,7 @@
   h1, h2, h3 {
     font-family: 'Quicksand', 'Noto Sans Devanagari', sans-serif;
     font-weight: 700;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
   }
   p { color: hsl(var(--body-foreground)); }
 }
@@ -126,13 +126,14 @@
     color: hsl(var(--foreground));
   }
   .lulu-logo svg { flex-shrink: 0; }
+  h1 .lulu-logo svg { display: none; }
   .lulu-logo circle { fill: hsl(var(--logo-violet)); }
   .lulu-logo path { stroke: hsl(var(--logo-white)); }
   .lulu-wordmark {
     font-family: 'Quicksand', sans-serif;
     font-size: 24px;
     font-weight: 700;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
     white-space: nowrap;
   }
   .lulu-wordmark span { font-weight: 500; }
@@ -174,7 +175,12 @@
   font-family: 'Quicksand', 'Noto Sans Devanagari', sans-serif;
   font-size: 18px;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
+}
+:is(.text-lg, .text-xl, .text-2xl).font-extrabold:not(button, a) {
+  font-family: 'Quicksand', 'Noto Sans Devanagari', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 :is(.font-bold, .font-extrabold):not(h1, h2, h3, .brand-title, .lulu-wordmark) {
   font-weight: 600;
