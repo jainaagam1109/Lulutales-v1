@@ -56,8 +56,9 @@ const App = () => (
             <Route path="/player/:id" element={<RequireAuth><Player /></RequireAuth>} />
             <Route path="/player/:id/:episodeNumber" element={<RequireAuth><Player /></RequireAuth>} />
             <Route path="/player/:id/:episodeNumber/read" element={<RequireAuth><EpisodeReader /></RequireAuth>} />
-            <Route path="/happy-place" element={<RequireAuth><HappyPlace /></RequireAuth>} />
-            <Route path="/library" element={<Navigate to="/happy-place" replace />} />
+            <Route path="/happy-place" element={<Navigate to="/my-stories" replace />} />
+            <Route path="/library" element={<RequireAuth><HappyPlace view="library" /></RequireAuth>} />
+            <Route path="/my-stories" element={<RequireAuth><HappyPlace view="mine" /></RequireAuth>} />
             <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
             <Route path="/profiles" element={<RequireAuth><KidsProfiles /></RequireAuth>} />
             <Route path="/universe/:id" element={<RequireAuth><Universe /></RequireAuth>} />

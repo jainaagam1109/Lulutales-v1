@@ -21,11 +21,12 @@ type MadeForFormat = "all" | "audio" | "text" | "saved";
 import { getThemeVisual } from "@/lib/themeEmoji";
 
 const StoryRowCard = ({ story, to }: { story: Story; to: string }) => {
+  const location = useLocation();
   const visual = getThemeVisual(story.theme);
   return (
     <Link
       to={to}
-      state={{ from: "/happy-place" }}
+      state={{ from: location.pathname }}
       className="flex w-44 flex-shrink-0 flex-col gap-2 rounded-2xl border border-border bg-card p-3 shadow-soft transition-colors hover:border-primary/40"
     >
       <div
@@ -91,12 +92,12 @@ const Row = ({
 };
 
 
-const HappyPlace = () => {
+const HappyPlace = ({ view }: { view: "library" | "mine" }) => {
   const location = useLocation();
   const profileId = typeof window !== "undefined" ? localStorage.getItem("lulutales_profile_id") : null;
   const childName = localStorage.getItem("lulutales_child_name");
   const hasActive = !!profileId;
-  const pageTitle = childName && hasActive ? `${childName}'s Happy Place` : "The Happy Place";
+  const pageTitle = view === "library" ? "Library" : "My stories";
   const curatedTitle = childName && hasActive ? `Personalised audio for ${childName}` : "Personalised audio stories";
 
   useEffect(() => {
@@ -296,13 +297,13 @@ const HappyPlace = () => {
 
 
       <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] space-y-6">
-        {savedVisible.length > 0 && (
+        {view === "mine" && savedVisible.length > 0 && (
           <section>
             <SectionHeader title="Favorites" />
             <Row stories={savedStories} universesMap={universesMap} />
           </section>
         )}
-        {hasActive && (
+        {view === "mine" && hasActive && (
           <section>
             <div className="relative mb-2 flex items-center justify-between px-5">
               <h2 className="text-sm font-bold text-foreground">
@@ -386,7 +387,7 @@ const HappyPlace = () => {
             )}
           </section>
         )}
-        {recommended.length > 0 && (
+        {view === "library" && recommended.length > 0 && (
           <section id="recommended" className="scroll-mt-4">
             <SectionHeader
               title={childName ? `Recommended for ${childName}` : "Recommended for you"}
@@ -399,15 +400,15 @@ const HappyPlace = () => {
             <Row stories={recommended} universesMap={universesMap} />
           </section>
         )}
-        <section>
+        {view === "library" && <section>
           <SectionHeader
             title="Story Worlds"
             subtitle="Recurring characters from LuluTales, each with their own story universe."
           />
           <StoryWorldsRow hideHeader />
-        </section>
+        </section>}
 
-        <section>
+        {view === "library" && <section>
           <SectionHeader
             title="All stories"
             subtitle={
@@ -464,7 +465,7 @@ const HappyPlace = () => {
               })}
             </div>
           )}
-        </section>
+        </section>}
 
 
       </main>

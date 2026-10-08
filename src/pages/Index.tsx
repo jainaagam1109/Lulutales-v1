@@ -155,7 +155,7 @@ const Index = () => {
             {hasChild && childName ? `Stories ${childName} might love` : "Stories to explore"}
           </h2>
           <button
-            onClick={() => nav("/happy-place#recommended")}
+            onClick={() => nav("/library")}
             className="text-[11px] font-bold text-primary-deep"
           >
             See all →
