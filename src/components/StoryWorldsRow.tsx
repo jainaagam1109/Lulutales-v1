@@ -6,14 +6,14 @@ import { SectionHeader } from "@/components/SectionHeader";
 import { ageDistance } from "@/lib/sortStories";
 
 const PALETTE = [
-  { bg: "linear-gradient(135deg, #FFD7A8 0%, #FFB066 100%)", text: "#7A3B00" },
-  { bg: "linear-gradient(135deg, #C7E9FF 0%, #6FB9F0 100%)", text: "#0B3C66" },
-  { bg: "linear-gradient(135deg, #D6F5DC 0%, #7FCE94 100%)", text: "#0E4A22" },
-  { bg: "linear-gradient(135deg, #FFD1E1 0%, #F26AA0 100%)", text: "#5B0E33" },
-  { bg: "linear-gradient(135deg, #E2D6FF 0%, #9B7BE8 100%)", text: "#2E1466" },
-  { bg: "linear-gradient(135deg, #FFF1A8 0%, #F2C84B 100%)", text: "#5A3D00" },
-  { bg: "linear-gradient(135deg, #B8F1EA 0%, #2DB6A6 100%)", text: "#0B3E39" },
-  { bg: "linear-gradient(135deg, #F5C7B8 0%, #D9745A 100%)", text: "#5A1B0A" },
+  "bg-tag-warm-bg text-tag-warm-fg",
+  "bg-tag-cool-bg text-tag-cool-fg",
+  "bg-tag-mint-bg text-tag-mint-fg",
+  "bg-accent text-accent-foreground",
+  "bg-secondary text-secondary-foreground",
+  "bg-tag-warm-bg text-tag-warm-fg",
+  "bg-tag-mint-bg text-tag-mint-fg",
+  "bg-tag-cool-bg text-tag-cool-fg",
 ];
 
 const hashString = (s: string): number => {
@@ -38,7 +38,7 @@ const UniverseCard = ({
   characterBible?: Record<string, any> | null;
 }) => {
   const paletteIdx = hashString(id + name) % PALETTE.length;
-  const { bg, text } = PALETTE[paletteIdx];
+  const palette = PALETTE[paletteIdx];
 
   const emoji =
     characterBible && typeof characterBible.emoji === "string"
@@ -52,21 +52,19 @@ const UniverseCard = ({
       className="flex w-40 flex-shrink-0 flex-col gap-2 rounded-2xl border border-border bg-card p-3 shadow-soft transition-colors hover:border-primary/40"
     >
       <div
-        className="flex h-24 items-center justify-center overflow-hidden rounded-xl"
-        style={{ background: bg }}
+        className={`flex h-24 items-center justify-center overflow-hidden rounded-xl ${palette}`}
       >
         {cover ? (
           <img src={cover} alt={name} className="h-full w-full object-cover" />
         ) : (
           <span
             className="text-2xl font-bold"
-            style={{ color: text }}
           >
             {initial}
           </span>
         )}
       </div>
-      <div className="line-clamp-1 text-xs font-bold text-foreground">{name}</div>
+      <div className="brand-title line-clamp-1 text-xs font-bold text-foreground">{name}</div>
       <div className="text-[10px] font-semibold text-muted-foreground">
         {count} {count === 1 ? "story" : "stories"}
       </div>

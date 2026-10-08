@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { LuluLogo } from "@/components/LuluLogo";
 
 // Typed shim for the beta supabase.auth.oauth namespace.
 type OAuthDetails = {
@@ -96,7 +97,7 @@ export default function OAuthConsent() {
     <main className="min-h-screen flex items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-glow">
         <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary text-xl">🎙️</div>
+          <div className="flex h-11 w-11 items-center justify-center"><LuluLogo size={44} showWordmark={false} /></div>
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               LuluTales

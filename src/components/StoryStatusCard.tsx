@@ -22,7 +22,7 @@ export const StoryStatusCard = ({ story, variant = "grid" }: Props) => {
           <div className="text-[10px] font-semibold text-primary-deep">
             In progress
           </div>
-          <div className="truncate text-sm font-bold text-foreground">{story.title || "Your story"}</div>
+          <div className="brand-title truncate text-sm font-bold text-foreground">{story.title || "Your story"}</div>
           <div className="text-[10px] text-muted-foreground">Preparing your story…</div>
         </div>
       </Link>
@@ -41,7 +41,7 @@ export const StoryStatusCard = ({ story, variant = "grid" }: Props) => {
         <div className="text-[10px] font-semibold text-primary-deep">
           In progress
         </div>
-        <div className="line-clamp-2 text-xs font-bold leading-snug text-foreground">
+        <div className="brand-title line-clamp-2 text-xs font-bold leading-snug text-foreground">
           {story.title || "Your story"}
         </div>
         <div className="text-[10px] text-muted-foreground">Preparing your story…</div>
