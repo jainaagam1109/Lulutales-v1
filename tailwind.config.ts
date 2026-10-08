@@ -13,7 +13,13 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', '"Noto Sans Devanagari"', "sans-serif"],
+        heading: ['"Quicksand"', '"Noto Sans Devanagari"', "sans-serif"],
+      },
       colors: {
+        "body-foreground": "hsl(var(--body-foreground))",
+        "primary-hover": "hsl(var(--primary-hover))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

@@ -99,7 +99,7 @@ export const StoryCard = ({
             {badge && <TagChip label={badge.label} variant={badge.variant} />}
             <span className="inline-block rounded-full border border-border bg-muted/60 px-2 py-0.5 text-[9px] font-semibold text-muted-foreground">{languageLabel(story)}</span>
           </div>
-          <div className="mt-1 truncate text-sm font-bold text-foreground">{story.title}</div>
+          <div className="brand-title mt-1 truncate text-sm font-bold text-foreground">{story.title}</div>
         </div>
       </Link>
     );
@@ -130,7 +130,7 @@ export const StoryCard = ({
               {characterName}
             </span>
           ) : null}
-          <div className="line-clamp-2 min-h-[2.25rem] text-xs font-bold leading-snug text-foreground">
+          <div className="brand-title line-clamp-2 min-h-[2.25rem] text-xs font-bold leading-snug text-foreground">
             {story.title}
           </div>
           {(bucketCardName(story) || badge) && (
@@ -148,7 +148,7 @@ export const StoryCard = ({
             {badge && <TagChip label={badge.label} variant={badge.variant} />}
             <span className="inline-block rounded-full border border-border bg-muted/60 px-2 py-0.5 text-[9px] font-semibold text-muted-foreground">{languageLabel(story)}</span>
           </div>
-          <div className="line-clamp-2 min-h-[2.25rem] text-xs font-bold leading-snug text-foreground">{story.title}</div>
+          <div className="brand-title line-clamp-2 min-h-[2.25rem] text-xs font-bold leading-snug text-foreground">{story.title}</div>
         </div>
       )}
     </Link>

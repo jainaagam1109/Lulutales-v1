@@ -4,6 +4,8 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneShell } from "@/components/PhoneShell";
+import { LuluLogo } from "@/components/LuluLogo";
+import { Button } from "@/components/ui/button";
 
 const schema = z
   .object({
@@ -50,10 +52,10 @@ const ResetPassword = () => {
     <PhoneShell>
       <main className="flex-1 px-6 pb-10 pt-12">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-3xl bg-secondary text-3xl">
-            🔒
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center text-3xl">
+            <LuluLogo size={48} showWordmark={false} />
           </div>
-          <h1 className="text-2xl font-extrabold text-foreground">LuluTales</h1>
+          <h1 className="text-2xl font-extrabold text-foreground"><LuluLogo /></h1>
           <p className="mt-1 text-sm text-muted-foreground">Set a new password</p>
         </div>
 
@@ -87,13 +89,13 @@ const ResetPassword = () => {
                 placeholder="••••••••"
               />
             </label>
-            <button
+            <Button
               onClick={submit}
               disabled={busy}
               className="w-full rounded-full bg-gradient-primary py-3.5 text-sm font-bold text-primary-foreground shadow-glow disabled:opacity-50"
             >
               {busy ? "Please wait…" : "Update password"}
-            </button>
+            </Button>
           </>
         )}
       </main>

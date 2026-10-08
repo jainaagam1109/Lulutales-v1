@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronRight, Lock, Headphones, Moon, BookOpen } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { PhoneShell } from "@/components/PhoneShell";
+import { LuluLogo } from "@/components/LuluLogo";
 import { BottomNav } from "@/components/BottomNav";
 import { PageHeader } from "@/components/PageHeader";
 import { fetchStoriesForProfile } from "@/lib/stories";
@@ -34,7 +35,7 @@ const MagicHub = () => {
       title: "Generate audio story",
       desc: "Narrated aloud for your child to listen and enjoy on their own.",
       formatHint: "🎧 Press play — no reading needed · ~5–15 min",
-      emoji: "🎙",
+      emoji: <LuluLogo size={32} showWordmark={false} />,
       iconBg: "bg-tag-warm-bg text-tag-warm-fg",
       tag: "Beta",
       tagClass: "bg-tag-warm-bg text-tag-warm-fg border-tag-warm-border",
@@ -98,8 +99,8 @@ const MagicHub = () => {
                   {emoji ? emoji : <Lock className="h-6 w-6" />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <div className="text-sm font-extrabold text-foreground">{title}</div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="brand-title text-sm font-extrabold text-foreground">{title}</div>
                     <span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold ${tagClass}`}>
                       {tag}
                     </span>

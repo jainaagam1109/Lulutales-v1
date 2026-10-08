@@ -4,60 +4,64 @@
 
 @layer base {
   :root {
-    /* Lulutales palette — soft, playful, kid-friendly */
-    --background: 210 100% 97%;
-    --foreground: 220 45% 22%;
+    /* LuluTales — Paper, Night Ink and Lulu Violet */
+    --background: 252 45% 98%;
+    --foreground: 251 27% 20%;
+    --body-foreground: 250 21% 28%;
 
     --surface: 0 0% 100%;
-    --surface-soft: 215 100% 98%;
+    --surface-soft: 252 45% 98%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 45% 22%;
+    --card-foreground: 251 27% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 45% 22%;
+    --popover-foreground: 251 27% 20%;
 
-    /* Primary periwinkle blue */
-    --primary: 224 100% 74%;
+    /* Lulu Violet */
+    --primary: 247 63% 57%;
     --primary-foreground: 0 0% 100%;
-    --primary-deep: 224 45% 47%;
+    --primary-deep: 246 53% 45%;
+    --primary-hover: 246 53% 45%;
+    --logo-violet: 247 63% 57%;
+    --logo-white: 0 0% 100%;
 
-    /* Mint accent */
-    --accent: 175 55% 66%;
-    --accent-foreground: 220 45% 22%;
+    /* Lamplight and Daydream */
+    --accent: 31 76% 94%;
+    --accent-foreground: 251 27% 20%;
 
-    --secondary: 220 60% 96%;
-    --secondary-foreground: 224 45% 47%;
+    --secondary: 208 70% 95%;
+    --secondary-foreground: 251 27% 20%;
 
-    --muted: 215 50% 95%;
-    --muted-foreground: 218 22% 50%;
+    --muted: 252 45% 96%;
+    --muted-foreground: 249 13% 39%;
 
-    --destructive: 0 75% 60%;
+    --destructive: 4 76% 40%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 218 60% 92%;
-    --input: 218 60% 92%;
-    --ring: 224 100% 74%;
+    --border: 254 28% 91%;
+    --input: 254 28% 91%;
+    --ring: 247 63% 57%;
 
     /* Tag colors */
-    --tag-warm-bg: 32 100% 94%;
-    --tag-warm-fg: 30 85% 40%;
-    --tag-warm-border: 35 100% 82%;
-    --tag-cool-bg: 220 100% 96%;
-    --tag-cool-fg: 224 45% 47%;
-    --tag-cool-border: 220 80% 88%;
-    --tag-mint-bg: 155 60% 92%;
-    --tag-mint-fg: 155 65% 27%;
-    --tag-mint-border: 155 55% 78%;
+    --tag-warm-bg: 31 76% 94%;
+    --tag-warm-fg: 251 27% 20%;
+    --tag-warm-border: var(--border);
+    --tag-cool-bg: 208 70% 95%;
+    --tag-cool-fg: 251 27% 20%;
+    --tag-cool-border: var(--border);
+    --tag-mint-bg: 154 39% 93%;
+    --tag-mint-fg: 157 55% 27%;
+    --tag-mint-border: var(--border);
 
     /* Gradients */
-    --gradient-bg: linear-gradient(180deg, hsl(210 100% 95%) 0%, hsl(215 100% 98%) 45%, hsl(30 100% 96%) 100%);
-    --gradient-primary: linear-gradient(135deg, hsl(224 100% 74%) 0%, hsl(175 55% 66%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(40 100% 99%) 0%, hsl(210 100% 98%) 100%);
+    --gradient-bg: hsl(var(--background));
+    --gradient-primary: linear-gradient(hsl(var(--primary)), hsl(var(--primary)));
+    --gradient-card: hsl(var(--card));
 
     /* Shadows */
-    --shadow-soft: 0 8px 24px -8px hsl(224 60% 70% / 0.25);
-    --shadow-glow: 0 10px 24px -6px hsl(224 100% 74% / 0.4);
+    --shadow-soft: 0 8px 24px -10px hsl(251 27% 20% / 0.18);
+    --shadow-glow: 0 10px 24px -8px hsl(247 63% 57% / 0.35);
 
     --radius: 1rem;
   }
@@ -65,13 +69,24 @@
   .dark {
     --background: 220 45% 8%;
     --foreground: 210 40% 95%;
+    --body-foreground: 210 25% 85%;
+    --surface: 220 40% 12%;
+    --surface-soft: 220 45% 8%;
     --card: 220 40% 12%;
     --card-foreground: 210 40% 95%;
-    --primary: 224 100% 74%;
+    --popover: 220 40% 12%;
+    --popover-foreground: 210 40% 95%;
+    --primary: 247 63% 57%;
     --primary-foreground: 0 0% 100%;
     --border: 220 30% 20%;
     --input: 220 30% 20%;
-    --ring: 224 100% 74%;
+    --secondary: 220 30% 18%;
+    --secondary-foreground: 210 40% 95%;
+    --muted: 220 30% 18%;
+    --muted-foreground: 249 13% 72%;
+    --accent: 31 25% 18%;
+    --accent-foreground: 210 40% 95%;
+    --ring: 247 63% 57%;
   }
 }
 
@@ -83,13 +98,19 @@
     @apply text-foreground;
     background: var(--gradient-bg);
     background-attachment: fixed;
-    font-family: 'Nunito', 'Inter', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif;
     min-height: 100vh;
   }
+  h1, h2, h3 {
+    font-family: 'Quicksand', 'Noto Sans Devanagari', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+  p { color: hsl(var(--body-foreground)); }
 }
 
 @layer utilities {
-  .bg-gradient-primary { background: var(--gradient-primary); }
+  .bg-gradient-primary { background: hsl(var(--primary)); }
   .bg-gradient-card { background: var(--gradient-card); }
   .shadow-soft { box-shadow: var(--shadow-soft); }
   .shadow-glow { box-shadow: var(--shadow-glow); }
@@ -98,6 +119,24 @@
 }
 
 @layer components {
+  .lulu-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: hsl(var(--foreground));
+  }
+  .lulu-logo svg { flex-shrink: 0; }
+  h1 .lulu-logo svg { display: none; }
+  .lulu-logo circle { fill: hsl(var(--logo-violet)); }
+  .lulu-logo path { stroke: hsl(var(--logo-white)); }
+  .lulu-wordmark {
+    font-family: 'Quicksand', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+  .lulu-wordmark span { font-weight: 500; }
   .seek-range {
     -webkit-appearance: none;
     appearance: none;
@@ -130,3 +169,36 @@
   }
   .seek-range:disabled { opacity: 0.5; cursor: not-allowed; }
 }
+
+/* Keep legacy screens on the shared brand without changing their controls. */
+h1, h2, h3 {
+  font-family: 'Quicksand', 'Noto Sans Devanagari', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+:is(h1, h2, h3):is(.text-xs, .text-sm, .text-base), .brand-title {
+  font-family: 'Quicksand', 'Noto Sans Devanagari', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+:is(.text-lg, .text-xl, .text-2xl).font-extrabold:not(button, a) {
+  font-family: 'Quicksand', 'Noto Sans Devanagari', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+:is(.font-bold, .font-extrabold):not(h1, h2, h3, .brand-title, .lulu-wordmark) {
+  font-weight: 600;
+}
+p.text-muted-foreground { color: hsl(var(--body-foreground)); }
+:is(button, a):is(.bg-gradient-primary, .bg-primary):not([role="tab"], [role="switch"]),
+button.bg-card.rounded-full.border {
+  min-height: 48px;
+  border-radius: 9999px;
+  font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif;
+  font-weight: 600;
+}
+:is(button, a):is(.bg-gradient-primary, .bg-primary):hover {
+  background: hsl(var(--primary-hover));
+}
+button.bg-card.rounded-full.border { border-width: 1.5px; }

@@ -5,6 +5,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { PhoneShell } from "@/components/PhoneShell";
+import { LuluLogo } from "@/components/LuluLogo";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { loadActiveProfileForUser } from "@/lib/activeProfile";
@@ -181,10 +183,10 @@ const Onboarding = () => {
           <X className="h-4 w-4" />
         </button>
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-3xl bg-secondary text-3xl">
-            🎙️
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center text-3xl">
+            <LuluLogo size={48} showWordmark={false} />
           </div>
-          <h1 className="text-2xl font-extrabold text-foreground">LuluTales</h1>
+          <h1 className="text-2xl font-extrabold text-foreground"><LuluLogo /></h1>
           <p className="mt-1 text-sm text-muted-foreground">Audio stories for curious kids</p>
         </div>
 
@@ -245,13 +247,13 @@ const Onboarding = () => {
         className="border-t border-border bg-card px-6 pt-3"
         style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
       >
-        <button
+        <Button
           onClick={submit}
           disabled={loading}
           className="w-full rounded-full bg-gradient-primary py-3.5 text-sm font-bold text-primary-foreground shadow-glow transition-opacity disabled:opacity-50"
         >
           {loading ? "Saving…" : isAddMode ? "Add child →" : "Continue →"}
-        </button>
+        </Button>
       </div>
     </PhoneShell>
   );
