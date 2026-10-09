@@ -25,6 +25,7 @@ import AdminUpload from "./pages/AdminUpload";
 import AdminHealth from "./pages/AdminHealth";
 import { RequireAdmin } from "@/components/RequireAdmin";
 import { RouteTracker } from "@/components/RouteTracker";
+import { LookApplier } from "@/components/LookApplier";
 
 import Insights from "./pages/Insights";
 import MakeStory from "./pages/MakeStory";
@@ -44,6 +45,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <RouteTracker />
+          <LookApplier />
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/oauth/consent" element={<OAuthConsent />} />

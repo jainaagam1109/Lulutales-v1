@@ -255,7 +255,7 @@ const KidsProfiles = () => {
 
   return (
     <PhoneShell withNav>
-      <PageHeader title="Kids' profiles" />
+      <PageHeader title="Children" />
 
       <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] space-y-3">
         {kids.map((k) => {

@@ -5,9 +5,9 @@ import { useFamily, formatDay, nextMonthStart } from "@/lib/family";
 /** A little Lulu face that peeks out of the corner of the big violet card. */
 const LuluPeek = () => (
   <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true" className="pointer-events-none absolute -bottom-7 -right-5 opacity-95">
-    <circle cx="60" cy="60" r="56" fill="hsl(var(--accent))" />
-    <path d="M38 52q7-8 14 0M68 52q7-8 14 0" fill="none" stroke="hsl(var(--foreground))" strokeWidth="4.5" strokeLinecap="round" />
-    <path d="M46 66v4a14 14 0 0 0 28 0v-4" fill="none" stroke="hsl(var(--foreground))" strokeWidth="4.5" strokeLinecap="round" />
+    <circle cx="60" cy="60" r="56" fill="hsl(var(--lamplight))" />
+    <path d="M38 52q7-8 14 0M68 52q7-8 14 0" fill="none" stroke="hsl(var(--lamplight-foreground))" strokeWidth="4.5" strokeLinecap="round" />
+    <path d="M46 66v4a14 14 0 0 0 28 0v-4" fill="none" stroke="hsl(var(--lamplight-foreground))" strokeWidth="4.5" strokeLinecap="round" />
   </svg>
 );
 
@@ -105,7 +105,7 @@ export const MakeStoryCard = ({
           <div className="brand-title text-white">New story for {name}</div>
           {left && <div className="text-xs text-white/80">{left.replace(" this month", "")}</div>}
         </div>
-        <span className="inline-flex min-h-10 items-center gap-1 rounded-full bg-accent px-4 text-sm font-semibold text-foreground">
+        <span className="inline-flex min-h-10 items-center gap-1 rounded-full bg-[hsl(var(--lamplight))] px-4 text-sm font-semibold text-[hsl(var(--lamplight-foreground))]">
           <Plus className="h-4 w-4" /> Make
         </span>
       </Link>
@@ -128,7 +128,7 @@ export const MakeStoryCard = ({
           ? "Pick a moment they’re facing. It takes about 5 minutes."
           : "Pick a feeling or a moment. We write it just for them."}
       </p>
-      <span className="relative mt-1 inline-flex min-h-[46px] items-center self-start rounded-full bg-accent px-[22px] font-semibold text-foreground">
+      <span className="relative mt-1 inline-flex min-h-[46px] items-center self-start rounded-full bg-[hsl(var(--lamplight))] px-[22px] font-semibold text-[hsl(var(--lamplight-foreground))]">
         {firstStory ? "Make the first story" : "Make a story"}
       </span>
     </Link>

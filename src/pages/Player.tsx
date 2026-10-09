@@ -33,6 +33,7 @@ import {
 } from "@/lib/lastStory";
 
 import { resolveInitialRate, setProfilePlaybackRate } from "@/lib/playbackRate";
+import { localSleepMinutes } from "@/lib/parentSettings";
 
 const fetchUniverse = async (universeId: string | null | undefined): Promise<string | null> => {
   if (!universeId) return null;
@@ -593,6 +594,41 @@ const Player = () => {
     }
   };
 
+  // ---- sleep timer (set in Parents) ----------------------------------------
+  // Starts when listening starts; fades the voice out over the last 10 seconds, then stops.
+  const sleepEndRef = useRef<number | null>(null);
+  const [sleepLeft, setSleepLeft] = useState<number | null>(null);
+  useEffect(() => {
+    if (!playing) return;
+    const mins = localSleepMinutes();
+    if (!mins) {
+      sleepEndRef.current = null;
+      setSleepLeft(null);
+      return;
+    }
+    if (!sleepEndRef.current) sleepEndRef.current = Date.now() + mins * 60_000;
+    const iv = setInterval(() => {
+      const a = audioRef.current;
+      const end = sleepEndRef.current;
+      if (!a || !end) return;
+      const left = end - Date.now();
+      setSleepLeft(Math.max(0, Math.ceil(left / 60_000)));
+      if (left <= 0) {
+        a.pause();
+        a.volume = 1;
+        setPlaying(false);
+        setCountdown(null);
+        stopAutoplay();
+        sleepEndRef.current = null;
+        setSleepLeft(0);
+      } else if (left < 10_000) {
+        a.volume = Math.max(0, left / 10_000);
+      }
+    }, 500);
+    return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playing]);
+
   const skip = (delta: number) => {
     const a = audioRef.current;
     if (!a) return;
@@ -761,6 +797,12 @@ const Player = () => {
                 <Flag className="h-5 w-5" />Report
               </button>
             </div>
+
+            {sleepLeft !== null && (
+              <p className="mt-3 text-center text-xs text-muted-foreground">
+                {sleepLeft > 0 ? `Sleep timer · stops in ${sleepLeft} min` : "Sleep timer ended. Goodnight!"}
+              </p>
+            )}
 
             {!audioUrl && current && <p className="mt-4 text-center text-sm text-muted-foreground">The audio for this episode isn’t ready yet.</p>}
 

@@ -29,6 +29,9 @@
     /* Lamplight and Daydream */
     --accent: 31 76% 94%;
     --accent-foreground: 251 27% 20%;
+    /* Lamplight cream that stays the same in light and dark looks (buttons on the violet card) */
+    --lamplight: 31 76% 94%;
+    --lamplight-foreground: 251 27% 20%;
 
     --secondary: 208 70% 95%;
     --secondary-foreground: 251 27% 20%;
