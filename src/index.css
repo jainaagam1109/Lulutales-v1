@@ -178,9 +178,9 @@ h1, h2, h3 {
 }
 :is(h1, h2, h3):is(.text-xs, .text-sm, .text-base), .brand-title {
   font-family: 'Quicksand', 'Noto Sans Devanagari', sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.25;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0;
 }
 :is(.text-lg, .text-xl, .text-2xl).font-extrabold:not(button, a) {
