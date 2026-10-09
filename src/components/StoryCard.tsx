@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import type { Story } from "@/lib/stories";
 import { getStoryStatus } from "@/lib/storyStatus";
-import { TagChip } from "./TagChip";
+import { SkillPicture, skillKeyFor } from "./SkillPicture";
 import { StoryStatusCard } from "./StoryStatusCard";
 import { BUCKETS, type BucketKey } from "@/lib/themeCatalog";
 
@@ -27,11 +27,11 @@ const realDurationSeconds = (story: Story): number | null => {
 
 const formatBadgeFor = (story: Story): { label: string; variant: "mint" | "warm" } | null => {
   const t = story.story_type;
-  if (t === "bedtime_text") return { label: "📖 Read aloud", variant: "warm" };
+  if (t === "bedtime_text") return { label: "Read aloud", variant: "warm" };
   if (t === "personalised_audio" || t === "pre_recorded") {
     const secs = realDurationSeconds(story);
     const mins = secs ? Math.max(1, Math.round(secs / 60)) : null;
-    return { label: mins ? `🎧 Listen · ~${mins} min` : "🎧 Listen", variant: "mint" };
+    return { label: mins ? `Listen · ${mins} min` : "Listen", variant: "mint" };
   }
   return null;
 };
@@ -42,23 +42,16 @@ export const storyLanguage = (story: Story): "english" | "hindi" => {
   return lang === "hindi" ? "hindi" : "english";
 };
 
-const languageLabel = (story: Story) => (storyLanguage(story) === "hindi" ? "हिंदी" : "English");
 
-const TILE_TINTS = [
-  "hsl(var(--tag-warm-bg))",
-  "hsl(var(--tag-cool-bg))",
-  "hsl(var(--tag-mint-bg))",
-  "hsl(var(--secondary))",
-  "hsl(var(--primary) / 0.18)",
-  "hsl(var(--accent) / 0.22)",
-];
 
-const hashId = (s: string): number => {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
-  return Math.abs(h);
+const metaLine = (story: Story, badge: { label: string } | null) => {
+  const parts: string[] = [];
+  const skill = bucketCardName(story);
+  if (skill) parts.push(skill);
+  if (badge) parts.push(badge.label.replace(/^[^A-Za-z]+/, ""));
+  if (storyLanguage(story) === "hindi") parts.push("हिंदी");
+  return parts.join(" · ");
 };
-
 
 export const StoryCard = ({
   story,
@@ -80,77 +73,44 @@ export const StoryCard = ({
 
   const to = story.story_type === "bedtime_text" ? `/bedtime/${story.id}` : `/story/${story.id}`;
   const state = { from: location.pathname };
-
   const badge = formatBadgeFor(story);
+  const skill = skillKeyFor(story as any);
+  const isType3 = !!(story as any).universe_id;
+  const characterName = isType3 ? (universeName ?? null) : null;
 
   if (variant === "row") {
     return (
       <Link
         to={to}
         state={state}
-        className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-soft transition-colors hover:border-primary/40"
+        className="flex items-center gap-3 rounded-[18px] border border-border bg-card p-2.5 transition-colors hover:border-primary/40"
       >
-        <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-card text-3xl">
-          {story.thumbnail ?? "📖"}
+        <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl">
+          <SkillPicture skill={skill} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1">
-            {(() => { const l = bucketCardName(story); return l && <TagChip label={l} />; })()}
-            {badge && <TagChip label={badge.label} variant={badge.variant} />}
-            <span className="inline-block rounded-full border border-border bg-muted/60 px-2 py-0.5 text-[9px] font-semibold text-muted-foreground">{languageLabel(story)}</span>
-          </div>
-          <div className="brand-title mt-1 truncate text-sm font-bold text-foreground">{story.title}</div>
+          {characterName && <div className="text-[11px] font-semibold text-primary">{characterName}</div>}
+          <div className="brand-title line-clamp-2 text-sm font-bold text-foreground">{story.title}</div>
+          <div className="mt-0.5 truncate text-xs text-muted-foreground">{metaLine(story, badge)}</div>
         </div>
       </Link>
     );
   }
 
-  // Type 3 = character-universe stories. Detected via universe_id.
-  const isType3 = !!(story as any).universe_id;
-  const characterName = isType3 ? (universeName ?? null) : null;
-
-  const tileBg = TILE_TINTS[hashId(story.id) % TILE_TINTS.length];
-
   return (
     <Link
       to={to}
       state={state}
-      className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition-colors hover:border-primary/40"
+      className="flex h-full flex-col overflow-hidden rounded-[18px] border border-border bg-card transition-colors hover:border-primary/40"
     >
-      <div
-        className="flex h-20 items-center justify-center text-4xl"
-        style={{ background: tileBg }}
-      >
-        {story.thumbnail ?? "📖"}
+      <div className="h-[104px] w-full overflow-hidden">
+        <SkillPicture skill={skill} />
       </div>
-      {isType3 ? (
-        <div className="flex min-w-0 flex-1 flex-col space-y-1.5 p-3">
-          {characterName ? (
-            <span className="text-[10px] font-semibold text-primary-deep">
-              {characterName}
-            </span>
-          ) : null}
-          <div className="brand-title line-clamp-2 min-h-[2.25rem] text-xs font-bold leading-snug text-foreground">
-            {story.title}
-          </div>
-          {(bucketCardName(story) || badge) && (
-            <div className="flex flex-wrap items-center gap-1 pt-0.5">
-              {bucketCardName(story) && <TagChip label={bucketCardName(story)!} />}
-              {badge && <TagChip label={badge.label} variant={badge.variant} />}
-            <span className="inline-block rounded-full border border-border bg-muted/60 px-2 py-0.5 text-[9px] font-semibold text-muted-foreground">{languageLabel(story)}</span>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="flex min-w-0 flex-1 flex-col space-y-1 p-3">
-          <div className="flex flex-wrap items-center gap-1">
-            {(() => { const l = bucketCardName(story); return l && <TagChip label={l} />; })()}
-            {badge && <TagChip label={badge.label} variant={badge.variant} />}
-            <span className="inline-block rounded-full border border-border bg-muted/60 px-2 py-0.5 text-[9px] font-semibold text-muted-foreground">{languageLabel(story)}</span>
-          </div>
-          <div className="brand-title line-clamp-2 min-h-[2.25rem] text-xs font-bold leading-snug text-foreground">{story.title}</div>
-        </div>
-      )}
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5 px-3 pb-3 pt-2.5">
+        {characterName && <span className="text-[11px] font-semibold text-primary">{characterName}</span>}
+        <div className="brand-title line-clamp-2 text-xs font-bold leading-snug text-foreground">{story.title}</div>
+        <div className="truncate text-xs text-muted-foreground">{metaLine(story, badge)}</div>
+      </div>
     </Link>
   );
 };

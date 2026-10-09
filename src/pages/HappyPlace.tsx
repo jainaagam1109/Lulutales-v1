@@ -1,96 +1,40 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
-import { Search, ChevronDown, ChevronUp, Check } from "lucide-react";
-import { fetchStories, fetchStoriesForProfile, fetchUniverses, fetchSavedStories, fetchPlayCounts, type Story, type Universe } from "@/lib/stories";
+import { Search } from "lucide-react";
+import { fetchStories, fetchStoriesForProfile, fetchUniverses, fetchSavedStories, fetchPlayCounts, type Story } from "@/lib/stories";
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { SectionHeader } from "@/components/SectionHeader";
-import { PageHeader } from "@/components/PageHeader";
-import { TagChip } from "@/components/TagChip";
+import { ProfileSwitcherChip } from "@/components/ProfileAvatarButton";
 import { StoryCard, storyLanguage } from "@/components/StoryCard";
+import { StoryShelf } from "@/components/StoryShelf";
 import { StoryWorldsRow } from "@/components/StoryWorldsRow";
+import { MakeStoryCard } from "@/components/MakeStoryCard";
 import { getStoryStatus, isRenderable } from "@/lib/storyStatus";
 import { fetchCompletedThemes } from "@/lib/analytics";
 import { sortStories } from "@/lib/sortStories";
-import { BUCKETS, type BucketKey } from "@/lib/themeCatalog";
+import { BUCKETS, SKILL_ORDER, type BucketKey } from "@/lib/themeCatalog";
+import { useFamily } from "@/lib/family";
 
 type MadeForFormat = "all" | "audio" | "text" | "saved";
 
-import { getThemeVisual } from "@/lib/themeEmoji";
-
-const StoryRowCard = ({ story, to }: { story: Story; to: string }) => {
-  const location = useLocation();
-  const visual = getThemeVisual(story.theme);
-  return (
-    <Link
-      to={to}
-      state={{ from: location.pathname }}
-      className="flex w-44 flex-shrink-0 flex-col gap-2 rounded-2xl border border-border bg-card p-3 shadow-soft transition-colors hover:border-primary/40"
-    >
-      <div
-        className="flex h-20 items-center justify-center rounded-xl text-4xl"
-        style={{ backgroundColor: visual.bg }}
-      >
-        {visual.emoji}
-      </div>
-      {story.theme && <TagChip label={story.theme} />}
-      <div className="line-clamp-2 min-h-[2.25rem] text-xs font-bold leading-snug text-foreground">
-        {story.title}
-      </div>
-    </Link>
-  );
-};
-
-const CreateCtaCard = () => (
-  <Link
-    to="/magic-hub"
-    className="flex h-32 w-44 flex-shrink-0 flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-primary/40 bg-card/60 p-3 text-center transition-colors hover:border-primary"
+/** Small rounded filter chip. */
+const Chip = ({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-pressed={on}
+    className={`inline-flex min-h-9 flex-shrink-0 items-center whitespace-nowrap rounded-full border px-3.5 text-sm font-semibold transition-colors ${
+      on ? "border-foreground bg-foreground text-background" : "border-border bg-card text-foreground hover:border-primary/40"
+    }`}
   >
-    <div className="text-2xl">✨</div>
-    <div className="text-[11px] font-bold leading-snug text-foreground">
-      You haven't created a story yet
-    </div>
-    <div className="text-[11px] font-semibold text-primary-deep">Create one</div>
-  </Link>
+    {children}
+  </button>
 );
 
-
-const Row = ({
-  stories,
-  emptyVariant = "create",
-  universesMap,
-}: {
-  stories: Story[];
-  emptyVariant?: "create" | "coming-soon";
-  universesMap?: Map<string, string>;
-}) => {
-  const renderable = stories.filter(isRenderable);
-  if (renderable.length === 0) {
-    if (emptyVariant === "coming-soon") {
-      return (
-        <div className="flex h-32 w-44 flex-shrink-0 items-center justify-center rounded-2xl border border-dashed border-border bg-card/60 text-center text-[11px] font-semibold text-muted-foreground">
-          Coming soon
-        </div>
-      );
-    }
-    return <CreateCtaCard />;
-  }
-  return (
-    <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
-      {renderable.map((s) => {
-        const universeName = universesMap?.get((s as any).universe_id) ?? null;
-        return (
-          <div key={s.id} className="w-44 flex-shrink-0">
-            <StoryCard story={s} universeName={universeName} />
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
+const selectCls =
+  "min-h-9 rounded-full border border-border bg-card px-3 text-sm font-semibold text-foreground focus:border-primary focus:outline-none";
 
 const HappyPlace = ({ view }: { view: "library" | "mine" }) => {
   const location = useLocation();
@@ -98,7 +42,7 @@ const HappyPlace = ({ view }: { view: "library" | "mine" }) => {
   const childName = localStorage.getItem("lulutales_child_name");
   const hasActive = !!profileId;
   const pageTitle = view === "library" ? "Library" : "My stories";
-  const curatedTitle = childName && hasActive ? `Personalised audio for ${childName}` : "Personalised audio stories";
+  const fam = useFamily();
 
   useEffect(() => {
     if (location.hash !== "#recommended") return;
@@ -147,21 +91,6 @@ const HappyPlace = ({ view }: { view: "library" | "mine" }) => {
   const [query, setQuery] = useState("");
 
   const [madeForFormat, setMadeForFormat] = useState<MadeForFormat>("all");
-  const [menuOpen, setMenuOpen] = useState(false);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handler = (e: MouseEvent) => {
-      const t = e.target as Node;
-      if (menuRef.current?.contains(t)) return;
-      if (triggerRef.current?.contains(t)) return;
-      setMenuOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [menuOpen]);
 
   const matches = (s: Story) => {
     if (!query) return true;
@@ -225,7 +154,6 @@ const HappyPlace = ({ view }: { view: "library" | "mine" }) => {
     storyRoom.forEach((x) => x.age_group && s.add(String(x.age_group)));
     return Array.from(s).sort();
   }, [storyRoom]);
-  const allBucketOptions = useMemo(() => Object.values(BUCKETS), []);
 
   const storyRoomFiltered = useMemo(
     () =>
@@ -265,7 +193,7 @@ const HappyPlace = ({ view }: { view: "library" | "mine" }) => {
   const formatLabels: Record<MadeForFormat, string> = {
     all: "All",
     audio: "Listen",
-    text: "Read",
+    text: "Read aloud",
     saved: "Saved",
   };
 
@@ -281,193 +209,147 @@ const HappyPlace = ({ view }: { view: "library" | "mine" }) => {
   }, [storyRoom, childAge, playCounts, completedThemes]);
 
 
+  const savedNotMine = savedVisible.filter((s) => s.story_type === "pre_recorded");
+  const name = childName || "your child";
+  const waiting = fam.status === "waiting";
+
   return (
     <PhoneShell withNav>
-      <PageHeader showBack={false} title={pageTitle}>
-        <div className="mt-4 flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 shadow-soft">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search stories"
-            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-          />
-        </div>
-      </PageHeader>
-
-
-      <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] space-y-6">
-        {view === "mine" && savedVisible.length > 0 && (
-          <section>
-            <SectionHeader title="Favorites" />
-            <Row stories={savedStories} universesMap={universesMap} />
-          </section>
-        )}
-        {view === "mine" && hasActive && (
-          <section>
-            <div className="relative mb-2 flex items-center justify-between px-5">
-              <h2 className="text-sm font-bold text-foreground">
-                {childName ? `Made for ${childName}` : "Made for you"}
-              </h2>
-              <button
-                ref={triggerRef}
-                type="button"
-                aria-haspopup="true"
-                aria-expanded={menuOpen}
-                onClick={() => setMenuOpen((o) => !o)}
-                className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[11px] font-bold transition-colors ${
-                  menuOpen || madeForFormat !== "all"
-                    ? "border-primary/40 bg-primary/10 text-primary-deep"
-                    : "border-border bg-card text-foreground"
-                }`}
-              >
-                <span>{formatLabels[madeForFormat]}</span>
-                {menuOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-              </button>
-              {menuOpen && (
-                <div
-                  ref={menuRef}
-                  role="menu"
-                  className="absolute right-5 top-full z-30 mt-1 w-44 overflow-hidden rounded-xl border border-border bg-card shadow-lg"
-                >
-                  {(["all", "audio", "text", "saved"] as MadeForFormat[]).map((opt) => {
-                    const selected = madeForFormat === opt;
-                    return (
-                      <button
-                        key={opt}
-                        type="button"
-                        role="menuitem"
-                        tabIndex={0}
-                        onClick={() => {
-                          setMadeForFormat(opt);
-                          setMenuOpen(false);
-                        }}
-                        className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-xs font-semibold transition-colors hover:bg-muted ${
-                          selected ? "text-primary-deep" : "text-foreground"
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          {selected ? <Check className="h-3.5 w-3.5" /> : <span className="inline-block w-3.5" />}
-                          <span>{formatLabels[opt]}</span>
-                        </span>
-                        <span className="text-muted-foreground">{madeForCounts[opt]}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-            {hasActive && (
-              <p className="mb-2 px-5 text-xs text-muted-foreground">
-                {childName
-                  ? `Stories personalised especially for ${childName}.`
-                  : "Stories personalised especially for your child."}
-              </p>
-            )}
-            {madeForChild.length === 0 ? (
-              madeForFormat === "saved" ? (
-                <div className="rounded-2xl border border-dashed border-border bg-card/60 p-4 text-sm text-muted-foreground">
-                  No saved stories yet — tap the bookmark on any story to keep it here.
-                </div>
-              ) : (
-                <div className="flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-card/60 p-4">
-                  <div className="text-sm text-muted-foreground">
-                    No personalised stories yet — create one in Story Worlds.
-                  </div>
-                  <Link
-                    to="/magic-hub"
-                    className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-soft"
-                  >
-                    Go to Story Worlds
-                  </Link>
-                </div>
-              )
-            ) : (
-              <Row stories={madeForChild} universesMap={universesMap} />
-            )}
-          </section>
-        )}
-        {view === "library" && recommended.length > 0 && (
-          <section id="recommended" className="scroll-mt-4">
-            <SectionHeader
-              title={childName ? `Recommended for ${childName}` : "Recommended for you"}
-              subtitle={
-                childName
-                  ? `Handpicked stories matched to ${childName}'s interests.`
-                  : "Handpicked stories matched to your child's interests."
-              }
-            />
-            <Row stories={recommended} universesMap={universesMap} />
-          </section>
-        )}
-        {view === "library" && <section>
-          <SectionHeader
-            title="Story Worlds"
-            subtitle="Recurring characters from LuluTales, each with their own story universe."
-          />
-          <StoryWorldsRow hideHeader />
-        </section>}
-
-        {view === "library" && <section>
-          <SectionHeader
-            title="All stories"
-            subtitle={
-              childName
-                ? `Every story in ${childName}'s library, all in one place.`
-                : "Every story in your child's library, all in one place."
-            }
-          />
-          <div className="mb-2 flex gap-2 px-5">
-            <select
-              value={allAgeFilter}
-              onChange={(e) => setAllAgeFilter(e.target.value)}
-              aria-label="Filter by age"
-              className="flex-1 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground focus:border-primary focus:outline-none"
-            >
-              <option value="">All ages</option>
-              {allAgeOptions.map((a) => (
-                <option key={a} value={a}>{a}</option>
-              ))}
-            </select>
-            <select
-              value={allBucketFilter}
-              onChange={(e) => setAllBucketFilter(e.target.value as BucketKey | "")}
-              aria-label="Filter by bucket"
-              className="flex-1 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground focus:border-primary focus:outline-none"
-            >
-              <option value="">All themes</option>
-              {allBucketOptions.map((b) => (
-                <option key={b.key} value={b.key}>{b.fullName}</option>
-              ))}
-            </select>
-            <select
-              value={allLanguageFilter}
-              onChange={(e) => setAllLanguageFilter(e.target.value as "" | "english" | "hindi")}
-              aria-label="Filter by language"
-              className="flex-1 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground focus:border-primary focus:outline-none"
-            >
-              <option value="">All languages</option>
-              <option value="english">English</option>
-              <option value="hindi">हिंदी</option>
-            </select>
+      <header className="px-5 pb-2 pt-3 md:px-10 md:pt-10">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="font-[Quicksand] text-[26px] font-bold text-foreground md:text-[32px]">{pageTitle}</h1>
+          <div className="md:hidden">
+            <ProfileSwitcherChip />
           </div>
-          {storyRoomSorted.length === 0 ? (
-            <div className="flex h-32 items-center justify-center rounded-2xl border border-dashed border-border bg-card/60 text-center text-[11px] font-semibold text-muted-foreground">
-              Coming soon
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {storyRoomSorted.map((s) => {
-                const universeName = universesMap?.get((s as any).universe_id) ?? null;
-                return (
-                  <StoryCard key={s.id} story={s} universeName={universeName} />
-                );
-              })}
-            </div>
-          )}
-        </section>}
+        </div>
+        {view === "library" && (
+          <label className="mt-3 flex min-h-12 items-center gap-2.5 rounded-full border border-border bg-card px-4 md:max-w-[480px]">
+            <Search className="h-4 w-4 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search stories"
+              aria-label="Search stories"
+              className="flex-1 bg-transparent text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none"
+            />
+          </label>
+        )}
+      </header>
 
+      <main className="flex-1 space-y-7 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-2 md:px-10 md:pb-12">
+        {view === "mine" && (
+          <>
+            <div className="md:max-w-[560px]">
+              <MakeStoryCard childName={childName} hasChild={hasActive} size="strip" />
+            </div>
 
+            {hasActive && (waiting && madeForCounts.all === 0 ? null : (
+              <section>
+                <div className="-mx-5 mb-3 flex gap-2 overflow-x-auto px-5 scrollbar-hide md:mx-0 md:px-0">
+                  {(["all", "audio", "text", "saved"] as MadeForFormat[]).map((opt) => (
+                    <Chip key={opt} on={madeForFormat === opt} onClick={() => setMadeForFormat(opt)}>
+                      {formatLabels[opt]}
+                      {madeForCounts[opt] > 0 && <span className="ml-1.5 opacity-60">{madeForCounts[opt]}</span>}
+                    </Chip>
+                  ))}
+                </div>
+                {madeForChild.length === 0 ? (
+                  <div className="rounded-[18px] border border-dashed border-border bg-card/60 p-5 text-sm text-muted-foreground">
+                    {madeForFormat === "saved"
+                      ? "Nothing saved yet. Tap the heart on any story to keep it here."
+                      : `${childName ? `${childName}’s` : "Your child’s"} stories will live here once you make one.`}
+                  </div>
+                ) : (
+                  <div className="grid gap-2.5 md:grid-cols-2">
+                    {madeForChild.map((s) => (
+                      <StoryCard key={s.id} story={s} variant="row" universeName={universesMap.get((s as any).universe_id) ?? null} />
+                    ))}
+                  </div>
+                )}
+              </section>
+            ))}
+
+            {waiting && madeForCounts.all === 0 && (
+              <div className="rounded-[18px] border border-dashed border-border bg-card/60 p-5">
+                <div className="brand-title text-foreground">{childName ? `${childName}’s` : "Your child’s"} own stories will live here</div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  While you wait, tap the heart on any library story to save it here.
+                </p>
+              </div>
+            )}
+
+            {madeForFormat !== "saved" && (
+              <StoryShelf
+                title="Saved from the library"
+                stories={savedNotMine}
+                nameFor={(s) => universesMap.get((s as any).universe_id) ?? null}
+              />
+            )}
+          </>
+        )}
+
+        {view === "library" && !query && recommended.length > 0 && (
+          <div id="recommended" className="scroll-mt-4">
+            <StoryShelf
+              title={`Picked for ${name}`}
+              stories={recommended.slice(0, 8)}
+              nameFor={(s) => universesMap.get((s as any).universe_id) ?? null}
+            />
+          </div>
+        )}
+
+        {view === "library" && !query && (
+          <section>
+            <SectionHeader title="Story worlds" subtitle="Meet the LuluTales children. Each has their own set of stories." />
+            <StoryWorldsRow hideHeader />
+          </section>
+        )}
+
+        {view === "library" && (
+          <section>
+            <SectionHeader
+              title={query ? "Results" : "All stories"}
+              right={<span className="shrink-0 text-sm text-muted-foreground">{storyRoomSorted.length} stories</span>}
+            />
+            <div className="-mx-5 mb-2.5 flex gap-2 overflow-x-auto px-5 scrollbar-hide md:mx-0 md:flex-wrap md:px-0">
+              <Chip on={!allBucketFilter} onClick={() => setAllBucketFilter("")}>All skills</Chip>
+              {SKILL_ORDER.map((k) => (
+                <Chip key={k} on={allBucketFilter === k} onClick={() => setAllBucketFilter(allBucketFilter === k ? "" : k)}>
+                  {BUCKETS[k].cardName}
+                </Chip>
+              ))}
+            </div>
+            <div className="mb-3.5 flex gap-2">
+              <select value={allAgeFilter} onChange={(e) => setAllAgeFilter(e.target.value)} aria-label="Filter by age" className={selectCls}>
+                <option value="">Any age</option>
+                {allAgeOptions.map((a) => (
+                  <option key={a} value={a}>{/^\d+$/.test(a) ? `Age ${a}` : a}</option>
+                ))}
+              </select>
+              <select
+                value={allLanguageFilter}
+                onChange={(e) => setAllLanguageFilter(e.target.value as "" | "english" | "hindi")}
+                aria-label="Filter by language"
+                className={selectCls}
+              >
+                <option value="">Any language</option>
+                <option value="english">English</option>
+                <option value="hindi">हिंदी</option>
+              </select>
+            </div>
+            {storyRoomSorted.length === 0 ? (
+              <div className="rounded-[18px] border border-dashed border-border bg-card/60 p-6 text-center text-sm text-muted-foreground">
+                No stories match. Try another skill or age.
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+                {storyRoomSorted.map((s) => (
+                  <StoryCard key={s.id} story={s} universeName={universesMap.get((s as any).universe_id) ?? null} />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
       </main>
 
       <BottomNav />

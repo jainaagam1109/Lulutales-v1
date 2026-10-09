@@ -192,13 +192,13 @@ h1, h2, h3 {
   font-weight: 600;
 }
 p.text-muted-foreground { color: hsl(var(--body-foreground)); }
-:is(button, a):is(.bg-gradient-primary, .bg-primary):not([role="tab"], [role="switch"], .h-6, .h-8, .h-10) {
+:is(button, a):is(.bg-gradient-primary, .bg-primary):not([role="tab"], [role="switch"], .h-6, .h-8, .h-10, .lt-card) {
   min-height: 48px;
   border-radius: 9999px;
   font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', sans-serif;
   font-weight: 600;
 }
-:is(button, a):is(.bg-gradient-primary, .bg-primary):hover {
+:is(button, a):is(.bg-gradient-primary, .bg-primary):not(.lt-card):hover {
   background: hsl(var(--primary-hover));
 }
 

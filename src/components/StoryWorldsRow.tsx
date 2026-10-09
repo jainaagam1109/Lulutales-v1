@@ -5,22 +5,11 @@ import { fetchUniversesWithCounts } from "@/lib/stories";
 import { SectionHeader } from "@/components/SectionHeader";
 import { ageDistance } from "@/lib/sortStories";
 
-const PALETTE = [
-  "bg-tag-warm-bg text-tag-warm-fg",
-  "bg-tag-cool-bg text-tag-cool-fg",
-  "bg-tag-mint-bg text-tag-mint-fg",
-  "bg-accent text-accent-foreground",
-  "bg-secondary text-secondary-foreground",
-  "bg-tag-warm-bg text-tag-warm-fg",
-  "bg-tag-mint-bg text-tag-mint-fg",
-  "bg-tag-cool-bg text-tag-cool-fg",
-];
+const TINTS = ["#FBEFE2", "#E8F1FB", "#E6F4EC", "#EFEBFB", "#FCE8EC", "#FFF4D6"];
 
 const hashString = (s: string): number => {
   let h = 0;
-  for (let i = 0; i < s.length; i++) {
-    h = ((h << 5) - h + s.charCodeAt(i)) | 0;
-  }
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
   return Math.abs(h);
 };
 
@@ -37,37 +26,25 @@ const UniverseCard = ({
   cover?: string | null;
   characterBible?: Record<string, any> | null;
 }) => {
-  const paletteIdx = hashString(id + name) % PALETTE.length;
-  const palette = PALETTE[paletteIdx];
-
-  const emoji =
-    characterBible && typeof characterBible.emoji === "string"
-      ? characterBible.emoji
-      : null;
-  const initial = emoji ?? name.trim().charAt(0).toUpperCase();
-
+  const tint = TINTS[hashString(id + name) % TINTS.length];
+  const initial = name.trim().charAt(0).toUpperCase();
+  const age = characterBible?.age;
   return (
     <Link
       to={`/universe/${id}`}
-      className="flex w-40 flex-shrink-0 flex-col gap-2 rounded-2xl border border-border bg-card p-3 shadow-soft transition-colors hover:border-primary/40"
+      className="flex w-[128px] flex-shrink-0 flex-col items-center gap-1.5 rounded-[18px] border border-border bg-card px-3 py-4 text-center transition-colors hover:border-primary/40 md:w-auto"
     >
-      <div
-        className={`flex h-24 items-center justify-center overflow-hidden rounded-xl ${palette}`}
+      <span
+        className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full font-[Quicksand] text-2xl font-bold text-foreground"
+        style={{ background: tint }}
       >
-        {cover ? (
-          <img src={cover} alt={name} className="h-full w-full object-cover" />
-        ) : (
-          <span
-            className="text-2xl font-bold"
-          >
-            {initial}
-          </span>
-        )}
-      </div>
-      <div className="brand-title line-clamp-1 text-xs font-bold text-foreground">{name}</div>
-      <div className="text-[10px] font-semibold text-muted-foreground">
+        {cover ? <img src={cover} alt="" className="h-full w-full object-cover" /> : initial}
+      </span>
+      <span className="brand-title line-clamp-1 text-foreground">{name}</span>
+      <span className="text-xs text-muted-foreground">
+        {age ? `Age ${age} · ` : ""}
         {count} {count === 1 ? "story" : "stories"}
-      </div>
+      </span>
     </Link>
   );
 };
@@ -103,8 +80,8 @@ export const StoryWorldsRow = ({ hideHeader = false }: { hideHeader?: boolean } 
 
   return (
     <section>
-      {!hideHeader && <SectionHeader title="Story Worlds" />}
-      <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
+      {!hideHeader && <SectionHeader title="Story worlds" />}
+      <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0 lg:grid-cols-6">
         {sortedUniverses.map((u) => (
           <UniverseCard
             key={u.id}

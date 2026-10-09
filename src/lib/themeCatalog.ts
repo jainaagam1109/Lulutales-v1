@@ -31,20 +31,23 @@ export interface BucketDef {
 }
 
 export const BUCKETS: Record<BucketKey, BucketDef> = {
-  "B1": { key: "B1", fullName: "Sleep & Calm", cardName: "Sleep & Calm", definition: "Winding down, feeling safe in the dark, and letting the body rest.", badges: ["Sleepy Star", "Moon Whisperer", "Dream Captain"] },
-  "B2": { key: "B2", fullName: "Healthy Eating & Body", cardName: "Healthy Eating", definition: "Eating well and caring for a growing body.", badges: ["Brave Taster", "Rainbow Plate", "Mighty Grower"] },
-  "B3": { key: "B3", fullName: "Curiosity & Learning", cardName: "Curiosity", definition: "Wondering, noticing, and figuring out how the world works.", badges: ["Little Wonderer", "Question Explorer", "Master Discoverer"] },
-  "B4": { key: "B4", fullName: "Sharing & Getting Along", cardName: "Sharing", definition: "Playing well with others: sharing, turn-taking, and cooperating.", badges: ["Sharing Buddy", "Team Player", "Friendship Builder"] },
-  "B5": { key: "B5", fullName: "Kindness & Empathy", cardName: "Kindness", definition: "Caring about how others feel — comforting, including, being gentle.", badges: ["Kind Sprout", "Heart Helper", "Kindness Champion"] },
-  "B6": { key: "B6", fullName: "Big Feelings", cardName: "Big Feelings", definition: "Naming big emotions and learning to ride them out.", badges: ["Feelings Spotter", "Storm Rider", "Feelings Master"] },
-  "B7a": { key: "B7a", fullName: "Courage & Bravery", cardName: "Courage", definition: "Facing something scary or new and doing it anyway.", badges: ["Brave Cub", "Bold Lion", "Lionheart"] },
-  "B7b": { key: "B7b", fullName: "Perseverance & Grit", cardName: "Grit", definition: "Sticking with hard things: trying again and bouncing back.", badges: ["Little Try-Again", "Steady Climber", "Mountain Mover"] },
-  "B8": { key: "B8", fullName: "Honesty & Integrity", cardName: "Honesty", definition: "Telling the truth and doing right even when no one's watching.", badges: ["Spark of Truth", "Truth Torch", "Shining Beacon"] },
-  "B9": { key: "B9", fullName: "Independence & Self", cardName: "Independence", definition: "Doing it myself, knowing my worth, becoming who I am.", badges: ["I-Can Kid", "Do-It-Myself Star", "True Me"] },
-  "B10": { key: "B10", fullName: "Responsibility & Helping", cardName: "Responsibility", definition: "Doing my part and being someone others can count on.", badges: ["Little Helper", "Super Helper", "Captain Reliable"] },
-  "B11": { key: "B11", fullName: "Fairness & the Wider World", cardName: "Fairness", definition: "Fairness, and caring for the wider world beyond me.", badges: ["Fair Friend", "Justice Seeker", "World Changer"] },
-  "B12": { key: "B12", fullName: "Family & Belonging", cardName: "Belonging", definition: "Feeling loved and rooted — family, home, and belonging.", badges: ["Snuggle Bug", "Home Heart", "Family Anchor"] },
+  "B1": { key: "B1", fullName: "Calm and sleep", cardName: "Calm and sleep", definition: "Winding down, feeling safe in the dark, and letting the body rest.", badges: ["Sleepy Star", "Moon Whisperer", "Dream Captain"] },
+  "B2": { key: "B2", fullName: "Healthy eating", cardName: "Healthy eating", definition: "Eating well and caring for a growing body.", badges: ["Brave Taster", "Rainbow Plate", "Mighty Grower"] },
+  "B3": { key: "B3", fullName: "Curiosity", cardName: "Curiosity", definition: "Wondering, noticing, and figuring out how the world works.", badges: ["Little Wonderer", "Question Explorer", "Master Discoverer"] },
+  "B4": { key: "B4", fullName: "Sharing", cardName: "Sharing", definition: "Playing well with others: sharing, turn-taking, and cooperating.", badges: ["Sharing Buddy", "Team Player", "Friendship Builder"] },
+  "B5": { key: "B5", fullName: "Kindness", cardName: "Kindness", definition: "Caring about how others feel — comforting, including, being gentle.", badges: ["Kind Sprout", "Heart Helper", "Kindness Champion"] },
+  "B6": { key: "B6", fullName: "Big feelings", cardName: "Big feelings", definition: "Naming big emotions and learning to ride them out.", badges: ["Feelings Spotter", "Storm Rider", "Feelings Master"] },
+  "B7a": { key: "B7a", fullName: "Courage", cardName: "Courage", definition: "Facing something scary or new and doing it anyway.", badges: ["Brave Cub", "Bold Lion", "Lionheart"] },
+  "B7b": { key: "B7b", fullName: "Trying again", cardName: "Trying again", definition: "Sticking with hard things: trying again and bouncing back.", badges: ["Little Try-Again", "Steady Climber", "Mountain Mover"] },
+  "B8": { key: "B8", fullName: "Honesty", cardName: "Honesty", definition: "Telling the truth and doing right even when no one's watching.", badges: ["Spark of Truth", "Truth Torch", "Shining Beacon"] },
+  "B9": { key: "B9", fullName: "Doing it myself", cardName: "Doing it myself", definition: "Doing it myself, knowing my worth, becoming who I am.", badges: ["I-Can Kid", "Do-It-Myself Star", "True Me"] },
+  "B10": { key: "B10", fullName: "Helping out", cardName: "Helping out", definition: "Doing my part and being someone others can count on.", badges: ["Little Helper", "Super Helper", "Captain Reliable"] },
+  "B11": { key: "B11", fullName: "Fairness", cardName: "Fairness", definition: "Fairness, and caring for the wider world beyond me.", badges: ["Fair Friend", "Justice Seeker", "World Changer"] },
+  "B12": { key: "B12", fullName: "Belonging", cardName: "Belonging", definition: "Feeling loved and rooted — family, home, and belonging.", badges: ["Snuggle Bug", "Home Heart", "Family Anchor"] },
 };
+
+/** The order skills are shown to parents (library filters, admin). */
+export const SKILL_ORDER: BucketKey[] = ["B7a", "B6", "B5", "B4", "B7b", "B8", "B9", "B3", "B10", "B11", "B12", "B2", "B1"];
 
 export interface ThemeOption {
   value: string;

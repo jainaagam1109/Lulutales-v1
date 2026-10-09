@@ -1,27 +1,29 @@
+import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 export const SectionHeader = ({
   title,
   subtitle,
   seeAllTo,
+  right,
   className = "",
 }: {
-  title: string;
-  subtitle?: string;
+  title: ReactNode;
+  subtitle?: ReactNode;
   seeAllTo?: string;
+  right?: ReactNode;
   className?: string;
 }) => (
-  <div className={`mb-2 px-5 ${className}`}>
-    <div className="flex items-center justify-between">
-      <h2 className="text-sm font-bold text-foreground">{title}</h2>
+  <div className={`mb-2.5 ${className}`}>
+    <div className="flex items-baseline justify-between gap-3">
+      <h2 className="font-[Quicksand] text-[19px] font-bold text-foreground">{title}</h2>
       {seeAllTo && (
-        <Link to={seeAllTo} className="text-[11px] font-bold text-primary-deep">
+        <Link to={seeAllTo} className="shrink-0 text-sm font-semibold text-primary">
           See all
         </Link>
       )}
+      {right}
     </div>
-    {subtitle && (
-      <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
-    )}
+    {subtitle && <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>}
   </div>
 );
