@@ -40,7 +40,7 @@ const Universe = () => {
     Array.isArray(v) ? v.join(", ") : typeof v === "object" ? JSON.stringify(v) : String(v);
 
   return (
-    <PhoneShell>
+    <PhoneShell withNav>
       <PageHeader title={title} subtitle={universe?.description ?? undefined} />
       <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
         {universe?.cover_image && (
@@ -70,7 +70,7 @@ const Universe = () => {
           <div className="rounded-2xl border border-dashed border-border bg-card/60 p-6 text-center text-sm text-muted-foreground">
             No stories in this world yet.
             <div className="mt-3">
-              <Link to="/my-stories" className="text-xs font-bold text-primary-deep">
+              <Link to="/library" className="text-xs font-bold text-primary-deep">
                 ← Back to Story Worlds
               </Link>
             </div>

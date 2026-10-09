@@ -68,7 +68,7 @@ const MagicHub = () => {
   ];
 
   return (
-    <PhoneShell>
+    <PhoneShell withNav>
       <PageHeader
         backTo="/"
         title="Magic Hub"

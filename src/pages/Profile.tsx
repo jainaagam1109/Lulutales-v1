@@ -124,8 +124,8 @@ const Profile = () => {
   const parentName = user?.email?.split("@")[0] ?? "Parent";
 
   return (
-    <PhoneShell>
-      <PageHeader showProfile={false} />
+    <PhoneShell withNav>
+      <PageHeader showBack={false} showProfile={false} title="Parents" />
 
       <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] space-y-5">
         <div className="flex items-center gap-3">

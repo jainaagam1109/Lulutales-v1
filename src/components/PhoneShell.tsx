@@ -1,18 +1,29 @@
 import { ReactNode } from "react";
-import { Signal, Wifi, BatteryFull } from "lucide-react";
+import { DesktopSidebar } from "@/components/DesktopSidebar";
 
-export const PhoneShell = ({ children, statusBar = false }: { children: ReactNode; statusBar?: boolean }) => (
-  <div className="mx-auto flex h-[100dvh] w-full max-w-[430px] flex-col overflow-hidden border-x border-border bg-background shadow-soft sm:my-4 sm:h-[calc(100dvh-2rem)] sm:rounded-[2.25rem] sm:border">
-    {statusBar && (
-      <div className="flex items-center justify-between px-6 pt-3 text-[11px] font-bold text-foreground/80">
-        <span>9:41</span>
-        <div className="flex items-center gap-1">
-          <Signal className="h-3 w-3" />
-          <Wifi className="h-3 w-3" />
-          <BatteryFull className="h-3.5 w-3.5" />
-        </div>
-      </div>
-    )}
-    {children}
+/**
+ * Page frame.
+ * - Phones: full screen, as before.
+ * - Computers (md+): no phone-shaped box. Pages with the main menu (withNav) get the
+ *   left-hand menu and a wide content column; other pages (sign-in, forms, player)
+ *   sit in a comfortable centred column.
+ */
+export const PhoneShell = ({
+  children,
+  withNav = false,
+}: {
+  children: ReactNode;
+  statusBar?: boolean;
+  withNav?: boolean;
+}) => (
+  <div className="flex h-[100dvh] w-full bg-background">
+    {withNav && <DesktopSidebar />}
+    <div
+      className={`mx-auto flex h-full w-full min-w-0 flex-col overflow-hidden ${
+        withNav ? "max-w-[430px] md:max-w-[960px]" : "max-w-[430px] md:max-w-[560px]"
+      }`}
+    >
+      {children}
+    </div>
   </div>
 );

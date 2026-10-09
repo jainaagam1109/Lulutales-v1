@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 import { Home, Library, Heart, User } from "lucide-react";
 import { MiniPlayer } from "./MiniPlayer";
 
-const items = [
+export const NAV_ITEMS = [
   { to: "/", label: "Home", icon: Home },
   { to: "/library", label: "Library", icon: Library },
   { to: "/my-stories", label: "My stories", icon: Heart },
@@ -12,8 +12,8 @@ const items = [
 export const BottomNav = () => (
   <div className="sticky bottom-0 z-30 shrink-0">
     <MiniPlayer />
-    <nav className="flex items-stretch justify-around gap-1 border-t border-border bg-surface/90 px-2 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md">
-      {items.map(({ to, label, icon: Icon }) => (
+    <nav className="flex md:hidden items-stretch justify-around gap-1 border-t border-border bg-surface/90 px-2 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md">
+      {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
         <NavLink
           key={to}
           to={to}

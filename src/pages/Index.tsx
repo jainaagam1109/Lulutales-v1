@@ -214,7 +214,7 @@ const Index = () => {
 
 
   return (
-    <PhoneShell>
+    <PhoneShell withNav>
       <PageHeader showBack={false} title={title} subtitle={subtitle} />
 
       <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] space-y-5">

@@ -12,7 +12,7 @@ const Library = () => {
   const visibleStories = stories.filter(isRenderable);
 
   return (
-    <PhoneShell>
+    <PhoneShell withNav>
       <PageHeader showBack={false} title="Library" subtitle="Your saved stories" />
       <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))]">
         {isLoading && (
