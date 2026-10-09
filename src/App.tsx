@@ -31,7 +31,6 @@ import MakeStory from "./pages/MakeStory";
 import Generating from "./pages/Generating";
 import BedtimeReader from "./pages/BedtimeReader";
 import EpisodeReader from "./pages/EpisodeReader";
-import BedtimePreview from "./pages/BedtimePreview";
 import NotFound from "./pages/NotFound";
 import OAuthConsent from "./pages/OAuthConsent";
 
@@ -75,7 +74,7 @@ const App = () => (
             <Route path="/magic-hub/audio" element={<Navigate to="/magic-hub" replace />} />
             <Route path="/magic-hub/bedtime" element={<Navigate to="/magic-hub?format=read" replace />} />
             <Route path="/generating/:storyId" element={<RequireAuth><Generating /></RequireAuth>} />
-            <Route path="/bedtime/:id" element={<RequireAuth><BedtimePreview /></RequireAuth>} />
+            <Route path="/bedtime/:id" element={<RequireAuth><StoryDetail /></RequireAuth>} />
             <Route path="/bedtime/:id/read" element={<RequireAuth><BedtimeReader /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

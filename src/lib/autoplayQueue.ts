@@ -8,9 +8,10 @@ const AUTOPLAY_PREF_KEY = "lulutales_autoplay_enabled";
 /** Autoplay is ON by default; only an explicit "0" turns it off. */
 export const isAutoplayEnabled = (): boolean => {
   try {
-    return localStorage.getItem(AUTOPLAY_PREF_KEY) !== "0";
+    // Off unless a parent switches it on (Parents → Autoplay). Episodes of one story always play on.
+    return localStorage.getItem(AUTOPLAY_PREF_KEY) === "1";
   } catch {
-    return true;
+    return false;
   }
 };
 

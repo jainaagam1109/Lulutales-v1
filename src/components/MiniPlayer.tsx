@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Play, Headphones } from "lucide-react";
+import { Play } from "lucide-react";
+import { SkillPicture, skillKeyFor } from "./SkillPicture";
 import { fetchStory, fetchEpisodes, type Story } from "@/lib/stories";
 import {
   getActiveProfileId,
@@ -74,31 +75,28 @@ export const MiniPlayer = () => {
   if (!story) return null;
   if (location.pathname.startsWith("/player/")) return null;
   if (location.pathname.startsWith("/bedtime/")) return null;
+  if (location.pathname.startsWith("/story/") || location.pathname.startsWith("/magic-hub") || location.pathname.startsWith("/generating")) return null;
 
   const safePct = Math.max(0, Math.min(100, pct));
 
   return (
     <Link
       to={`/player/${story.id}/${ep}`}
-      className="mx-3 mb-2 flex items-center gap-3 rounded-2xl border border-border bg-surface/95 p-2 pr-3 shadow-soft backdrop-blur-md"
+      aria-label={`Continue listening to ${story.title}`}
+      className="mx-3 mb-2 flex items-center gap-3 overflow-hidden rounded-[18px] bg-[#1F1B3A] p-2 pr-2.5 text-white shadow-soft md:mx-0 md:mb-4"
     >
-      <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-card text-primary-deep">
-        <Headphones className="h-5 w-5" />
+      <div className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-xl">
+        <SkillPicture skill={skillKeyFor(story as any)} />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-xs font-bold text-foreground">{story.title}</div>
-        <div className="truncate text-[10px] text-muted-foreground">
-          Continue listening · {safePct}% complete · tap to resume
-        </div>
-        <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-secondary">
-          <div
-            className="h-full bg-gradient-primary"
-            style={{ width: `${safePct}%` }}
-          />
+        <div className="truncate text-sm font-semibold">{story.title}</div>
+        <div className="truncate text-xs text-white/70">Continue listening{ep > 1 ? ` · Episode ${ep}` : ""}</div>
+        <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-white/15">
+          <div className="h-full bg-primary" style={{ width: `${safePct}%` }} />
         </div>
       </div>
-      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow">
-        <Play className="h-4 w-4 fill-current" />
+      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+        <Play className="ml-0.5 h-4 w-4 fill-current" />
       </div>
     </Link>
   );

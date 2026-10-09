@@ -6,8 +6,10 @@ import { fetchStory } from "@/lib/stories";
 import { parseBedtimeStory } from "@/lib/parseBedtimeStory";
 import { supabase } from "@/integrations/supabase/client";
 import { getSessionId } from "@/lib/track";
+import { skillKeyFor } from "@/components/SkillPicture";
+import { SKILL_ART } from "@/lib/skillArt";
 
-const SIZES = [16, 18, 20];
+const SIZES = [17, 19, 22];
 
 const BedtimeReader = () => {
   const { id = "" } = useParams();
@@ -76,79 +78,74 @@ const BedtimeReader = () => {
 
   const fontSize = SIZES[sizeIdx];
   const { prose } = parseBedtimeStory(story?.story_text);
-
-  const bg = dark ? "#0F1923" : "#FFFFFF";
-  const fg = dark ? "#F5F0E8" : "#1A1612";
-  const subtle = dark ? "rgba(245,240,232,0.7)" : "rgba(26,22,18,0.6)";
-  const border = dark ? "rgba(245,240,232,0.18)" : "rgba(26,22,18,0.12)";
+  const paragraphs = (prose ?? "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+  const skill = story ? skillKeyFor(story as any) : "B1";
 
   return (
-    <div className="fixed inset-0 flex flex-col" style={{ background: bg, color: fg }}>
-      <button
-        onClick={() => nav(`/bedtime/${id}`)}
-        className="absolute left-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full"
-        style={{ color: fg, background: dark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)" }}
-        aria-label="Back"
-      >
-        <ChevronLeft className="h-5 w-5" />
-      </button>
-
-      <main
-        className="flex-1 overflow-y-auto"
-        style={{ padding: "72px 24px 120px" }}
-      >
-        {prose ? (
-          <article
-            style={{
-              fontSize: `${fontSize}px`,
-              lineHeight: 1.8,
-              color: fg,
-              whiteSpace: "pre-wrap",
-              maxWidth: "640px",
-              margin: "0 auto",
-            }}
-          >
-            {prose}
-          </article>
-        ) : (
-          <p className="mx-auto max-w-md pt-10 text-center text-sm" style={{ color: subtle }}>
-            {story ? "This story doesn't have text yet." : "Loading…"}
-          </p>
-        )}
-      </main>
-
-      <div
-        className="absolute inset-x-0 bottom-0 flex items-center justify-between px-5 py-3"
-        style={{ background: bg, borderTop: `1px solid ${border}` }}
-      >
-        <div className="flex items-center gap-2">
+    <div className={dark ? "dark" : ""}>
+      <div className="fixed inset-0 flex flex-col bg-background text-foreground">
+        <header className="flex items-center gap-2 border-b border-border px-3 py-2">
           <button
-            onClick={() => setSizeIdx((i) => Math.max(0, i - 1))}
-            disabled={sizeIdx === 0}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold disabled:opacity-40"
-            style={{ border: `1px solid ${border}`, color: fg }}
-            aria-label="Decrease font size"
+            type="button"
+            onClick={() => nav(`/story/${id}`)}
+            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-muted"
+            aria-label="Back to the story"
           >
-            A−
+            <ChevronLeft className="h-5 w-5" />
           </button>
+          <div className="min-w-0 flex-1">
+            <div className="text-xs font-semibold text-muted-foreground">Read aloud · {SKILL_ART[skill]?.name}</div>
+            <div className="truncate font-[Quicksand] text-[17px] font-bold">{story?.title ?? ""}</div>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-y-auto px-6 pb-32 pt-8">
+          {paragraphs.length ? (
+            <article className="mx-auto max-w-[620px]" style={{ fontSize: `${fontSize}px`, lineHeight: 1.8 }}>
+              {paragraphs.map((p, i) => (
+                <p key={i} className="mb-5 !text-foreground">
+                  {p}
+                </p>
+              ))}
+              <p className="mt-10 text-center font-[Quicksand] text-lg font-bold !text-muted-foreground">The end</p>
+            </article>
+          ) : (
+            <p className="mx-auto max-w-md pt-10 text-center text-sm text-muted-foreground">
+              {story ? "This story doesn’t have any text yet." : "Loading…"}
+            </p>
+          )}
+        </main>
+
+        <footer className="absolute inset-x-0 bottom-0 flex items-center justify-between border-t border-border bg-background px-5 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSizeIdx((i) => Math.max(0, i - 1))}
+              disabled={sizeIdx === 0}
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-border text-sm font-bold disabled:opacity-40"
+              aria-label="Smaller text"
+            >
+              A−
+            </button>
+            <button
+              type="button"
+              onClick={() => setSizeIdx((i) => Math.min(SIZES.length - 1, i + 1))}
+              disabled={sizeIdx === SIZES.length - 1}
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-border text-base font-bold disabled:opacity-40"
+              aria-label="Bigger text"
+            >
+              A+
+            </button>
+          </div>
           <button
-            onClick={() => setSizeIdx((i) => Math.min(SIZES.length - 1, i + 1))}
-            disabled={sizeIdx === SIZES.length - 1}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold disabled:opacity-40"
-            style={{ border: `1px solid ${border}`, color: fg }}
-            aria-label="Increase font size"
+            type="button"
+            onClick={() => setDark((d) => !d)}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-border"
+            aria-label={dark ? "Light page" : "Dark page for bedtime"}
           >
-            A+
+            {dark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
-        </div>
-        <button
-          onClick={() => setDark((d) => !d)}
-          className="flex h-10 w-10 items-center justify-center rounded-full"
-          style={{ border: `1px solid ${border}`, color: fg }}
-          aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-        >
-          {dark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-        </button>
+        </footer>
       </div>
     </div>
   );

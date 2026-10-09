@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Play, Pause, Maximize2, Sun, Moon } from "lucide-react";
-import { fetchStory, fetchEpisodes, type Story } from "@/lib/stories";
+import { ChevronDown, Play, Pause, Heart, SkipBack, SkipForward, RotateCcw, RotateCw, ListMusic, Flag } from "lucide-react";
+import { toast } from "sonner";
+import { fetchStory, fetchEpisodes, isSaved, toggleSaved, type Story } from "@/lib/stories";
+import { SkillPicture, skillKeyFor } from "@/components/SkillPicture";
+import { ReportSheet } from "@/components/ReportSheet";
+import { SKILL_ART } from "@/lib/skillArt";
 import {
   AUTOPLAY_MAX_ADVANCES,
   isAutoplayEnabled,
@@ -12,7 +16,6 @@ import {
 } from "@/lib/autoplayQueue";
 
 import { PhoneShell } from "@/components/PhoneShell";
-import { PageHeader } from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { getSessionId } from "@/lib/track";
 import { cleanEpisodeTitle } from "@/lib/episodeTitle";
@@ -29,7 +32,7 @@ import {
   getLastEpisode,
 } from "@/lib/lastStory";
 
-import { SPEED_STEPS, resolveInitialRate, setProfilePlaybackRate } from "@/lib/playbackRate";
+import { resolveInitialRate, setProfilePlaybackRate } from "@/lib/playbackRate";
 
 const fetchUniverse = async (universeId: string | null | undefined): Promise<string | null> => {
   if (!universeId) return null;
@@ -63,6 +66,7 @@ const Player = () => {
   const epParamRaw = params.episodeNumber;
   const epNum = parseInt(epParamRaw ?? "1", 10) || 1;
   const nav = useNavigate();
+  const location = useLocation();
   const audioRef = useRef<HTMLAudioElement>(null);
   const shouldAutoplayRef = useRef(false);
   const resumeAppliedRef = useRef<string | null>(null);
@@ -175,9 +179,17 @@ const Player = () => {
 
 
 
-  const [showFullText, setShowFullText] = useState(false);
-  const [textSizeIdx, setTextSizeIdx] = useState(1);
-  const [textDark, setTextDark] = useState(false);
+  const [view, setView] = useState<"picture" | "read">("picture");
+  const [sheet, setSheet] = useState<null | "speed" | "episodes" | "report">(null);
+  const [saved, setSaved] = useState(false);
+  useEffect(() => {
+    if (id) isSaved(id).then(setSaved).catch(() => {});
+  }, [id]);
+  const onToggleSave = async () => {
+    const next = await toggleSaved(id);
+    setSaved(next);
+    toast.success(next ? "Saved to My stories" : "Removed from My stories");
+  };
   const [speed, setSpeed] = useState<number>(() => {
     if (typeof window === "undefined") return 1;
     const pid = localStorage.getItem("lulutales_profile_id");
@@ -186,9 +198,6 @@ const Player = () => {
     return resolveInitialRate(pid, isFinite(age as number) ? age : null);
   });
 
-  const speedIdx = SPEED_STEPS.indexOf(speed);
-  const canSlower = speedIdx > 0;
-  const canFaster = speedIdx >= 0 && speedIdx < SPEED_STEPS.length - 1;
 
   useEffect(() => {
     const a = audioRef.current;
@@ -590,327 +599,299 @@ const Player = () => {
     a.currentTime = Math.max(0, Math.min(a.duration || 0, a.currentTime + delta));
   };
 
-  const goPrev = () => hasPrev && nav(`/player/${id}/${epNum - 1}`, { replace: true });
-  const goNext = () => hasNext && nav(`/player/${id}/${epNum + 1}`, { replace: true });
+  const goPrev = () => hasPrev && nav(`/player/${id}/${epNum - 1}`, { replace: true, state: location.state });
+  const goNext = () => hasNext && nav(`/player/${id}/${epNum + 1}`, { replace: true, state: location.state });
 
   const pct = dur > 0 ? (t / dur) * 100 : 0;
+  const skill = skillKeyFor(story as any);
+  const skillName = SKILL_ART[skill]?.name ?? "";
+  const from = (location.state as { from?: string } | null)?.from ?? "";
+  const playingFrom =
+    from === "/library" ? "Library" : from === "/my-stories" ? "My stories" : from.startsWith("/universe") ? universeName || "Story world" : from === "/" ? "Home" : story?.story_type === "pre_recorded" ? "Library" : "My stories";
+  const epTitle = (n: number, title?: string | null) => cleanEpisodeTitle(title, story?.title, n) || `Episode ${n}`;
+  const nextEp = hasNext ? episodes?.find((e) => e.episode_number === epNum + 1) : null;
+  const subLine = [skillName, totalEps > 1 ? `Episode ${epNum} of ${totalEps}` : null].filter(Boolean).join(" · ");
+  const paragraphs = (episodeText ?? "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+
+  const sheetBtn = "flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl text-xs font-semibold text-white/80 hover:bg-white/5";
 
   // Episode not found state
   if (episodes && !epLoading && !current) {
     return (
-      <PhoneShell>
-        <PageHeader backTo={id ? `/story/${id}` : "/"} />
-        <main className="flex-1 overflow-y-auto px-6 pb-24">
-
-          <div className="mt-20 text-center">
-            <div className="text-5xl">🤔</div>
-            <h2 className="mt-3 text-lg font-extrabold text-foreground">Episode not found</h2>
-            <p className="mt-1 text-sm text-muted-foreground">This story doesn't have an episode {epNum}.</p>
-          </div>
-        </main>
-      </PhoneShell>
+      <div className="dark">
+        <PhoneShell>
+          <main className="flex flex-1 flex-col items-center justify-center px-6 text-center text-foreground">
+            <h2 className="font-[Quicksand] text-xl font-bold">We couldn’t find this episode</h2>
+            <p className="mt-1 text-sm text-muted-foreground">This story doesn’t have an episode {epNum}.</p>
+            <button type="button" onClick={() => nav(`/story/${id}`)} className="mt-5 bg-primary px-6 text-primary-foreground">
+              Back to the story
+            </button>
+          </main>
+        </PhoneShell>
+      </div>
     );
   }
 
   return (
-    <PhoneShell>
-      <PageHeader backTo={id ? `/story/${id}` : "/"} />
-      <main className="flex-1 overflow-y-auto px-6 pb-24">
-
-        {episodeText ? (
-          <div className="relative mx-auto mb-6 h-64 w-full max-w-sm rounded-3xl bg-gradient-card p-4 shadow-soft">
-            <div className="h-full overflow-y-auto pr-8 text-sm leading-relaxed text-foreground whitespace-pre-wrap">
-              {episodeText}
-            </div>
-            <button
-              onClick={() => setShowFullText(true)}
-              aria-label="Read full episode text"
-              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-card/80 text-primary-deep shadow-soft"
-            >
-              <Maximize2 className="h-4 w-4" />
-            </button>
+    <div className="dark">
+      <PhoneShell>
+        <header className="flex items-center justify-between px-3 pt-3 text-foreground">
+          <button
+            type="button"
+            onClick={() => nav(id ? `/story/${id}` : "/", { state: location.state })}
+            aria-label="Close player"
+            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/5"
+          >
+            <ChevronDown className="h-6 w-6" />
+          </button>
+          <div className="text-center">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Playing from</div>
+            <div className="text-sm font-semibold">{playingFrom}</div>
           </div>
-        ) : (
-          <div className="mx-auto mb-6 flex h-64 w-64 items-center justify-center rounded-3xl bg-gradient-card text-8xl shadow-soft">
-            {story?.thumbnail ?? "📖"}
-          </div>
-        )}
-
-        <div className="text-center">
-          {typeof universeName === "string" && (
-            <div className="mb-1 text-[10px] font-semibold text-muted-foreground">
-              {universeName}
-            </div>
-          )}
-          <div className="text-[10px] font-semibold text-primary-deep">{story?.theme}</div>
-          <h1 className="mt-1 text-xl font-extrabold text-foreground">{story?.title ?? "Loading…"}</h1>
-          <div className="text-xs text-muted-foreground">
-            {current
-              ? cleanEpisodeTitle(current.title, story?.title, current.episode_number) ||
-                `Episode ${current.episode_number}`
-              : "Loading episode…"}
-          </div>
-        </div>
-
-        <div className="mt-8">
-          <input
-            type="range"
-            min={0}
-            max={dur || 0}
-            step={0.1}
-            value={t}
-            onChange={(e) => {
-              const a = audioRef.current;
-              if (!a || !isFinite(a.duration)) return;
-              const next = Number(e.target.value);
-              a.currentTime = next;
-              setT(next);
-            }}
-            disabled={!audioUrl || !dur}
-            className="seek-range"
-            style={{
-              background: `linear-gradient(to right, hsl(var(--primary)) ${pct}%, hsl(var(--secondary)) ${pct}%)`,
-            }}
-            aria-label="Seek"
-          />
-          <div className="mt-2 flex justify-between text-[10px] text-muted-foreground">
-            <span>{fmt(t)}</span>
-            <span>{fmt(dur)}</span>
-          </div>
-        </div>
-
-        <div className="mt-6 flex items-center justify-center gap-4">
           <button
-            onClick={() => skip(-10)}
-            className="rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-primary-deep"
+            type="button"
+            onClick={onToggleSave}
+            aria-pressed={saved}
+            aria-label={saved ? "Saved. Tap to remove" : "Save to My stories"}
+            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/5"
           >
-            - 10s
+            <Heart className={`h-5 w-5 ${saved ? "fill-current text-primary" : ""}`} />
           </button>
-          <button
-            onClick={toggle}
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-primary text-primary-foreground shadow-glow disabled:opacity-50"
-            aria-label={playing ? "Pause" : "Play"}
-            disabled={!audioUrl}
-          >
-            {playing ? <Pause className="h-7 w-7 fill-current" /> : <Play className="h-7 w-7 fill-current" />}
-          </button>
-          <button
-            onClick={() => skip(10)}
-            className="rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-primary-deep"
-          >
-            + 10s
-          </button>
-        </div>
+        </header>
 
-        <div className="mt-3 flex items-center justify-center gap-3">
-          <button
-            onClick={() => canSlower && setSpeed(SPEED_STEPS[speedIdx - 1])}
-            disabled={!canSlower}
-            className="rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-primary-deep disabled:opacity-40"
-            aria-label="Slower"
-          >
-            −
-          </button>
-          <span className="min-w-[3rem] text-center text-xs font-bold text-foreground">{speed}x</span>
-          <button
-            onClick={() => canFaster && setSpeed(SPEED_STEPS[speedIdx + 1])}
-            disabled={!canFaster}
-            className="rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold text-primary-deep disabled:opacity-40"
-            aria-label="Faster"
-          >
-            +
-          </button>
-        </div>
-
-        {!audioUrl && current && (
-          <p className="mt-6 text-center text-xs text-muted-foreground">No audio uploaded for this episode yet.</p>
-        )}
-
-        {audioUrl && (
-          <audio
-            ref={audioRef}
-            src={audioUrl}
-            preload="metadata"
-            className="hidden"
-            onError={() => {
-              // Broken audio during an autoplay run: skip to the next candidate.
-              if (advancesRef.current > 0 && !autoStoppedRef.current) void queueRef.current();
-            }}
-          />
-        )}
-
-        {countdown !== null && (
-          <div className="mt-6 rounded-2xl border border-border bg-card p-3 text-center shadow-soft">
-            <div className="text-xs font-semibold text-foreground">Next episode in {countdown}s</div>
-            <div className="mt-2 flex justify-center gap-2">
+        <main className="flex flex-1 flex-col overflow-y-auto px-6 pb-6 text-foreground">
+          {/* Picture / Read along */}
+          <div role="tablist" aria-label="View" className="mx-auto mt-2 flex rounded-full bg-white/10 p-1">
+            {(["picture", "read"] as const).map((v) => (
               <button
-                onClick={() => setCountdown(0)}
-                className="rounded-full bg-gradient-primary px-4 py-1.5 text-[11px] font-bold text-primary-foreground shadow-glow"
+                key={v}
+                type="button"
+                role="tab"
+                aria-selected={view === v}
+                disabled={v === "read" && !episodeText}
+                onClick={() => setView(v)}
+                className={`min-h-9 rounded-full px-4 text-sm font-semibold disabled:opacity-40 ${view === v ? "bg-white text-[#1a1830]" : "text-white/80"}`}
               >
-                Play now
+                {v === "picture" ? "Picture" : "Read along"}
               </button>
-              <button
-                onClick={() => setCountdown(null)}
-                className="rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-semibold text-primary-deep"
-              >
-                Cancel
-              </button>
-            </div>
+            ))}
           </div>
-        )}
 
-        {autoNext && autoCountdown !== null && (
-          <div className="mt-6 rounded-2xl border border-border bg-card p-3 text-center shadow-soft">
-            <div className="text-xs font-semibold text-foreground">
-              Next story in {autoCountdown}s
-            </div>
-            <div className="mt-0.5 truncate text-[11px] text-muted-foreground">{autoNext.title}</div>
-            <div className="mt-2 flex justify-center gap-2">
-              <button
-                onClick={() => setAutoCountdown(0)}
-                className="rounded-full bg-gradient-primary px-4 py-1.5 text-[11px] font-bold text-primary-foreground shadow-glow"
-              >
-                Play now
-              </button>
-              <button
-                onClick={stopAutoplay}
-                className="rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-semibold text-primary-deep"
-              >
-                Stop autoplay
-              </button>
-            </div>
+          <div className="mx-auto mt-4 w-full max-w-[360px]">
+            {view === "read" && episodeText ? (
+              <div className="h-[300px] overflow-y-auto rounded-[24px] bg-white/[0.06] p-5 text-[17px] leading-[1.75] text-white/90">
+                {paragraphs.map((p, i) => (
+                  <p key={i} className="mb-4 !text-white/90 last:mb-0">{p}</p>
+                ))}
+              </div>
+            ) : (
+              <div className="aspect-square w-full overflow-hidden rounded-[28px]">
+                <SkillPicture skill={skill} />
+              </div>
+            )}
           </div>
-        )}
 
-        {autoPrompt && (
-          <div className="mt-6 rounded-2xl border border-border bg-card p-3 text-center shadow-soft">
-            <div className="text-xs font-semibold text-foreground">Still listening?</div>
-            <div className="mt-0.5 text-[11px] text-muted-foreground">
-              We've played a few stories in a row. Keep going?
+          <div className="mx-auto mt-5 w-full max-w-[360px]">
+            {typeof universeName === "string" && <div className="text-xs font-semibold text-primary">{universeName}</div>}
+            <h1 className="font-[Quicksand] text-[22px] font-bold leading-tight">{story?.title ?? "Loading…"}</h1>
+            <div className="mt-0.5 text-sm text-muted-foreground">
+              {subLine}
+              {totalEps > 1 && current ? ` · ${epTitle(current.episode_number, current.title)}` : ""}
             </div>
-            <div className="mt-2 flex justify-center gap-2">
-              <button
-                onClick={() => {
-                  advancesRef.current = 0;
-                  setAutoPrompt(false);
-                  void queueRef.current();
+
+            <div className="mt-4">
+              <input
+                type="range"
+                min={0}
+                max={dur || 0}
+                step={0.1}
+                value={t}
+                onChange={(e) => {
+                  const a = audioRef.current;
+                  if (!a || !isFinite(a.duration)) return;
+                  const next = Number(e.target.value);
+                  a.currentTime = next;
+                  setT(next);
                 }}
-                className="rounded-full bg-gradient-primary px-4 py-1.5 text-[11px] font-bold text-primary-foreground shadow-glow"
-              >
-                Keep going
+                disabled={!audioUrl || !dur}
+                className="seek-range"
+                style={{ background: `linear-gradient(to right, hsl(var(--primary)) ${pct}%, rgba(255,255,255,.18) ${pct}%)` }}
+                aria-label="Seek"
+              />
+              <div className="mt-1.5 flex justify-between text-xs tabular-nums text-muted-foreground">
+                <span>{fmt(t)}</span>
+                <span>{fmt(dur)}</span>
+              </div>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between">
+              <button type="button" onClick={goPrev} disabled={!hasPrev} aria-label="Previous episode" className="flex h-12 w-12 items-center justify-center rounded-full disabled:opacity-30">
+                <SkipBack className="h-6 w-6 fill-current" />
+              </button>
+              <button type="button" onClick={() => skip(-10)} aria-label="Back 10 seconds" className="flex h-12 w-12 items-center justify-center rounded-full">
+                <RotateCcw className="h-6 w-6" />
+                <span className="sr-only">10</span>
               </button>
               <button
-                onClick={stopAutoplay}
-                className="rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-semibold text-primary-deep"
+                type="button"
+                onClick={toggle}
+                disabled={!audioUrl}
+                aria-label={playing ? "Pause" : "Play"}
+                className="lt-card flex h-[72px] w-[72px] items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-50"
               >
-                Stop autoplay
+                {playing ? <Pause className="h-8 w-8 fill-current" /> : <Play className="ml-1 h-8 w-8 fill-current" />}
+              </button>
+              <button type="button" onClick={() => skip(10)} aria-label="Forward 10 seconds" className="flex h-12 w-12 items-center justify-center rounded-full">
+                <RotateCw className="h-6 w-6" />
+                <span className="sr-only">10</span>
+              </button>
+              <button type="button" onClick={goNext} disabled={!hasNext} aria-label="Next episode" className="flex h-12 w-12 items-center justify-center rounded-full disabled:opacity-30">
+                <SkipForward className="h-6 w-6 fill-current" />
               </button>
             </div>
+
+            <div className="mt-4 flex gap-1 border-t border-white/10 pt-3">
+              <button type="button" onClick={() => setSheet("speed")} className={sheetBtn}>
+                <span className="text-sm font-bold text-white">{speed}×</span>Speed
+              </button>
+              <button type="button" onClick={() => setSheet("episodes")} disabled={totalEps < 2} className={`${sheetBtn} disabled:opacity-40`}>
+                <ListMusic className="h-5 w-5" />Episodes
+              </button>
+              <button type="button" onClick={() => setSheet("report")} className={sheetBtn}>
+                <Flag className="h-5 w-5" />Report
+              </button>
+            </div>
+
+            {!audioUrl && current && <p className="mt-4 text-center text-sm text-muted-foreground">The audio for this episode isn’t ready yet.</p>}
+
+            {countdown !== null && (
+              <div className="mt-4 rounded-2xl bg-white/[0.08] p-4">
+                <div className="text-sm font-semibold">Next episode in {countdown}s</div>
+                {nextEp && <div className="truncate text-sm text-muted-foreground">{epTitle(nextEp.episode_number, nextEp.title)}</div>}
+                <div className="mt-3 flex gap-2">
+                  <button type="button" onClick={() => setCountdown(0)} className="h-10 flex-1 bg-primary text-sm text-primary-foreground">Play now</button>
+                  <button type="button" onClick={() => setCountdown(null)} className="min-h-10 flex-1 rounded-full border border-white/20 text-sm font-semibold">Cancel</button>
+                </div>
+              </div>
+            )}
+
+            {countdown === null && nextEp && (
+              <button type="button" onClick={goNext} className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-white/[0.06] p-3 text-left">
+                <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-xl"><SkillPicture skill={skill} /></div>
+                <div className="min-w-0">
+                  <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Up next</div>
+                  <div className="truncate text-sm font-semibold">Episode {nextEp.episode_number} · {epTitle(nextEp.episode_number, nextEp.title)}</div>
+                </div>
+              </button>
+            )}
+
+            {autoNext && autoCountdown !== null && (
+              <div className="mt-4 rounded-2xl bg-white/[0.08] p-4">
+                <div className="text-sm font-semibold">Next story in {autoCountdown}s</div>
+                <div className="truncate text-sm text-muted-foreground">{autoNext.title}</div>
+                <div className="mt-3 flex gap-2">
+                  <button type="button" onClick={() => setAutoCountdown(0)} className="h-10 flex-1 bg-primary text-sm text-primary-foreground">Play now</button>
+                  <button type="button" onClick={stopAutoplay} className="min-h-10 flex-1 rounded-full border border-white/20 text-sm font-semibold">Stop</button>
+                </div>
+              </div>
+            )}
+
+            {autoPrompt && (
+              <div className="mt-4 rounded-2xl bg-white/[0.08] p-4">
+                <div className="text-sm font-semibold">Still listening?</div>
+                <div className="text-sm text-muted-foreground">We’ve played a few stories in a row. Keep going?</div>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      advancesRef.current = 0;
+                      setAutoPrompt(false);
+                      void queueRef.current();
+                    }}
+                    className="h-10 flex-1 bg-primary text-sm text-primary-foreground"
+                  >
+                    Keep going
+                  </button>
+                  <button type="button" onClick={stopAutoplay} className="min-h-10 flex-1 rounded-full border border-white/20 text-sm font-semibold">Stop</button>
+                </div>
+              </div>
+            )}
+
+            {runActive && !autoStopped && autoCountdown === null && !autoPrompt && (
+              <button type="button" onClick={stopAutoplay} className="mt-3 min-h-10 w-full text-sm font-semibold text-primary">
+                Stop playing more stories
+              </button>
+            )}
           </div>
-        )}
 
-        {runActive && !autoStopped && autoCountdown === null && !autoPrompt && (
-          <div className="mt-4 text-center">
-            <button
-              onClick={stopAutoplay}
-              className="rounded-full border border-border bg-card px-4 py-1.5 text-[11px] font-semibold text-primary-deep"
-            >
-              Stop autoplay
-            </button>
-          </div>
-        )}
-
-      </main>
-
-      {showFullText && episodeText && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col"
-          style={{
-            background: textDark ? "#0F1923" : "#FFFFFF",
-            color: textDark ? "#F5F0E8" : "#1A1612",
-          }}
-        >
-          <button
-            onClick={() => setShowFullText(false)}
-            className="absolute left-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full"
-            style={{
-              color: textDark ? "#F5F0E8" : "#1A1612",
-              background: textDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
-            }}
-            aria-label="Close full text"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-
-          <main className="flex-1 overflow-y-auto" style={{ padding: "72px 24px 120px" }}>
-            <div style={{ maxWidth: "640px", margin: "0 auto" }}>
-              {current && (
-                <h1 className="mb-4 text-lg font-extrabold" style={{ color: textDark ? "#F5F0E8" : "#1A1612" }}>
-                  {cleanEpisodeTitle(current.title, story?.title, current.episode_number) ||
-                    `Episode ${current.episode_number}`}
-                </h1>
-              )}
-              <article
-                style={{
-                  fontSize: `${[16, 18, 20][textSizeIdx]}px`,
-                  lineHeight: 1.8,
-                  color: textDark ? "#F5F0E8" : "#1A1612",
-                  whiteSpace: "pre-wrap",
-                }}
-              >
-                {episodeText}
-              </article>
-            </div>
-          </main>
-
-          <div
-            className="absolute inset-x-0 bottom-0 flex items-center justify-between px-5 py-3"
-            style={{
-              background: textDark ? "#0F1923" : "#FFFFFF",
-              borderTop: `1px solid ${textDark ? "rgba(245,240,232,0.18)" : "rgba(26,22,18,0.12)"}`,
-            }}
-          >
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setTextSizeIdx((i) => Math.max(0, i - 1))}
-                disabled={textSizeIdx === 0}
-                className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold disabled:opacity-40"
-                style={{
-                  border: `1px solid ${textDark ? "rgba(245,240,232,0.18)" : "rgba(26,22,18,0.12)"}`,
-                  color: textDark ? "#F5F0E8" : "#1A1612",
-                }}
-                aria-label="Decrease font size"
-              >
-                A−
-              </button>
-              <button
-                onClick={() => setTextSizeIdx((i) => Math.min(2, i + 1))}
-                disabled={textSizeIdx === 2}
-                className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold disabled:opacity-40"
-                style={{
-                  border: `1px solid ${textDark ? "rgba(245,240,232,0.18)" : "rgba(26,22,18,0.12)"}`,
-                  color: textDark ? "#F5F0E8" : "#1A1612",
-                }}
-                aria-label="Increase font size"
-              >
-                A+
-              </button>
-            </div>
-            <button
-              onClick={() => setTextDark((d) => !d)}
-              className="flex h-10 w-10 items-center justify-center rounded-full"
-              style={{
-                border: `1px solid ${textDark ? "rgba(245,240,232,0.18)" : "rgba(26,22,18,0.12)"}`,
-                color: textDark ? "#F5F0E8" : "#1A1612",
+          {audioUrl && (
+            <audio
+              ref={audioRef}
+              src={audioUrl}
+              preload="metadata"
+              className="hidden"
+              onError={() => {
+                // Broken audio during an autoplay run: skip to the next candidate.
+                if (advancesRef.current > 0 && !autoStoppedRef.current) void queueRef.current();
               }}
-              aria-label={textDark ? "Switch to light mode" : "Switch to dark mode"}
-            >
-              {textDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </button>
+            />
+          )}
+        </main>
+      </PhoneShell>
+
+      {/* ---------- sheets ---------- */}
+      {sheet === "report" && story && (
+        <ReportSheet storyId={story.id} storyTitle={story.title ?? ""} episodeNumber={totalEps > 1 ? epNum : null} onClose={() => setSheet(null)} />
+      )}
+      {(sheet === "speed" || sheet === "episodes") && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 md:items-center" role="dialog" aria-modal="true" onClick={() => setSheet(null)}>
+          <div className="max-h-[70vh] w-full max-w-[460px] overflow-y-auto rounded-t-[28px] bg-card p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-foreground md:rounded-[28px]" onClick={(e) => e.stopPropagation()}>
+            <h2 className="font-[Quicksand] text-[22px] font-bold">{sheet === "speed" ? "Speed" : "Episodes"}</h2>
+            {sheet === "speed" ? (
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {[0.75, 0.85, 0.95, 1, 1.1, 1.25].map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => {
+                      setSpeed(r);
+                      setSheet(null);
+                    }}
+                    className={`min-h-12 rounded-2xl border-2 text-[15px] font-semibold ${speed === r ? "border-primary bg-primary/10" : "border-border"}`}
+                  >
+                    {r === 1 ? "Normal" : `${r}×`}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <ol className="mt-3 divide-y divide-border">
+                {(episodes ?? []).map((ep) => {
+                  const on = ep.episode_number === epNum;
+                  return (
+                    <li key={ep.id}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSheet(null);
+                          if (!on) nav(`/player/${id}/${ep.episode_number}`, { replace: true, state: location.state });
+                        }}
+                        className="flex min-h-14 w-full items-center gap-3 text-left"
+                      >
+                        <span className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-semibold ${on ? "bg-primary text-primary-foreground" : "border border-border"}`}>
+                          {ep.episode_number}
+                        </span>
+                        <span className={`flex-1 truncate ${on ? "font-semibold" : ""}`}>{epTitle(ep.episode_number, ep.title)}</span>
+                        {on && <span className="text-xs font-semibold text-primary">Playing</span>}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
           </div>
         </div>
       )}
-    </PhoneShell>
+    </div>
   );
 };
 

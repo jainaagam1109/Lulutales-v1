@@ -71,7 +71,7 @@ export const StoryCard = ({
     return null;
   }
 
-  const to = story.story_type === "bedtime_text" ? `/bedtime/${story.id}` : `/story/${story.id}`;
+  const to = `/story/${story.id}`;
   const state = { from: location.pathname };
   const badge = formatBadgeFor(story);
   const skill = skillKeyFor(story as any);
