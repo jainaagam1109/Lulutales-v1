@@ -55,7 +55,7 @@ const Auth = () => {
   const nav = useNavigate();
   const [searchParams] = useSearchParams();
   const { session, loading } = useAuth();
-  const [mode, setMode] = useState<Mode>("signin");
+  const [mode, setMode] = useState<Mode>(searchParams.get("mode") === "signup" ? "signup" : "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);

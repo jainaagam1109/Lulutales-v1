@@ -1,0 +1,30 @@
+
+
+a{color:#5B4BD6}a:hover{color:#4336B0}
+@keyframes lt-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes lt-float-tilt{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-9px) rotate(-2deg)}}
+@keyframes lt-float-chip{0%,100%{transform:translateY(0) rotate(4deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+@keyframes lt-twinkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.65)}}
+@keyframes lt-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes lt-wave{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+@keyframes lt-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes lt-drift{0%,100%{transform:translateX(0)}50%{transform:translateX(18px)}}
+@keyframes lt-rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes lt-check{0%,100%{opacity:.25;transform:scale(.8)}20%,86%{opacity:1;transform:scale(1)}}
+@keyframes lt-glow{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes lt-ring{0%{transform:scale(1);opacity:.5}100%{transform:scale(1.9);opacity:0}}
+@keyframes lt-day{0%,42%{opacity:1}50%,92%{opacity:0}100%{opacity:1}}
+@keyframes lt-night{0%,42%{opacity:0}50%,92%{opacity:1}100%{opacity:0}}
+@keyframes lt-sway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+@keyframes lt-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes lt-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-34px)}}
+@keyframes lt-squash{0%,100%{transform:scaleX(1);opacity:.5}50%{transform:scaleX(.6);opacity:.25}}
+.lt-span2{grid-column:span 2}
+.lt-drop{margin-top:32px}
+@media (max-width:760px){.lt-span2{grid-column:auto}.lt-drop{margin-top:0}.lt-desk{display:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+
+.lt-welcome-d{display:block}.lt-welcome-m{display:none}
+@media (max-width: 760px){.lt-welcome-d{display:none}.lt-welcome-m{display:block}}
+.lt-welcome [hidden]{display:none!important}
+html{scroll-behavior:smooth}

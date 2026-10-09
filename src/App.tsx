@@ -5,6 +5,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { RequireAuth } from "@/components/RequireAuth";
+import { HomeGate } from "@/components/HomeGate";
+import { lazy, Suspense } from "react";
+const Welcome = lazy(() => import("./pages/Welcome"));
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
@@ -51,7 +54,8 @@ const App = () => (
             <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
             <Route path="/add-child" element={<RequireAuth><Onboarding /></RequireAuth>} />
             <Route path="/select-profile" element={<RequireAuth><SelectProfile /></RequireAuth>} />
-            <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
+            <Route path="/" element={<HomeGate home={<RequireAuth><Index /></RequireAuth>} welcome={<Suspense fallback={null}><Welcome /></Suspense>} />} />
+            <Route path="/welcome" element={<Suspense fallback={null}><Welcome /></Suspense>} />
             <Route path="/story/:id" element={<RequireAuth><StoryDetail /></RequireAuth>} />
             <Route path="/player/:id" element={<RequireAuth><Player /></RequireAuth>} />
             <Route path="/player/:id/:episodeNumber" element={<RequireAuth><Player /></RequireAuth>} />
