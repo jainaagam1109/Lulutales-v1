@@ -27,9 +27,7 @@ import { RequireAdmin } from "@/components/RequireAdmin";
 import { RouteTracker } from "@/components/RouteTracker";
 
 import Insights from "./pages/Insights";
-import MagicHub from "./pages/MagicHub";
-import AudioStoryForm from "./pages/AudioStoryForm";
-import BedtimeStoryForm from "./pages/BedtimeStoryForm";
+import MakeStory from "./pages/MakeStory";
 import Generating from "./pages/Generating";
 import BedtimeReader from "./pages/BedtimeReader";
 import EpisodeReader from "./pages/EpisodeReader";
@@ -73,9 +71,9 @@ const App = () => (
             <Route path="/admin/health" element={<RequireAdmin><AdminHealth /></RequireAdmin>} />
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
             <Route path="/insights" element={<RequireAuth><Insights /></RequireAuth>} />
-            <Route path="/magic-hub" element={<RequireAuth><MagicHub /></RequireAuth>} />
-            <Route path="/magic-hub/audio" element={<RequireAuth><AudioStoryForm /></RequireAuth>} />
-            <Route path="/magic-hub/bedtime" element={<RequireAuth><BedtimeStoryForm /></RequireAuth>} />
+            <Route path="/magic-hub" element={<RequireAuth><MakeStory /></RequireAuth>} />
+            <Route path="/magic-hub/audio" element={<Navigate to="/magic-hub" replace />} />
+            <Route path="/magic-hub/bedtime" element={<Navigate to="/magic-hub?format=read" replace />} />
             <Route path="/generating/:storyId" element={<RequireAuth><Generating /></RequireAuth>} />
             <Route path="/bedtime/:id" element={<RequireAuth><BedtimePreview /></RequireAuth>} />
             <Route path="/bedtime/:id/read" element={<RequireAuth><BedtimeReader /></RequireAuth>} />
