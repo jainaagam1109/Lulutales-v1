@@ -178,7 +178,7 @@ h1, h2, h3 {
 }
 :is(h1, h2, h3):is(.text-xs, .text-sm, .text-base), .brand-title {
   font-family: 'Quicksand', 'Noto Sans Devanagari', sans-serif;
-  font-size: 15px;
+  font-size: 8px;
   line-height: 1.25;
   font-weight: 600;
   letter-spacing: 0;
