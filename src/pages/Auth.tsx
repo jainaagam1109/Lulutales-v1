@@ -86,7 +86,7 @@ const Auth = () => {
 
   const verify = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (code.length !== 6) return;
+    if (code.length < 6) return;
     setBusy(true);
     setError(null);
     const { error } = await supabase.auth.verifyOtp({ email, token: code, type: "email" });
@@ -199,21 +199,21 @@ const Auth = () => {
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 pattern="[0-9]*"
-                maxLength={6}
+                maxLength={8}
                 value={code}
                 onChange={(e) => {
-                  const v = e.target.value.replace(/\D/g, "").slice(0, 6);
+                  const v = e.target.value.replace(/\D/g, "").slice(0, 8);
                   setCode(v);
                   setError(null);
                 }}
                 placeholder="••••••"
-                className="h-16 w-full rounded-2xl border border-border bg-card text-center font-[Quicksand] text-[30px] font-bold tracking-[0.5em] text-foreground placeholder:text-muted-foreground/40 focus:border-primary focus:outline-none"
+                className="h-16 w-full rounded-2xl border border-border bg-card text-center font-[Quicksand] text-[30px] font-bold tracking-[0.35em] text-foreground placeholder:text-muted-foreground/40 focus:border-primary focus:outline-none"
               />
               {error && <p className="mt-2 text-sm !text-destructive" role="alert">{error}</p>}
               <p className="mt-3 text-sm text-muted-foreground">
                 The code works for 10 minutes. If it hasn’t arrived in a minute, check your spam folder.
               </p>
-              <button type="submit" disabled={busy || code.length !== 6} className="mt-5 w-full bg-primary text-primary-foreground disabled:opacity-50">
+              <button type="submit" disabled={busy || code.length < 6} className="mt-5 w-full bg-primary text-primary-foreground disabled:opacity-50">
                 {busy ? "Checking…" : "Continue"}
               </button>
             </form>
