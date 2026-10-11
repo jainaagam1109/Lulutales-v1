@@ -74,7 +74,12 @@ const Auth = () => {
     if (!EMAIL_RE.test(em)) return setError("Please enter a valid email.");
     setBusy(true);
     setError(null);
-    const { error } = await supabase.auth.signInWithOtp({ email: em, options: { shouldCreateUser: true } });
+    const { error } = await supabase.auth.signInWithOtp({ email: em, options: {
+        shouldCreateUser: true,
+        // The link in the email brings the parent back to the same site they asked from.
+        emailRedirectTo: `${window.location.origin}/auth${nextPath ? `?next=${encodeURIComponent(nextPath)}` : ""}`,
+      },
+    });
     setBusy(false);
     if (error) return setError(friendly(error.message));
     setEmail(em);
