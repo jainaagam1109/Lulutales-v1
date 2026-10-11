@@ -20,7 +20,7 @@ import Profile from "./pages/Profile";
 import KidsProfiles from "./pages/KidsProfiles";
 import Universe from "./pages/Universe";
 
-import Admin from "./pages/Admin";
+import { AdminRequests, AdminFamilies, AdminReports, AdminSettings } from "./pages/admin/AdminPages";
 import AdminUpload from "./pages/AdminUpload";
 import AdminHealth from "./pages/AdminHealth";
 import { RequireAdmin } from "@/components/RequireAdmin";
@@ -71,7 +71,10 @@ const App = () => (
             <Route path="/universe/:id" element={<RequireAuth><Universe /></RequireAuth>} />
 
 
-            <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
+            <Route path="/admin" element={<RequireAdmin><AdminRequests /></RequireAdmin>} />
+            <Route path="/admin/families" element={<RequireAdmin><AdminFamilies /></RequireAdmin>} />
+            <Route path="/admin/reports" element={<RequireAdmin><AdminReports /></RequireAdmin>} />
+            <Route path="/admin/settings" element={<RequireAdmin><AdminSettings /></RequireAdmin>} />
             <Route path="/admin/upload" element={<RequireAdmin><AdminUpload /></RequireAdmin>} />
             <Route path="/admin/health" element={<RequireAdmin><AdminHealth /></RequireAdmin>} />
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
