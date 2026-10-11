@@ -11,6 +11,10 @@ begin
   from (select auto_approve_hours from public.app_settings limit 1) s
   on conflict (user_id) do nothing;
   return new;
+exception when others then
+  -- Never let this block a sign-up; an admin can fix the record later.
+  raise warning 'handle_new_family failed for %: %', new.id, sqlerrm;
+  return new;
 end $$;
 
 drop trigger if exists on_auth_user_created_family on auth.users;
