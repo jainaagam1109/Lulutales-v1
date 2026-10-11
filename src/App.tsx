@@ -29,6 +29,8 @@ import { LookApplier } from "@/components/LookApplier";
 
 import Insights from "./pages/Insights";
 import MakeStory from "./pages/MakeStory";
+import Joined from "./pages/Joined";
+import InviteLanding from "./pages/InviteLanding";
 import Generating from "./pages/Generating";
 import BedtimeReader from "./pages/BedtimeReader";
 import EpisodeReader from "./pages/EpisodeReader";
@@ -48,6 +50,8 @@ const App = () => (
           <LookApplier />
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/i/:code" element={<InviteLanding />} />
+            <Route path="/joined" element={<RequireAuth><Joined /></RequireAuth>} />
             <Route path="/oauth/consent" element={<OAuthConsent />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />

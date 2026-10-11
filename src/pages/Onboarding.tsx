@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { loadActiveProfileForUser } from "@/lib/activeProfile";
 import { trackEvent } from "@/lib/events";
 import { track } from "@/lib/track";
+import { redeemPendingInvite } from "@/lib/invite";
 import {
   FieldLabel,
   TextInput,
@@ -142,7 +143,7 @@ const Onboarding = () => {
         name: name.trim(),
         age: ageNum,
         gender: gender || null,
-        companion: joinCompanion(companion.name, companion.what),
+        companion: joinCompanion(companion.name, companion.what) || null,
         user_id: session.user.id,
         status: hasActive ? "inactive" : "active",
       })
@@ -161,7 +162,9 @@ const Onboarding = () => {
     setLoading(false);
     void track("profile_created", { profile_id: data.id, age: data.age, is_add: isAddMode });
     if (!isAddMode) {
-      nav(next ?? "/", { replace: true });
+      await redeemPendingInvite().catch(() => false);
+      await qc.invalidateQueries();
+      nav(next ?? "/joined", { replace: true });
     } else {
       toast.success(`${data.name} added`);
       nav("/profiles");
@@ -169,92 +172,108 @@ const Onboarding = () => {
   };
 
 
-  const headingText = isAddMode ? "Add a child" : "Tell us about your child";
+  const ageNum = Number(age);
+  const g = gender === "Girl" ? "girl" : gender === "Boy" ? "boy" : null;
+  const pitch =
+    ageNum >= 2 && ageNum <= 9
+      ? `Written for a ${ageNum}-year-old${g ? ` ${g}` : ""}: ${
+          ageNum <= 3 ? "short, sing-song sentences and one simple feeling at a time." : ageNum <= 6 ? "short sentences, a gentle pace and one feeling at a time." : "richer words, a real plot and feelings they can talk about."
+        }`
+      : null;
+  const shownName = name.trim() || "your child";
 
   return (
     <PhoneShell>
-      <main className="relative flex-1 overflow-y-auto px-6 pt-12 pb-[calc(6rem+env(safe-area-inset-bottom))]">
-        <button
-          type="button"
-          aria-label={isAddMode ? "Close" : "Skip"}
-          onClick={() => nav(isAddMode ? "/profiles" : "/")}
-          className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground hover:text-primary-deep"
-        >
-          <X className="h-4 w-4" />
-        </button>
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center text-3xl">
-            <LuluLogo size={48} showWordmark={false} />
-          </div>
-          <h1 className="text-2xl font-extrabold text-foreground"><LuluLogo /></h1>
-          <p className="mt-1 text-sm text-muted-foreground">Audio stories for curious kids</p>
-        </div>
-
-        <h2 className="mb-1 text-xl font-bold text-foreground">{headingText}</h2>
-        <p className="mb-3 text-sm text-muted-foreground">We'll use this to personalise stories.</p>
-        <p className="mb-6 rounded-xl bg-secondary/40 px-3 py-2 text-[11px] text-muted-foreground">
-          Your child's details stay private to your account — never sold or shared — and are used only to personalise stories.
+      <main className="flex-1 overflow-y-auto px-6 pb-8 pt-6">
+        {isAddMode ? (
+          <button type="button" onClick={() => nav("/profiles")} className="mb-4 inline-flex min-h-10 items-center text-sm font-semibold text-foreground">
+            <X className="mr-1 h-4 w-4" /> Cancel
+          </button>
+        ) : (
+          <div className="mb-6 text-sm font-semibold text-muted-foreground">Last step</div>
+        )}
+        <h1 className="font-[Quicksand] text-[28px] font-bold leading-tight text-foreground">
+          {isAddMode ? "Add a child" : "Who are the stories for?"}
+        </h1>
+        <p className="mt-1 text-[15px] text-muted-foreground">
+          {isAddMode ? "Each child gets their own stories." : "You can add family names and more children later."}
         </p>
 
-        <div className="mb-4">
-          <FieldLabel tooltip="Your child's first name — used to personalise the story.">
-            Child's name
-          </FieldLabel>
-          <TextInput
+        <label className="mt-6 block">
+          <span className="mb-2 block font-semibold text-foreground">Your child’s first name</span>
+          <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             onBlur={() => setTouched((t) => ({ ...t, name: true }))}
             placeholder="e.g. Aanya"
             maxLength={60}
-            state={nameState}
-            errorMessage="Hmm, this should be letters only 😊"
+            autoComplete="off"
+            aria-invalid={nameState === "error"}
+            className="h-12 w-full rounded-2xl border border-border bg-card px-4 text-[16px] text-foreground placeholder:text-muted-foreground/70 focus:border-primary focus:outline-none"
           />
+          {nameState === "error" && <span className="mt-1.5 block text-sm text-destructive">Please use letters only.</span>}
+        </label>
+
+        <div className="mt-5">
+          <span className="mb-2 block font-semibold text-foreground">Age</span>
+          <div role="radiogroup" aria-label="Age" className="grid grid-cols-4 gap-2">
+            {[2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+              <button
+                key={n}
+                type="button"
+                role="radio"
+                aria-checked={age === String(n)}
+                onClick={() => setAge(String(n))}
+                className={`min-h-12 rounded-2xl border text-[17px] font-semibold ${
+                  age === String(n) ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-foreground"
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="mb-4">
-          <FieldLabel tooltip="Helps us pitch the language and length just right.">Age</FieldLabel>
-          <TextInput
-            value={age}
-            onChange={(e) => setAge(e.target.value)}
-            onBlur={() => setTouched((t) => ({ ...t, age: true }))}
-            inputMode="numeric"
-            placeholder="e.g. 5"
-            state={ageState}
-            errorMessage={AGE_ERROR}
-          />
-          {ageState !== "error" && (
-            <p className="mt-1 text-[11px] text-muted-foreground">{AGE_HELPER}</p>
-          )}
+        <div className="mt-5">
+          <div className="mb-2 flex items-baseline gap-2">
+            <span className="font-semibold text-foreground">Girl or boy?</span>
+            <span className="text-xs text-muted-foreground">Optional</span>
+          </div>
+          <div role="radiogroup" aria-label="Girl or boy" className="flex flex-wrap gap-2">
+            {[
+              { v: "Girl", l: "Girl" },
+              { v: "Boy", l: "Boy" },
+              { v: "Prefer not to say", l: "Rather not say" },
+            ].map((o) => (
+              <button
+                key={o.v}
+                type="button"
+                role="radio"
+                aria-checked={gender === o.v}
+                onClick={() => setGender(gender === o.v ? "" : o.v)}
+                className={`min-h-11 rounded-full border px-5 text-[15px] font-semibold ${
+                  gender === o.v ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-foreground"
+                }`}
+              >
+                {o.l}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <div className="mb-4">
-          <FieldLabel optional tooltip="So we use the right pronouns in the story.">
-            Gender
-          </FieldLabel>
-          <Select value={gender} onChange={setGender} options={GENDERS} placeholder="Select gender" />
-        </div>
-
-        <div className="mb-8">
-          <CompanionFields
-            name={companion.name}
-            what={companion.what}
-            onChange={setCompanion}
-          />
-        </div>
+        {pitch && <p className="mt-5 rounded-[18px] bg-accent p-4 text-sm text-foreground/80">{pitch}</p>}
       </main>
 
-      <div
-        className="border-t border-border bg-card px-6 pt-3"
-        style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
-      >
-        <Button
-          onClick={submit}
-          disabled={loading}
-          className="w-full rounded-full bg-gradient-primary py-3.5 text-sm font-bold text-primary-foreground shadow-glow transition-opacity disabled:opacity-50"
-        >
-          {loading ? "Saving…" : isAddMode ? "Add child →" : "Continue →"}
-        </Button>
-      </div>
+      <footer className="border-t border-border bg-background px-6 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3">
+        <button type="button" onClick={submit} disabled={loading || !name.trim() || !age} className="w-full bg-primary text-primary-foreground disabled:opacity-50">
+          {loading ? "Saving…" : isAddMode ? "Add child" : "Continue"}
+        </button>
+        {!isAddMode && (
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            By continuing, you confirm you’re {shownName}’s parent or guardian. We use their name only to write their stories and never sell it.
+          </p>
+        )}
+      </footer>
     </PhoneShell>
   );
 };

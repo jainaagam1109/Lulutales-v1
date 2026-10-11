@@ -12,6 +12,7 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { supabase } from "@/integrations/supabase/client";
 import { useFamily, formatDay, nextMonthStart } from "@/lib/family";
 import { useParentSettings, type Look } from "@/lib/parentSettings";
+import { fetchMyInviteCode } from "@/lib/invite";
 import { fetchStoriesCompleted, fetchScreenTimeSeconds, fetchActiveDaysLast7, fetchBucketBreakdown } from "@/lib/analytics";
 
 const fmtTime = (secs: number) => {
@@ -153,6 +154,27 @@ const Profile = () => {
     },
   });
 
+  const { data: inviteCode } = useQuery({
+    queryKey: ["my-invite", user?.id],
+    enabled: !!user?.id && fam.status === "approved",
+    queryFn: fetchMyInviteCode,
+    staleTime: Infinity,
+  });
+  const inviteUrl = inviteCode ? `${window.location.origin}/i/${inviteCode}` : "";
+  const shareInvite = async () => {
+    const text = `I use LuluTales for personalised bedtime stories for ${childName}. Join with my link and skip the wait:`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "LuluTales", text, url: inviteUrl });
+        return;
+      }
+      await navigator.clipboard.writeText(`${text} ${inviteUrl}`);
+      toast.success("Invite link copied");
+    } catch {
+      /* closed the share sheet */
+    }
+  };
+
   const save = async (patch: Parameters<typeof update>[0]) => {
     try {
       await update(patch);
@@ -290,6 +312,28 @@ const Profile = () => {
               </p>
             </Card>
           </Section>
+
+          {/* ---------- Invite ---------- */}
+          {inviteCode && (
+            <Section title="Invite friends">
+              <Card className="p-4">
+                <p className="text-[15px] text-muted-foreground">
+                  Friends you invite skip the wait. You get 2 extra stories for each friend who joins.
+                </p>
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="min-w-0 flex-1 truncate rounded-2xl bg-muted px-4 py-3 text-sm font-semibold text-foreground">
+                    {inviteUrl.replace(/^https?:\/\//, "")}
+                  </span>
+                  <button type="button" onClick={shareInvite} className="h-11 shrink-0 bg-primary px-5 text-primary-foreground">
+                    Share
+                  </button>
+                </div>
+                {fam.allowance && fam.allowance.bonus > 0 && (
+                  <p className="mt-2 text-sm text-muted-foreground">{fam.allowance.bonus} extra stories earned this month</p>
+                )}
+              </Card>
+            </Section>
+          )}
 
           {/* ---------- Listening ---------- */}
           <Section title="Listening">

@@ -16,6 +16,8 @@ export const useFamily = () => {
     queryKey: ["family", user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
+      // If this family's 48 hours are up, approve them now (harmless if the database step isn't in yet).
+      await (supabase as any).rpc("claim_auto_approval").then(() => {}, () => {});
       const [{ data: access }, { data: allow }] = await Promise.all([
         (supabase as any).from("family_access").select("status, auto_approve_at").eq("user_id", user!.id).maybeSingle(),
         (supabase as any).rpc("family_story_allowance", { _user_id: user!.id }),
