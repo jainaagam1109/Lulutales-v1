@@ -305,7 +305,7 @@ const Profile = () => {
               </div>
               <p className="mt-1.5 text-sm text-muted-foreground">
                 {fam.status === "waiting"
-                  ? `We review requests within 48 hours.${fam.autoApproveAt ? ` Making stories opens by ${formatDay(fam.autoApproveAt)}.` : ""}`
+                  ? "Making stories opens for your family soon. The whole library is open while you wait."
                   : fam.noLimit
                     ? "Your family has no monthly limit."
                     : `Your family has ${Math.max(0, fam.remaining)} of ${fam.total} stories left. New stories on ${nextMonthStart()}.`}

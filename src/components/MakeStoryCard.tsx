@@ -44,18 +44,17 @@ export const MakeStoryCard = ({
 
   // ---------- Waiting for approval ----------
   if (fam.status === "waiting") {
-    const day = formatDay(fam.autoApproveAt);
     return (
       <div className="flex flex-col gap-2 rounded-[22px] border border-border bg-card p-5">
         <Pill>
           <Clock className="mr-1.5 h-3.5 w-3.5" />
-          {day ? `Opens by ${day}` : "Opens soon"}
+          Opening soon
         </Pill>
         <h2 className="brand-title !text-[19px] text-foreground">
           {size === "strip" ? "Making stories opens soon" : `${childName ? `${childName}’s` : "Your child’s"} own stories open soon.`}
         </h2>
         <p className="text-sm text-muted-foreground">
-          We review requests within 48 hours and email you. The whole library is open while you wait.
+          We’re letting families in a few at a time. The whole library is open while you wait.
         </p>
         <Link to="/library" className="mt-1 text-sm font-semibold text-primary">
           Open the library →

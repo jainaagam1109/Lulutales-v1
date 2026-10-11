@@ -73,7 +73,6 @@ const Joined = () => {
     );
   }
 
-  const day = formatDay(fam.autoApproveAt);
   return (
     <PhoneShell>
       <main className="flex flex-1 flex-col overflow-y-auto px-6 pb-8 pt-6 md:justify-center">
@@ -84,7 +83,7 @@ const Joined = () => {
         </p>
         <ul className="mt-6 flex flex-col gap-4">
           <Point title="The story library is open" sub="Listen to any story today." />
-          <Point title={`${name}’s own stories${day ? ` by ${day}` : " soon"}`} sub="We review requests within 48 hours." />
+          <Point title={`${name}’s own stories, soon`} sub="We’re letting families in a few at a time." />
         </ul>
         <div className="mt-auto flex flex-col gap-2 pt-8">
           <Link to="/library" className="lt-card flex min-h-12 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground">
