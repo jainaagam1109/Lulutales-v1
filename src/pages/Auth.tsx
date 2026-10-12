@@ -125,7 +125,9 @@ const Auth = () => {
         {step === "email" ? (
           <>
             <div className="mb-10">
-              <LuluLogo size={34} />
+              <a href="/" aria-label="LuluTales home" className="inline-flex">
+                <LuluLogo size={34} />
+              </a>
             </div>
             {invited && (
               <span className="mb-3 inline-flex min-h-7 items-center self-start rounded-full bg-primary/10 px-3 text-[13px] font-semibold text-primary">

@@ -28,7 +28,9 @@ export const RequireAuth = ({ children }: Props) => {
       return;
     }
     if (!session) {
-      setRedirectTo("/auth");
+      // Bring the parent back to the page they were trying to open once they sign in.
+      const here = `${location.pathname}${location.search}`;
+      setRedirectTo(here && here !== "/" ? `/auth?next=${encodeURIComponent(here)}` : "/auth");
       setChecking(false);
       return;
     }
@@ -51,14 +53,14 @@ export const RequireAuth = ({ children }: Props) => {
       setRedirectTo(null);
       setChecking(false);
     })();
-  }, [session, loading, location.pathname]);
+  }, [session, loading, location.pathname, location.search]);
 
   if (loading || checking) {
     return (
       <div className="flex h-screen items-center justify-center text-sm text-muted-foreground">Loading…</div>
     );
   }
-  if (redirectTo && redirectTo !== location.pathname) {
+  if (redirectTo && redirectTo.split("?")[0] !== location.pathname) {
     return <Navigate to={redirectTo} replace state={{ from: location }} />;
   }
   return <>{children}</>;
