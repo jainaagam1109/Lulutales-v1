@@ -398,6 +398,8 @@ const Profile = () => {
               />
               <LinkRow icon={Mail} title="Contact us" sub="hello@lulutales.in" href="mailto:hello@lulutales.in" />
               <LinkRow icon={Info} title="About LuluTales" sub="Who we are and how stories are made" to="/welcome" />
+              <LinkRow icon={Shield} title="Privacy policy" to="/privacy" />
+              <LinkRow icon={Info} title="Terms of use" to="/terms" />
             </Card>
           </Section>
 

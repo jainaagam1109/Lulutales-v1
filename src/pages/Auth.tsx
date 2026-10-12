@@ -179,6 +179,11 @@ const Auth = () => {
               </button>
               <p className="mt-2 text-center text-sm text-muted-foreground">We’ll email you a 6-digit code. No password to remember.</p>
             </form>
+            <p className="mt-8 text-center text-xs text-muted-foreground">
+              By continuing, you agree to our{" "}
+              <a href="/terms" className="font-semibold text-primary">Terms</a> and{" "}
+              <a href="/privacy" className="font-semibold text-primary">Privacy policy</a>.
+            </p>
           </>
         ) : (
           <>

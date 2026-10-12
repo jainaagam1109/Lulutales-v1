@@ -24,7 +24,7 @@ export const LookApplier = () => {
   }, []);
 
   const look = localLook();
-  const exempt = !session || pathname === "/welcome" || pathname.startsWith("/admin") || pathname.startsWith("/auth");
+  const exempt = !session || pathname === "/welcome" || pathname.startsWith("/admin") || pathname.startsWith("/auth") || pathname === "/privacy" || pathname === "/terms";
   const dark = !exempt && (look === "dark" || (look === "auto" && isNight()));
 
   useEffect(() => {
