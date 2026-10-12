@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import desktopHtml from "./welcome/desktop.html?raw";
 import phoneHtml from "./welcome/phone.html?raw";
 import "./welcome/welcome.css";
+import { useAuth } from "@/hooks/useAuth";
 
 /**
  * Public welcome (sales) page shown at "/" to visitors who are not signed in.
@@ -12,6 +13,24 @@ import "./welcome/welcome.css";
 const Welcome = () => {
   const ref = useRef<HTMLDivElement>(null);
   const nav = useNavigate();
+  const { session } = useAuth();
+
+  // A parent who is already signed in (e.g. from "About LuluTales") sees "Open the app",
+  // not "Log in" / "Sign up free".
+  useEffect(() => {
+    const root = ref.current;
+    if (!root || !session) return;
+    root.querySelectorAll<HTMLAnchorElement>("a[href^='/auth']").forEach((a) => {
+      if (a.getAttribute("href") === "/auth") {
+        a.style.display = "none"; // the header "Log in" link
+        return;
+      }
+      a.setAttribute("href", "/");
+      a.textContent = "Open the app";
+      const note = a.nextElementSibling as HTMLElement | null;
+      if (note && /no card needed/i.test(note.textContent ?? "")) note.style.display = "none";
+    });
+  }, [session]);
 
   useEffect(() => {
     document.title = "LuluTales – Stories that help your child grow";

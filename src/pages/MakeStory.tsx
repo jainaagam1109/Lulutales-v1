@@ -108,7 +108,7 @@ const Segmented = <T extends string>({
         disabled={o.disabled}
         onClick={() => onChange(o.value)}
         className={`min-h-11 flex-1 rounded-full px-3 text-[15px] font-semibold transition-colors disabled:opacity-40 ${
-          value === o.value ? "bg-card text-foreground shadow-soft" : "text-muted-foreground"
+          value === o.value ? "lt-card bg-primary text-primary-foreground shadow-soft" : "text-muted-foreground hover:text-foreground"
         }`}
       >
         {o.label}

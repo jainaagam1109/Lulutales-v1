@@ -696,7 +696,8 @@ const Player = () => {
         </header>
 
         <main className="flex flex-1 flex-col overflow-y-auto px-6 pb-6 text-foreground">
-          {/* Picture / Read along */}
+          {/* Picture / Read along — only offered when this story has text to read. */}
+          {episodeText && (
           <div role="tablist" aria-label="View" className="mx-auto mt-2 flex rounded-full bg-white/10 p-1">
             {(["picture", "read"] as const).map((v) => (
               <button
@@ -704,7 +705,6 @@ const Player = () => {
                 type="button"
                 role="tab"
                 aria-selected={view === v}
-                disabled={v === "read" && !episodeText}
                 onClick={() => setView(v)}
                 className={`min-h-9 rounded-full px-4 text-sm font-semibold disabled:opacity-40 ${view === v ? "bg-white text-[#1a1830]" : "text-white/80"}`}
               >
@@ -712,10 +712,12 @@ const Player = () => {
               </button>
             ))}
           </div>
+          )}
 
-          <div className="mx-auto mt-4 w-full max-w-[360px]">
+          {/* On shorter screens the picture shrinks so play/pause always stays in view. */}
+          <div className="mx-auto mt-4 w-full" style={{ maxWidth: "min(360px, max(170px, calc(100dvh - 450px)))" }}>
             {view === "read" && episodeText ? (
-              <div className="h-[300px] overflow-y-auto rounded-[24px] bg-white/[0.06] p-5 text-[17px] leading-[1.75] text-white/90">
+              <div className="aspect-square overflow-y-auto rounded-[24px] bg-white/[0.06] p-5 text-[17px] leading-[1.75] text-white/90">
                 {paragraphs.map((p, i) => (
                   <p key={i} className="mb-4 !text-white/90 last:mb-0">{p}</p>
                 ))}

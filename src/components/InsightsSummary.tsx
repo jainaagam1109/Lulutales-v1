@@ -4,11 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { Clock, Palette, BookOpen, BarChart3, ChevronRight, Info, CalendarDays } from "lucide-react";
 import {
   fetchStoriesCompleted,
-  fetchCompletedThemes,
   fetchBestStreak,
   fetchScreenTimeSeconds,
   fetchActiveDaysLast7,
   fetchBadgeProgress,
+  fetchBucketBreakdown,
 } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
@@ -94,7 +94,7 @@ const InfoBtn = ({ id, openId, setOpenId, label, copy, className }: InfoBtnProps
         <span
           role="tooltip"
           style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width }}
-          className="z-50 rounded-xl border border-border bg-card p-2.5 text-left text-[11px] leading-snug text-foreground shadow-lg"
+          className="z-50 rounded-xl border border-border bg-card p-2.5 text-left text-xs leading-snug text-foreground shadow-lg"
         >
           {copy}
         </span>
@@ -157,7 +157,7 @@ const BadgeChip = ({ badge, openId, setOpenId }: BadgeChipProps) => {
           e.stopPropagation();
           setOpenId(open ? null : tipId);
         }}
-        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[11px] font-bold text-foreground hover:border-primary/40"
+        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold text-foreground hover:border-primary/40"
       >
         <span className="text-sm">{badge.emoji}</span>
         {badge.label}
@@ -166,7 +166,7 @@ const BadgeChip = ({ badge, openId, setOpenId }: BadgeChipProps) => {
         <span
           role="tooltip"
           style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width }}
-          className="z-50 rounded-xl border border-border bg-card p-2.5 text-left text-[11px] leading-snug text-foreground shadow-lg"
+          className="z-50 rounded-xl border border-border bg-card p-2.5 text-left text-xs leading-snug text-foreground shadow-lg"
         >
           <span className="mb-0.5 block font-bold">{badge.emoji} {badge.label}</span>
           {badge.description}
@@ -193,9 +193,10 @@ export const InsightsSummary = ({ profileId, variant = "card", childName }: Insi
     queryFn: () => fetchStoriesCompleted(profileId!),
     enabled,
   });
-  const { data: completedThemes = [] } = useQuery({
-    queryKey: ["analytics-completed-themes", profileId],
-    queryFn: () => fetchCompletedThemes(profileId!),
+  // Same counting as the Parents page: one entry per LuluTales skill (Courage, Kindness…).
+  const { data: skillBars = [] } = useQuery({
+    queryKey: ["analytics-bucket-breakdown", profileId],
+    queryFn: () => fetchBucketBreakdown(profileId!),
     enabled,
   });
   const { data: bestStreak = 0 } = useQuery({
@@ -233,53 +234,41 @@ export const InsightsSummary = ({ profileId, variant = "card", childName }: Insi
   const showSeeAll = badges.length > INITIAL_BADGES && !showAllBadges;
   const visibleBadges = showAllBadges ? badges : badges.slice(0, INITIAL_BADGES);
 
+  const tile = (id: string, Icon: typeof Clock, value: string, label: string, copy: string) => (
+    <div className="relative flex flex-col items-center rounded-xl bg-secondary/50 p-3 text-center">
+      <div className="absolute right-1 top-1">
+        <InfoBtn id={id} openId={openInfo} setOpenId={setOpenInfo} label={label} align="center" copy={copy} />
+      </div>
+      <Icon className="h-4 w-4 text-primary-deep" />
+      <div className="mt-1 text-lg font-extrabold leading-tight text-foreground">{value}</div>
+      <div className="mt-0.5 text-xs leading-tight text-muted-foreground">{label}</div>
+    </div>
+  );
+
+  // Same three numbers, in the same order and words, as the Parents page.
   const tiles = (
     <div className="grid grid-cols-3 gap-2">
-      <div className="relative flex flex-col items-center rounded-xl bg-secondary/50 p-3 text-center">
-        <div className="absolute right-1 top-1">
-          <InfoBtn
-            id="t-screen"
-            openId={openInfo}
-            setOpenId={setOpenInfo}
-            label="Screen time saved"
-            align="right"
-            copy={`Roughly how long ${name} spent listening instead of watching a screen. It's an estimate based on story length — a gentle sense of time well spent.`}
-          />
-        </div>
-        <Clock className="h-4 w-4 text-primary-deep" />
-        <div className="mt-1 text-lg font-extrabold leading-tight text-foreground">{fmtMinutes(screenTimeSec)}</div>
-        <div className="text-[9px] text-muted-foreground">Screen time saved</div>
-      </div>
-      <div className="relative flex flex-col items-center rounded-xl bg-secondary/50 p-3 text-center">
-        <div className="absolute right-1 top-1">
-          <InfoBtn
-            id="t-skills"
-            openId={openInfo}
-            setOpenId={setOpenInfo}
-            label="Life-skills learnt"
-            align="center"
-            copy={`The different kinds of life skills ${name}'s stories have touched on — like kindness, courage or independence. We count each skill once, however many stories explore it.`}
-          />
-        </div>
-        <Palette className="h-4 w-4 text-primary-deep" />
-        <div className="mt-1 text-lg font-extrabold text-foreground">{completedThemes.length}</div>
-        <div className="text-[9px] text-muted-foreground">Life-skills learnt</div>
-      </div>
-      <div className="relative flex flex-col items-center rounded-xl bg-secondary/50 p-3 text-center">
-        <div className="absolute right-1 top-1">
-          <InfoBtn
-            id="t-stories"
-            openId={openInfo}
-            setOpenId={setOpenInfo}
-            label="Stories finished"
-            align="right"
-            copy={`Stories ${name} has listened to all the way through. Started-but-not-finished ones don't count yet — this is the finish line, not the start.`}
-          />
-        </div>
-        <BookOpen className="h-4 w-4 text-primary-deep" />
-        <div className="mt-1 text-lg font-extrabold text-foreground">{storiesListened}</div>
-        <div className="text-[9px] text-muted-foreground">Stories finished</div>
-      </div>
+      {tile(
+        "t-stories",
+        BookOpen,
+        String(storiesListened),
+        "Stories finished",
+        `Stories ${name} has listened to all the way through. Started-but-not-finished ones don't count yet.`
+      )}
+      {tile(
+        "t-screen",
+        Clock,
+        fmtMinutes(screenTimeSec),
+        "Listening, not scrolling",
+        `Roughly how long ${name} spent listening to stories instead of watching a screen.`
+      )}
+      {tile(
+        "t-skills",
+        Palette,
+        String(skillBars.length),
+        "Skills explored",
+        `The different LuluTales skills ${name}'s finished stories have built, like kindness or courage. Each skill counts once, however many stories explore it.`
+      )}
     </div>
   );
 
@@ -301,7 +290,7 @@ export const InsightsSummary = ({ profileId, variant = "card", childName }: Insi
               copy={`How many of the last 7 days ${name} listened to a story. A missed day never resets it — it just shows their real rhythm, with daily listening as the gentle goal.`}
             />
           </div>
-          <div className="mt-0.5 text-[11px] text-muted-foreground">
+          <div className="mt-0.5 text-sm text-muted-foreground">
             A gentle picture of {name}'s listening rhythm.
           </div>
           <div className="mt-3 flex items-center gap-2">
@@ -316,7 +305,7 @@ export const InsightsSummary = ({ profileId, variant = "card", childName }: Insi
               />
             ))}
           </div>
-          <div className="mt-1.5 text-[10px] text-muted-foreground">
+          <div className="mt-1.5 text-xs text-muted-foreground">
             filled = listened · oldest → today
           </div>
         </div>
@@ -327,7 +316,7 @@ export const InsightsSummary = ({ profileId, variant = "card", childName }: Insi
   const badgesBlock = (
     <div className="mt-4">
       <div className="mb-2 flex items-center gap-1">
-        <div className="text-[10px] font-semibold text-muted-foreground">
+        <div className="text-sm font-semibold text-foreground">
           Badges earned
         </div>
         <InfoBtn
@@ -340,7 +329,7 @@ export const InsightsSummary = ({ profileId, variant = "card", childName }: Insi
         />
       </div>
       {badges.length === 0 ? (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Finish a story or build a streak to start earning badges ✨
         </p>
       ) : (
@@ -352,7 +341,7 @@ export const InsightsSummary = ({ profileId, variant = "card", childName }: Insi
             <button
               type="button"
               onClick={() => setShowAllBadges(true)}
-              className="inline-flex items-center rounded-full border border-border bg-secondary/50 px-3 py-1.5 text-[11px] font-bold text-primary-deep"
+              className="inline-flex items-center rounded-full border border-border bg-secondary/50 px-3 py-1.5 text-xs font-bold text-primary-deep"
             >
               See all ({badges.length})
             </button>

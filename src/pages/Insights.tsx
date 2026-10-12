@@ -74,14 +74,14 @@ const Insights = () => {
 
   return (
     <PhoneShell withNav>
-      <PageHeader title={`What ${childName} learned`} />
+      <PageHeader title={`What ${childName} is learning`} />
 
       <main className="flex-1 overflow-y-auto px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] space-y-5">
         <InsightsSummary profileId={profileId} variant="plain" childName={childName} />
 
         <section>
           <div className="flex items-center gap-1">
-            <h2 className="text-[11px] font-semibold text-muted-foreground">
+            <h2 className="text-sm font-semibold text-foreground">
               What {childName} has been exploring
             </h2>
             <span className="relative inline-flex">
@@ -102,7 +102,7 @@ const Insights = () => {
                 <span
                   role="tooltip"
                   style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width }}
-                  className="z-50 rounded-xl border border-border bg-card p-2.5 text-left text-[11px] leading-snug text-foreground shadow-lg"
+                  className="z-50 rounded-xl border border-border bg-card p-2.5 text-left text-xs leading-snug text-foreground shadow-lg"
                 >
                   The life skills {childName}'s recent stories lean toward, based on what {pr.subject}
                   {pr.subject === "they" ? "'ve" : "'s"} finished listening to. Longer bars mean more
@@ -111,7 +111,7 @@ const Insights = () => {
               )}
             </span>
           </div>
-          <p className="mb-3 mt-1 text-[11px] text-muted-foreground">
+          <p className="mb-3 mt-1 text-sm text-muted-foreground">
             Based on stories completed — each story builds a life skill.
           </p>
           {bucketBars.length === 0 ? (
@@ -122,8 +122,8 @@ const Insights = () => {
             <div className="space-y-3">
               {bucketBars.map((b) => (
                 <div key={b.bucket}>
-                  <div className="mb-1 text-xs font-bold text-foreground">{b.label}</div>
-                  <div className="mb-1 text-[11px] text-muted-foreground">
+                  <div className="mb-0.5 text-sm font-bold text-foreground">{b.label}</div>
+                  <div className="mb-1 text-xs text-muted-foreground">
                     {b.storyCount} {b.storyCount === 1 ? "story" : "stories"}
                   </div>
                   <div className="h-2 rounded-full bg-secondary">
