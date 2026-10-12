@@ -33,36 +33,36 @@ def box(t): return f'<table role="presentation" width="100%" cellpadding="0" cel
 def item(title, text): return f'''<tr><td style="padding:0 0 12px;vertical-align:top;width:26px"><div style="width:20px;height:20px;border-radius:50%;background:{VIOLET};color:#fff;font-size:12px;line-height:20px;text-align:center;font-weight:700">&#10003;</div></td>
 <td style="padding:0 0 12px 8px;font-family:{FONT};font-size:15px;line-height:1.55;color:{BODY}"><b style="color:{INK}">{title}</b> {text}</td></tr>'''
 
-def welcome(child):
+def welcome():
     inner = (h1("Thank you for joining LuluTales")
       + p("Hi there,")
-      + p(f"Thank you for registering <b style=\"color:{INK}\">{child}</b> with LuluTales. We’re so glad you’re here.")
+      + p("Thank you for registering with LuluTales. We’re so glad your family is here.")
       + p("We’re welcoming families a few at a time, so every child gets our full care. Our team will review your request shortly, and you’ll receive an email from us as soon as you’re in.")
       + box("<b>While you wait, the story library is open.</b><br>Calm bedtime stories, first-day courage, sharing, big feelings and more. Every story is designed with certified child psychologists, in English and हिंदी.")
       + button("Explore the story library", "https://lulutales.in/library")
       + p("Have a friend who’s already on LuluTales? Ask them for their invite link and you’ll skip the wait.", f"margin-top:18px;font-size:15px;color:{MUTED}")
       + p(f"Warmly,<br><b style=\"color:{INK}\">The LuluTales team</b>", "margin:18px 0 0"))
-    return page(f"Thank you for registering {child}. Here’s what happens next.", inner)
+    return page("Thank you for registering. Here’s what happens next.", inner)
 
-def youre_in(child):
+def youre_in():
     items = "".join([
-      item(f"Stories starring {child}.", f"{child} is the hero, with your family’s names, your city and the things they love."),
+      item("Stories starring your child.", "Your child is the hero, with your family’s names, your city and the things they love."),
       item("A story for the moment they’re in.", "First day at school, a new sibling, bedtime fears, sharing toys. Pick the moment and we write the story around it."),
       item("Listen or read together.", "A warm voice tells it, no screen needed. Or read it aloud at bedtime. In English or हिंदी."),
       item("5 new stories every month,", "plus the full story library and story worlds."),
       item("Invite friends.", "They skip the wait, and you get 2 extra stories for each friend who joins."),
     ])
-    inner = (h1(f"You’re in. Let’s make {child}’s first story")
+    inner = (h1("You’re in. Let’s make your child’s first story")
       + p("Hi there,")
       + p(f"Great news: your family is now one of LuluTales’ <b style=\"color:{INK}\">founding families</b>. Everything is free until 31 December 2026.")
-      + button(f"Make {child}’s first story", "https://lulutales.in/magic-hub")
+      + button("Make your first story", "https://lulutales.in/magic-hub")
       + f'<h2 style="margin:26px 0 12px;font-family:{HEAD};font-size:19px;color:{INK}">What you can do</h2>'
       + f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">{items}</table>'
-      + box(f"<b>How it helps {child}</b><br>Every LuluTales story is designed with certified child psychologists. When children hear themselves as the hero, solving a problem they really face, they practise courage, kindness and calm in a safe way. Each story quietly builds one skill, and you can see what {child} is learning in the Parents section.")
-      + button(f"Make {child}’s first story", "https://lulutales.in/magic-hub")
+      + box("<b>How it helps your child</b><br>Every LuluTales story is designed with certified child psychologists. When children hear themselves as the hero, solving a problem they really face, they practise courage, kindness and calm in a safe way. Each story quietly builds one skill, and you can see what your child is learning in the Parents section.")
+      + button("Make your first story", "https://lulutales.in/magic-hub")
       + p(f"Warmly,<br><b style=\"color:{INK}\">The LuluTales team</b>", "margin:22px 0 0"))
-    return page(f"Your family is in. Make {child}’s first personalised story tonight.", inner)
+    return page("Your family is in. Make your first personalised story tonight.", inner)
 
 if __name__ == "__main__":
-    open("welcome-preview.html","w").write(welcome("Ashu"))
-    open("youre-in-preview.html","w").write(youre_in("Ashu"))
+    open("welcome-preview.html","w").write(welcome())
+    open("youre-in-preview.html","w").write(youre_in())
