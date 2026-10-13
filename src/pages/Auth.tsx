@@ -6,6 +6,7 @@ import { PhoneShell } from "@/components/PhoneShell";
 import { LuluLogo } from "@/components/LuluLogo";
 import { useAuth } from "@/hooks/useAuth";
 import { trackEvent } from "@/lib/events";
+import { trackAuthViewed } from "@/lib/visitorTrack";
 import { pendingInvite, redeemPendingInvite } from "@/lib/invite";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -36,6 +37,10 @@ const Auth = () => {
   const [wait, setWait] = useState(0);
   const routed = useRef(false);
   const invited = !!pendingInvite();
+
+  useEffect(() => {
+    trackAuthViewed();
+  }, []);
 
   const nextPath = useMemo(() => {
     const raw = params.get("next");
