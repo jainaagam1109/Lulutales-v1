@@ -28,3 +28,12 @@ a{color:#5B4BD6}a:hover{color:#4336B0}
 @media (max-width: 760px){.lt-welcome-d{display:none}.lt-welcome-m{display:block}}
 .lt-welcome [hidden]{display:none!important}
 html{scroll-behavior:smooth}
+
+/* Parent reviews: a sideways row with the next card peeking, so it's clear there are more. */
+.lt-reviews{display:flex;gap:28px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:4px;padding:14px 4px 30px;scrollbar-width:none;overscroll-behavior-x:contain}
+.lt-reviews::-webkit-scrollbar{display:none}
+.lt-reviews>figure{flex:0 0 calc((100% - 56px) / 3.25);margin:0!important;scroll-snap-align:start;min-width:0}
+.lt-reviews>figure figcaption{justify-content:flex-start!important;padding-left:24px!important;padding-right:0!important}
+.lt-reviews>figure figcaption>span:last-child{text-align:left!important}
+.lt-reviews .lt-drop{margin-top:0}
+@media (max-width: 760px){.lt-reviews{gap:16px;padding:12px 2px 24px}.lt-reviews>figure{flex-basis:82%}.lt-reviews>figure figcaption{padding-left:18px!important}}

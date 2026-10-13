@@ -57,6 +57,17 @@ const Welcome = () => {
         return;
       }
 
+      // Review row arrows (computer layout).
+      const revBtn = target.closest<HTMLButtonElement>("[data-rev]");
+      if (revBtn) {
+        const row = revBtn.parentElement?.nextElementSibling as HTMLElement | null;
+        if (row?.hasAttribute("data-reviews")) {
+          const step = row.clientWidth * 0.8;
+          row.scrollBy({ left: revBtn.dataset.rev === "next" ? step : -step, behavior: "smooth" });
+        }
+        return;
+      }
+
       // Keep in-app links inside the app (no full page reload).
       const link = target.closest<HTMLAnchorElement>("a[href^='/']");
       if (link) {
