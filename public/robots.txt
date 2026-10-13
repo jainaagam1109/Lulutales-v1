@@ -1,16 +1,35 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
+# Link-preview bots (WhatsApp, Facebook, X, LinkedIn) may read any page, so shared
+# links (including invite links) always show the LuluTales preview card.
 User-agent: facebookexternalhit
+User-agent: WhatsApp
+User-agent: Twitterbot
+User-agent: LinkedInBot
+User-agent: Slackbot
 Allow: /
 
+# LuluTales: only the public pages (welcome, privacy, terms) are meant for search.
+# Everything else is the signed-in app, which search engines would only see as the sign-in screen.
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /auth
+Disallow: /joined
+Disallow: /onboarding
+Disallow: /add-child
+Disallow: /select-profile
+Disallow: /profile
+Disallow: /profiles
+Disallow: /library
+Disallow: /my-stories
+Disallow: /happy-place
+Disallow: /insights
+Disallow: /magic-hub
+Disallow: /generating/
+Disallow: /story/
+Disallow: /player/
+Disallow: /bedtime/
+Disallow: /universe/
+Disallow: /reset-password
+Disallow: /oauth/
 
 Sitemap: https://lulutales.in/sitemap.xml

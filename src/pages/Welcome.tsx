@@ -34,7 +34,7 @@ const Welcome = () => {
   }, [session]);
 
   useEffect(() => {
-    document.title = "LuluTales – Stories that help your child grow";
+    document.title = "LuluTales – Personalised Audio Stories for Kids, in English & Hindi";
     const root = ref.current;
     if (!root) return;
 
