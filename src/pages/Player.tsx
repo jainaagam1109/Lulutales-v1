@@ -18,6 +18,7 @@ import {
 import { PhoneShell } from "@/components/PhoneShell";
 import { supabase } from "@/integrations/supabase/client";
 import { getSessionId } from "@/lib/track";
+import { trackFirstStoryPlayed } from "@/lib/visitorTrack";
 import { cleanEpisodeTitle } from "@/lib/episodeTitle";
 import {
   getActiveProfileId,
@@ -533,6 +534,7 @@ const Player = () => {
     };
 
     const onPlay = () => {
+      trackFirstStoryPlayed();
       if (!startedFlag) { startedFlag = true; void tryLog("start"); }
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
