@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/events";
+import { trackSignedUp } from "@/lib/visitorTrack";
 
 type AuthCtx = {
   session: Session | null;
@@ -20,6 +21,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
       setLoading(false);
+      if (event === "SIGNED_IN" && s?.user?.created_at) {
+        const ageMs = Date.now() - new Date(s.user.created_at).getTime();
+        if (ageMs >= 0 && ageMs < 2 * 60 * 1000) trackSignedUp();
+      }
       if (
         event === "PASSWORD_RECOVERY" &&
         window.location.pathname !== "/reset-password"
