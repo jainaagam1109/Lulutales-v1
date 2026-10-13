@@ -27,8 +27,17 @@ const StoryDetail = () => {
   const { id = "" } = useParams();
   const nav = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: string } | null)?.from;
-  const backTo = from && from.startsWith("/") ? from : "/";
+  // Where the parent originally came from (Library, My stories, a story world, Home).
+  // Story and player pages are never a valid origin, so they can't loop back to themselves.
+  const rawFrom = (location.state as { from?: string } | null)?.from;
+  const from =
+    rawFrom && rawFrom.startsWith("/") && !rawFrom.startsWith("//") && !/^\/(story|player|bedtime)\//.test(rawFrom)
+      ? rawFrom
+      : undefined;
+  const backTo = from ?? "/";
+  // Hand the origin (not this page) to the player, so closing it brings the parent back here
+  // with the same back button, and the player can say where it is "Playing from".
+  const originState = from ? { from } : undefined;
   const backLabel = backTo === "/library" ? "Library" : backTo === "/my-stories" ? "My stories" : backTo.startsWith("/universe") ? "Story world" : "Home";
 
   const { data: story, isLoading } = useQuery({ queryKey: ["story", id], queryFn: () => fetchStory(id) });
@@ -89,7 +98,7 @@ const StoryDetail = () => {
 
   const play = () => {
     if (isRead) return nav(`/bedtime/${story.id}/read`);
-    nav(resumeEp ? `/player/${story.id}/${resumeEp}` : `/player/${story.id}`, { state: { from: location.pathname } });
+    nav(resumeEp ? `/player/${story.id}/${resumeEp}` : `/player/${story.id}`, { state: originState });
   };
 
   const summary = ((story as any).parent_summary as string | null) || story.description;
@@ -174,7 +183,7 @@ const StoryDetail = () => {
                     <li key={ep.id}>
                       <button
                         type="button"
-                        onClick={() => nav(`/player/${story.id}/${ep.episode_number}`, { state: { from: location.pathname } })}
+                        onClick={() => nav(`/player/${story.id}/${ep.episode_number}`, { state: originState })}
                         className="flex w-full items-center gap-3 px-4 py-3 text-left"
                       >
                         <span
