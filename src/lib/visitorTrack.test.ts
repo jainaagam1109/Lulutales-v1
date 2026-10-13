@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { insert, createClient } = vi.hoisted(() => {
-  const insert = vi.fn(() => Promise.resolve({ error: null }));
+  const insert = vi.fn((_event: { visitor_id: string; event_name: string; src: string | null }) => Promise.resolve({ error: null }));
   return { insert, createClient: vi.fn(() => ({ from: () => ({ insert }) })) };
 });
 
@@ -47,8 +47,8 @@ describe("visitor tracking storage resilience", () => {
     second.trackInitialAuthViewed();
     second.trackAuthViewed();
     expect(insert).toHaveBeenCalledTimes(2);
-    expect(insert.mock.calls[1]?.[0]).toEqual(insert.mock.calls[0]?.[0] && {
-      ...insert.mock.calls[0][0], event_name: "auth_viewed",
+    expect(insert.mock.calls[1]?.[0]).toEqual({
+      visitor_id: "12345678-1234-4234-8234-123456789abc", event_name: "auth_viewed", src: "claude_test",
     });
   });
 
