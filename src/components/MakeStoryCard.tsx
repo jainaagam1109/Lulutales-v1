@@ -54,7 +54,7 @@ export const MakeStoryCard = ({
           {size === "strip" ? "Making stories opens soon" : `${childName ? `${childName}’s` : "Your child’s"} own stories open soon.`}
         </h2>
         <p className="text-sm text-muted-foreground">
-          We’re letting families in a few at a time. The whole library is open while you wait.
+          We’re letting parents in a few at a time. The whole library is open while you wait.
         </p>
         <Link to="/library" className="mt-1 text-sm font-semibold text-primary">
           Open the library →
@@ -80,7 +80,7 @@ export const MakeStoryCard = ({
   if (!fam.noLimit && fam.remaining <= 0) {
     return (
       <div className="flex flex-col gap-2 rounded-[22px] border border-border bg-card p-5">
-        <h2 className="brand-title !text-[19px] text-foreground">You’ve made all {fam.total} stories this month</h2>
+        <h2 className="brand-title !text-[19px] text-foreground">All {fam.total} personalised stories used this month</h2>
         <p className="text-sm text-muted-foreground">
           New stories on {nextMonthStart()}. Until then, {name} can replay favourites or explore the library.
         </p>
@@ -91,7 +91,7 @@ export const MakeStoryCard = ({
     );
   }
 
-  const left = fam.noLimit ? null : `Your family: ${fam.remaining} of ${fam.total} left this month`;
+  const left = fam.noLimit ? null : `${Math.max(0, fam.remaining)} of ${fam.total} personalised stories left this month`;
 
   // ---------- Slim strip (My stories) ----------
   if (size === "strip") {
@@ -102,7 +102,7 @@ export const MakeStoryCard = ({
       >
         <div className="min-w-0 flex-1">
           <div className="brand-title text-white">New story for {name}</div>
-          {left && <div className="text-xs text-white/80">{left.replace(" this month", "")}</div>}
+          {left && <div className="text-xs text-white/80">{left}</div>}
         </div>
         <span className="inline-flex min-h-10 items-center gap-1 rounded-full bg-[hsl(var(--lamplight))] px-4 text-sm font-semibold text-[hsl(var(--lamplight-foreground))]">
           <Plus className="h-4 w-4" /> Make

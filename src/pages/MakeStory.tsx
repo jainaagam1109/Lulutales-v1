@@ -510,7 +510,11 @@ const MakeStory = () => {
       <footer className="border-t border-border bg-background px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3">
         {step === 3 && !fam.noLimit && (
           <p className="mb-2 text-center text-sm text-muted-foreground">
-            Uses 1 of your family’s <strong className="font-semibold text-foreground">{fam.remaining} stories left</strong> this month.
+            {fam.remaining === 1 ? (
+              <>This uses your <strong className="font-semibold text-foreground">last personalised story</strong> this month.</>
+            ) : (
+              <>This uses 1 of your <strong className="font-semibold text-foreground">{fam.remaining} personalised stories left</strong> this month.</>
+            )}
           </p>
         )}
         {step < 3 ? (

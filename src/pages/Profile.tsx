@@ -297,7 +297,7 @@ const Profile = () => {
             <Card className="p-4">
               <div className="flex flex-col">
                 <span className="font-semibold text-foreground">
-                  Founding family{plan?.founding ? ` #${plan.founding}` : ""}
+                  Founding member{plan?.founding ? ` #${plan.founding}` : ""}
                 </span>
                 <span className="text-sm text-muted-foreground">
                   Free until {freeUntil} {freeYear}
@@ -305,10 +305,10 @@ const Profile = () => {
               </div>
               <p className="mt-1.5 text-sm text-muted-foreground">
                 {fam.status === "waiting"
-                  ? "Making stories opens for your family soon. The whole library is open while you wait."
+                  ? "Personalised stories open for you soon. The whole library is open while you wait."
                   : fam.noLimit
-                    ? "Your family has no monthly limit."
-                    : `Your family has ${Math.max(0, fam.remaining)} of ${fam.total} stories left. New stories on ${nextMonthStart()}.`}
+                    ? "No monthly limit on personalised stories."
+                    : `${Math.max(0, fam.remaining)} of ${fam.total} personalised stories left this month.${kids.filter((k) => k.status !== "deleted").length > 1 ? " Shared by all your children." : ""} New stories on ${nextMonthStart()}.`}
               </p>
             </Card>
           </Section>
@@ -408,7 +408,7 @@ const Profile = () => {
             <Card className="divide-y divide-border">
               {isAdmin && <LinkRow icon={Shield} title="Admin" sub="Only you can see this" to="/admin" />}
               <LinkRow icon={LogOut} title="Sign out" sub={user?.email ?? undefined} onClick={handleSignOut} />
-              <LinkRow icon={Trash2} title="Delete account" sub="Removes your family and stories for good" onClick={() => setConfirmDelete(true)} danger />
+              <LinkRow icon={Trash2} title="Delete account" sub="Removes your account, your children’s details and all stories for good" onClick={() => setConfirmDelete(true)} danger />
             </Card>
           </Section>
         </div>
@@ -427,7 +427,7 @@ const Profile = () => {
               </button>
             </div>
             <p className="mt-2 text-[15px] text-muted-foreground">
-              This removes your family, your children’s details and every story made for them. It can’t be undone.
+              This removes your account, your children’s details and every story made for them. It can’t be undone.
             </p>
             <p className="mt-2 text-[15px] text-muted-foreground">
               Send us the request from this email address and we’ll confirm once it’s done.
