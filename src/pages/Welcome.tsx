@@ -4,6 +4,7 @@ import desktopHtml from "./welcome/desktop.html?raw";
 import phoneHtml from "./welcome/phone.html?raw";
 import "./welcome/welcome.css";
 import { useAuth } from "@/hooks/useAuth";
+import { setupReviewCarousel, type ReviewCarousel } from "./welcome/reviewCarousel";
 
 /**
  * Public welcome (sales) page shown at "/" to visitors who are not signed in.
@@ -61,10 +62,8 @@ const Welcome = () => {
       const revBtn = target.closest<HTMLButtonElement>("[data-rev]");
       if (revBtn) {
         const row = revBtn.parentElement?.nextElementSibling as HTMLElement | null;
-        if (row?.hasAttribute("data-reviews")) {
-          const step = row.clientWidth * 0.8;
-          row.scrollBy({ left: revBtn.dataset.rev === "next" ? step : -step, behavior: "smooth" });
-        }
+        const carousel = row ? carousels.get(row) : undefined;
+        if (carousel) revBtn.dataset.rev === "next" ? carousel.next() : carousel.prev();
         return;
       }
 
@@ -76,8 +75,15 @@ const Welcome = () => {
       }
     };
 
+    // Parent reviews move on their own, round robin.
+    const carousels = new Map<HTMLElement, ReviewCarousel>();
+    root.querySelectorAll<HTMLElement>("[data-reviews]").forEach((row) => carousels.set(row, setupReviewCarousel(row)));
+
     root.addEventListener("click", onClick);
-    return () => root.removeEventListener("click", onClick);
+    return () => {
+      root.removeEventListener("click", onClick);
+      carousels.forEach((c) => c.destroy());
+    };
   }, [nav]);
 
   return (

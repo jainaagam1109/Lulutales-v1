@@ -104,9 +104,10 @@ const StoryDetail = () => {
   const summary = ((story as any).parent_summary as string | null) || story.description;
 
   return (
-    <PhoneShell>
-      <main className="flex-1 overflow-y-auto pb-10">
-        <div className="relative h-[220px] w-full overflow-hidden md:mt-6 md:rounded-[28px]">
+    <PhoneShell wide>
+      {/* Phones: picture on top. Computers: picture on the left (stays in place), details on the right. */}
+      <main className="flex-1 overflow-y-auto pb-10 md:grid md:grid-cols-[minmax(0,440px)_minmax(0,1fr)] md:items-start md:gap-12 md:px-10 md:pt-8">
+        <div className="relative h-[220px] w-full overflow-hidden md:sticky md:top-0 md:aspect-square md:h-auto md:rounded-[28px]">
           <SkillPicture skill={skill} />
           <Link
             to={backTo}
@@ -116,7 +117,7 @@ const StoryDetail = () => {
           </Link>
         </div>
 
-        <div className="px-5 pt-4">
+        <div className="px-5 pt-4 md:max-w-[560px] md:px-0 md:pt-2">
           <div className="flex flex-wrap gap-1.5">
             <span className="inline-flex min-h-7 items-center rounded-full bg-primary/10 px-3 text-[13px] font-semibold text-primary">{builds.name}</span>
             {chips.map((c) => (
@@ -125,7 +126,7 @@ const StoryDetail = () => {
               </span>
             ))}
           </div>
-          <h1 className="mt-3 font-[Quicksand] text-[26px] font-bold leading-tight text-foreground">{story.title}</h1>
+          <h1 className="mt-3 font-[Quicksand] text-[26px] font-bold leading-[1.3] text-foreground md:text-[32px]">{story.title}</h1>
 
           {getStoryStatus(story) === "ready" ? (
             <div className="mt-4 flex gap-2">

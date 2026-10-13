@@ -670,7 +670,7 @@ const Player = () => {
 
   return (
     <div className="dark">
-      <PhoneShell>
+      <PhoneShell wide>
         <header className="flex items-center justify-between px-3 pt-3 text-foreground">
           <button
             type="button"
@@ -695,7 +695,9 @@ const Player = () => {
           </button>
         </header>
 
-        <main className="flex flex-1 flex-col overflow-y-auto px-6 pb-6 text-foreground">
+        {/* Phones: one column. Computers: picture (or read-along text) on the left, controls on the right. */}
+        <main className="flex flex-1 flex-col overflow-y-auto px-6 pb-6 text-foreground md:flex-row md:items-center md:justify-center md:gap-14 md:px-10">
+          <div className="flex flex-col md:flex-shrink-0">
           {/* Picture / Read along — only offered when this story has text to read. */}
           {episodeText && (
           <div role="tablist" aria-label="View" className="mx-auto mt-2 flex rounded-full bg-white/10 p-1">
@@ -715,7 +717,7 @@ const Player = () => {
           )}
 
           {/* On shorter screens the picture shrinks so play/pause always stays in view. */}
-          <div className="mx-auto mt-4 w-full" style={{ maxWidth: "min(360px, max(170px, calc(100dvh - 450px)))" }}>
+          <div className="lt-player-art mx-auto mt-4 w-full">
             {view === "read" && episodeText ? (
               <div className="aspect-square overflow-y-auto rounded-[24px] bg-white/[0.06] p-5 text-[17px] leading-[1.75] text-white/90">
                 {paragraphs.map((p, i) => (
@@ -728,10 +730,11 @@ const Player = () => {
               </div>
             )}
           </div>
+          </div>
 
-          <div className="mx-auto mt-5 w-full max-w-[360px]">
-            {typeof universeName === "string" && <div className="text-xs font-semibold text-primary">{universeName}</div>}
-            <h1 className="font-[Quicksand] text-[22px] font-bold leading-tight">{story?.title ?? "Loading…"}</h1>
+          <div className="mx-auto mt-5 w-full max-w-[360px] md:mx-0 md:mt-0 md:max-w-[400px]">
+            {typeof universeName === "string" && <div className="mb-1.5 text-xs font-semibold text-primary">{universeName}</div>}
+            <h1 className="font-[Quicksand] text-[22px] font-bold leading-[1.35] md:text-[28px]">{story?.title ?? "Loading…"}</h1>
             <div className="mt-0.5 text-sm text-muted-foreground">
               {subLine}
               {totalEps > 1 && current ? ` · ${epTitle(current.episode_number, current.title)}` : ""}

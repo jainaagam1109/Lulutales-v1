@@ -210,3 +210,10 @@ p.text-muted-foreground { color: hsl(var(--body-foreground)); }
 *::-webkit-scrollbar { width: 6px; height: 6px; }
 *::-webkit-scrollbar-track { background: transparent; }
 *::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 999px; }
+
+/* Player artwork: on phones it shrinks on short screens so play/pause stays visible;
+   on computers it sits large on the left, beside the controls. */
+.lt-player-art { max-width: min(360px, max(170px, calc(100dvh - 450px))); }
+@media (min-width: 768px) {
+  .lt-player-art { width: min(460px, calc(100dvh - 200px)); min-width: 260px; max-width: none; }
+}

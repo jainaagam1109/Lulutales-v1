@@ -89,8 +89,8 @@ export const StoryCard = ({
           <SkillPicture skill={skill} />
         </div>
         <div className="min-w-0 flex-1">
-          {characterName && <div className="text-[11px] font-semibold text-primary">{characterName}</div>}
-          <div className="brand-title line-clamp-2 text-sm font-bold text-foreground">{story.title}</div>
+          {characterName && <div className="mb-0.5 text-[11px] font-semibold text-primary">{characterName}</div>}
+          <div className="brand-title line-clamp-2 text-sm font-bold leading-snug text-foreground">{story.title}</div>
           <div className="mt-0.5 truncate text-xs text-muted-foreground">{metaLine(story, badge)}</div>
         </div>
       </Link>

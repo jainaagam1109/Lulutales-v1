@@ -11,16 +11,19 @@ import { DesktopSidebar } from "@/components/DesktopSidebar";
 export const PhoneShell = ({
   children,
   withNav = false,
+  wide = false,
 }: {
   children: ReactNode;
   statusBar?: boolean;
   withNav?: boolean;
+  /** Computers only: use the full width (player and story page lay out side by side). */
+  wide?: boolean;
 }) => (
   <div className="flex h-[100dvh] w-full bg-background">
     {withNav && <DesktopSidebar />}
     <div
       className={`mx-auto flex h-full w-full min-w-0 flex-col overflow-hidden ${
-        withNav ? "max-w-[430px] md:max-w-[960px]" : "max-w-[430px] md:max-w-[560px]"
+        withNav ? "max-w-[430px] md:max-w-[960px]" : wide ? "max-w-[430px] md:max-w-[1120px]" : "max-w-[430px] md:max-w-[560px]"
       }`}
     >
       {children}
