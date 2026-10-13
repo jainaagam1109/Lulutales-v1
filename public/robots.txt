@@ -32,4 +32,4 @@ Disallow: /universe/
 Disallow: /reset-password
 Disallow: /oauth/
 
-Sitemap: https://lulutales.in/sitemap.xml
+Sitemap: https://lulutales.in/sitemap-pages.xml
