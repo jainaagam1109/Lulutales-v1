@@ -12,18 +12,18 @@ interface SitemapEntry {
 
 // Only pages anyone can open. Everything else needs sign-in and is marked "don't list".
 const entries: SitemapEntry[] = [
-  { path: "/", changefreq: "weekly", priority: "1.0" },
-  { path: "/privacy", changefreq: "yearly", priority: "0.3" },
-  { path: "/terms", changefreq: "yearly", priority: "0.3" },
+  // Update the dates when a page's words change. Fixed dates keep this file identical on every build.
+  { path: "/", lastmod: "2026-10-14", changefreq: "weekly", priority: "1.0" },
+  { path: "/privacy", lastmod: "2026-10-12", changefreq: "yearly", priority: "0.3" },
+  { path: "/terms", lastmod: "2026-10-12", changefreq: "yearly", priority: "0.3" },
 ];
 
 function generateSitemap(entries: SitemapEntry[]) {
-  const today = new Date().toISOString().split("T")[0];
   const urls = entries.map((e) =>
     [
       `  <url>`,
       `    <loc>${BASE_URL}${e.path}</loc>`,
-      `    <lastmod>${e.lastmod ?? today}</lastmod>`,
+      e.lastmod ? `    <lastmod>${e.lastmod}</lastmod>` : null,
       e.changefreq ? `    <changefreq>${e.changefreq}</changefreq>` : null,
       e.priority ? `    <priority>${e.priority}</priority>` : null,
       `  </url>`,
