@@ -79,11 +79,11 @@ const Joined = () => {
         <div className="mb-8"><LuluLogo size={34} /></div>
         <h1 className="font-[Quicksand] text-[28px] font-bold leading-tight text-foreground">You’re on the list.</h1>
         <p className="mt-2 text-[15px] text-muted-foreground">
-          We’re opening personalised stories to a few parents at a time, so each one gets our full care.
+          We’re opening personalised stories to new parents in small batches, so each one gets our full care.
         </p>
         <ul className="mt-6 flex flex-col gap-4">
           <Point title="The story library is open" sub="Listen to any story today." />
-          <Point title={`${name}’s own stories, soon`} sub="We’re letting parents in a few at a time." />
+          <Point title={`${name}’s own stories, soon`} sub="We’re opening them to new parents in small batches." />
         </ul>
         <div className="mt-auto flex flex-col gap-2 pt-8">
           <Link to="/library" className="lt-card flex min-h-12 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground">
@@ -91,7 +91,7 @@ const Joined = () => {
           </Link>
           <p className="text-center text-sm text-muted-foreground">Free until 31 December 2026. Up to 5 personalised stories a month.</p>
           <p className="mt-3 text-center text-sm text-muted-foreground">
-            Have an invite link from a friend? Open it now and you skip the wait.
+            Know a parent already on LuluTales? Ask them for their invite link. Opening it lets you skip the wait.
           </p>
         </div>
       </main>

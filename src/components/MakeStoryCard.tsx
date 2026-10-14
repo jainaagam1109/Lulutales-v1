@@ -51,10 +51,10 @@ export const MakeStoryCard = ({
           Opening soon
         </Pill>
         <h2 className="brand-title !text-[19px] text-foreground">
-          {size === "strip" ? "Making stories opens soon" : `${childName ? `${childName}’s` : "Your child’s"} own stories open soon.`}
+          {size === "strip" ? "Personalised stories open soon" : `${childName ? `${childName}’s` : "Your child’s"} own stories open soon.`}
         </h2>
         <p className="text-sm text-muted-foreground">
-          We’re letting parents in a few at a time. The whole library is open while you wait.
+          We’re opening personalised stories to new parents in small batches. The whole library is open while you wait.
         </p>
         <Link to="/library" className="mt-1 text-sm font-semibold text-primary">
           Open the library →
@@ -67,7 +67,7 @@ export const MakeStoryCard = ({
   if (fam.status === "blocked") {
     return (
       <div className="flex flex-col gap-2 rounded-[22px] border border-border bg-card p-5">
-        <h2 className="brand-title !text-[19px] text-foreground">Making stories isn’t open on this account</h2>
+        <h2 className="brand-title !text-[19px] text-foreground">Personalised stories aren’t open on this account</h2>
         <p className="text-sm text-muted-foreground">
           If you think this is a mistake, write to us at{" "}
           <a href="mailto:hello@lulutales.in" className="font-semibold text-primary">hello@lulutales.in</a>.

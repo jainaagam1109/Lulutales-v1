@@ -196,7 +196,7 @@ const Onboarding = () => {
           {isAddMode ? "Add a child" : "Who are the stories for?"}
         </h1>
         <p className="mt-1 text-[15px] text-muted-foreground">
-          {isAddMode ? "Each child gets their own stories." : "You can add family names and more children later."}
+          {isAddMode ? "Each child gets their own stories." : "You can add family names, or another child, later."}
         </p>
 
         <label className="mt-6 block">
@@ -270,7 +270,7 @@ const Onboarding = () => {
         </button>
         {!isAddMode && (
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            By continuing, you confirm you’re {shownName}’s parent or guardian. We use their name only to write their stories and never sell it.
+            By continuing, you confirm you’re {shownName}’s parent or guardian. We use their name only to write their stories, and keep it private.
           </p>
         )}
       </footer>

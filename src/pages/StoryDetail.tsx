@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, Play, Heart, BookOpen, Check } from "lucide-react";
 import { toast } from "sonner";
 import { fetchEpisodes, fetchStory, isSaved, toggleSaved, type Story } from "@/lib/stories";
+import { ClampedText } from "@/components/ClampedText";
 import { PhoneShell } from "@/components/PhoneShell";
 import { StoryStatusCard } from "@/components/StoryStatusCard";
 import { SkillPicture, skillKeyFor } from "@/components/SkillPicture";
@@ -43,7 +44,6 @@ const StoryDetail = () => {
   const { data: story, isLoading } = useQuery({ queryKey: ["story", id], queryFn: () => fetchStory(id) });
   const { data: episodes = [] } = useQuery({ queryKey: ["episodes", id], queryFn: () => fetchEpisodes(id), enabled: !!id });
   const [saved, setSaved] = useState(false);
-  const [showFull, setShowFull] = useState(false);
   const pid = getActiveProfileId();
   const childName = typeof window !== "undefined" ? localStorage.getItem("lulutales_child_name") : null;
 
@@ -159,12 +159,7 @@ const StoryDetail = () => {
           {summary && (
             <section className="mt-6">
               <h2 className="font-[Quicksand] text-[19px] font-bold text-foreground">About this story</h2>
-              <p className={`mt-1.5 text-[15px] leading-relaxed text-foreground/80 ${!showFull && summary.length > 260 ? "line-clamp-5" : ""}`}>{summary}</p>
-              {summary.length > 260 && (
-                <button type="button" onClick={() => setShowFull((v) => !v)} className="mt-1 min-h-10 text-sm font-semibold text-primary">
-                  {showFull ? "Show less" : "Read more"}
-                </button>
-              )}
+              <ClampedText text={summary} className="mt-1.5 text-[15px] leading-relaxed text-foreground/80" />
             </section>
           )}
 

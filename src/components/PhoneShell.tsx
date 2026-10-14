@@ -19,11 +19,21 @@ export const PhoneShell = ({
   /** Computers only: use the full width (player and story page lay out side by side). */
   wide?: boolean;
 }) => (
-  <div className="flex h-[100dvh] w-full bg-background">
-    {withNav && <DesktopSidebar />}
+  // Computers, menu pages: the whole window scrolls (scroll bar at the window edge, and the
+  // mouse wheel works anywhere), while the left menu stays put.
+  <div className={`flex h-[100dvh] w-full bg-background ${withNav ? "md:overflow-y-auto" : ""}`}>
+    {withNav && (
+      <div className="hidden md:sticky md:top-0 md:block md:h-[100dvh] md:shrink-0">
+        <DesktopSidebar />
+      </div>
+    )}
     <div
       className={`mx-auto flex h-full w-full min-w-0 flex-col overflow-hidden ${
-        withNav ? "max-w-[430px] md:max-w-[960px]" : wide ? "max-w-[430px] md:max-w-[1120px]" : "max-w-[430px] md:max-w-[560px]"
+        withNav
+          ? "max-w-[430px] md:h-auto md:min-h-full md:max-w-[960px] md:overflow-visible md:[&>main]:overflow-visible"
+          : wide
+            ? "max-w-[430px] md:max-w-[1120px]"
+            : "max-w-[430px] md:max-w-[560px]"
       }`}
     >
       {children}

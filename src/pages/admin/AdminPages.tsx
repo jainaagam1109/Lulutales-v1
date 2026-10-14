@@ -308,10 +308,12 @@ const REASON: Record<string, string> = {
   names_details: "Mistake in names or details",
   audio: "Audio problem",
   other: "Something else",
+  app_problem: "App problem",
+  delete_account: "Delete account request",
 };
 type Report = {
   id: string; created_at: string; reason: string; note: string | null; status: string; episode_number: number | null;
-  story_id: string; story_title: string | null; is_library: boolean | null; parent_email: string | null;
+  story_id: string | null; story_title: string | null; is_library: boolean | null; parent_email: string | null;
 };
 
 export const AdminReports = () => {
@@ -336,7 +338,7 @@ export const AdminReports = () => {
   };
 
   return (
-    <AdminShell title="Reports" intro="Stories parents have flagged.">
+    <AdminShell title="Reports" intro="Stories parents have flagged, app problems and delete requests.">
       {data?.missing ? (
         <SetupNeeded />
       ) : (
@@ -360,13 +362,22 @@ export const AdminReports = () => {
                     </span>
                   </div>
                   <div className="mt-1 text-sm text-muted-foreground">
-                    “{r.story_title ?? "Story"}”{r.episode_number ? ` · Episode ${r.episode_number}` : ""} · {r.is_library ? "library" : "made for a family"} · from {r.parent_email ?? "unknown"} · {when(r.created_at)}
+                    {r.story_id
+                      ? `“${r.story_title ?? "Story"}”${r.episode_number ? ` · Episode ${r.episode_number}` : ""} · ${r.is_library ? "library" : "made for a family"} · `
+                      : ""}
+                    from {r.parent_email ?? "unknown"} · {when(r.created_at)}
                   </div>
                   {r.note && <p className="mt-2 text-[15px]">“{r.note}”</p>}
                   <div className="mt-3 flex flex-wrap gap-2">
                     {r.parent_email && (
                       <a
-                        href={`mailto:${r.parent_email}?subject=${encodeURIComponent(`About “${r.story_title ?? "your story"}” on LuluTales`)}`}
+                        href={`mailto:${r.parent_email}?subject=${encodeURIComponent(
+                          r.reason === "delete_account"
+                            ? "Your LuluTales account deletion"
+                            : r.story_id
+                              ? `About “${r.story_title ?? "your story"}” on LuluTales`
+                              : "About your message to LuluTales"
+                        )}`}
                         onClick={() => r.status === "new" && setStatus(r, "replied")}
                         className={`${btn} inline-flex items-center border border-border`}
                       >

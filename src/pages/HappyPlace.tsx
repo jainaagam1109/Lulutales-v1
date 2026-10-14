@@ -300,7 +300,7 @@ const HappyPlace = ({ view }: { view: "library" | "mine" }) => {
 
         {view === "library" && !query && (
           <section>
-            <SectionHeader title="Story worlds" subtitle="Meet the LuluTales children. Each has their own set of stories." />
+            <SectionHeader title="Story worlds" subtitle="Meet the LuluTales friends. Each has their own set of stories." />
             <StoryWorldsRow hideHeader />
           </section>
         )}

@@ -651,12 +651,12 @@ const Player = () => {
   const subLine = [skillName, totalEps > 1 ? `Episode ${epNum} of ${totalEps}` : null].filter(Boolean).join(" · ");
   const paragraphs = (episodeText ?? "").split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 
-  const sheetBtn = "flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl text-xs font-semibold text-white/80 hover:bg-white/5";
+  const sheetBtn = "flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl text-xs font-semibold text-foreground/80 hover:bg-foreground/5";
 
   // Episode not found state
   if (episodes && !epLoading && !current) {
     return (
-      <div className="dark">
+      <div>
         <PhoneShell>
           <main className="flex flex-1 flex-col items-center justify-center px-6 text-center text-foreground">
             <h2 className="font-[Quicksand] text-xl font-bold">We couldn’t find this episode</h2>
@@ -671,14 +671,14 @@ const Player = () => {
   }
 
   return (
-    <div className="dark">
+    <div>
       <PhoneShell wide>
         <header className="flex items-center justify-between px-3 pt-3 text-foreground">
           <button
             type="button"
             onClick={() => nav(id ? `/story/${id}` : "/", { state: location.state })}
             aria-label="Close player"
-            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/5"
+            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-foreground/5"
           >
             <ChevronDown className="h-6 w-6" />
           </button>
@@ -691,7 +691,7 @@ const Player = () => {
             onClick={onToggleSave}
             aria-pressed={saved}
             aria-label={saved ? "Saved. Tap to remove" : "Save to My stories"}
-            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/5"
+            className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-foreground/5"
           >
             <Heart className={`h-5 w-5 ${saved ? "fill-current text-primary" : ""}`} />
           </button>
@@ -702,7 +702,7 @@ const Player = () => {
           <div className="flex flex-col md:flex-shrink-0">
           {/* Picture / Read along — only offered when this story has text to read. */}
           {episodeText && (
-          <div role="tablist" aria-label="View" className="mx-auto mt-2 flex rounded-full bg-white/10 p-1">
+          <div role="tablist" aria-label="View" className="mx-auto mt-2 flex rounded-full bg-foreground/10 p-1">
             {(["picture", "read"] as const).map((v) => (
               <button
                 key={v}
@@ -710,7 +710,7 @@ const Player = () => {
                 role="tab"
                 aria-selected={view === v}
                 onClick={() => setView(v)}
-                className={`min-h-9 rounded-full px-4 text-sm font-semibold disabled:opacity-40 ${view === v ? "bg-white text-[#1a1830]" : "text-white/80"}`}
+                className={`min-h-9 rounded-full px-4 text-sm font-semibold disabled:opacity-40 ${view === v ? "lt-card bg-primary text-primary-foreground" : "text-foreground/80"}`}
               >
                 {v === "picture" ? "Picture" : "Read along"}
               </button>
@@ -721,9 +721,9 @@ const Player = () => {
           {/* On shorter screens the picture shrinks so play/pause always stays in view. */}
           <div className="lt-player-art mx-auto mt-4 w-full">
             {view === "read" && episodeText ? (
-              <div className="aspect-square overflow-y-auto rounded-[24px] bg-white/[0.06] p-5 text-[17px] leading-[1.75] text-white/90">
+              <div className="aspect-square overflow-y-auto rounded-[24px] bg-foreground/[0.06] p-5 text-[17px] leading-[1.75] text-foreground/90">
                 {paragraphs.map((p, i) => (
-                  <p key={i} className="mb-4 !text-white/90 last:mb-0">{p}</p>
+                  <p key={i} className="mb-4 !text-foreground/90 last:mb-0">{p}</p>
                 ))}
               </div>
             ) : (
@@ -758,7 +758,7 @@ const Player = () => {
                 }}
                 disabled={!audioUrl || !dur}
                 className="seek-range"
-                style={{ background: `linear-gradient(to right, hsl(var(--primary)) ${pct}%, rgba(255,255,255,.18) ${pct}%)` }}
+                style={{ background: `linear-gradient(to right, hsl(var(--primary)) ${pct}%, hsl(var(--foreground) / .18) ${pct}%)` }}
                 aria-label="Seek"
               />
               <div className="mt-1.5 flex justify-between text-xs tabular-nums text-muted-foreground">
@@ -793,9 +793,9 @@ const Player = () => {
               </button>
             </div>
 
-            <div className="mt-4 flex gap-1 border-t border-white/10 pt-3">
+            <div className="mt-4 flex gap-1 border-t border-border pt-3">
               <button type="button" onClick={() => setSheet("speed")} className={sheetBtn}>
-                <span className="text-sm font-bold text-white">{speed}×</span>Speed
+                <span className="text-sm font-bold text-foreground">{speed}×</span>Speed
               </button>
               <button type="button" onClick={() => setSheet("episodes")} disabled={totalEps < 2} className={`${sheetBtn} disabled:opacity-40`}>
                 <ListMusic className="h-5 w-5" />Episodes
@@ -814,18 +814,18 @@ const Player = () => {
             {!audioUrl && current && <p className="mt-4 text-center text-sm text-muted-foreground">The audio for this episode isn’t ready yet.</p>}
 
             {countdown !== null && (
-              <div className="mt-4 rounded-2xl bg-white/[0.08] p-4">
+              <div className="mt-4 rounded-2xl bg-foreground/[0.08] p-4">
                 <div className="text-sm font-semibold">Next episode in {countdown}s</div>
                 {nextEp && <div className="truncate text-sm text-muted-foreground">{epTitle(nextEp.episode_number, nextEp.title)}</div>}
                 <div className="mt-3 flex gap-2">
                   <button type="button" onClick={() => setCountdown(0)} className="h-10 flex-1 bg-primary text-sm text-primary-foreground">Play now</button>
-                  <button type="button" onClick={() => setCountdown(null)} className="min-h-10 flex-1 rounded-full border border-white/20 text-sm font-semibold">Cancel</button>
+                  <button type="button" onClick={() => setCountdown(null)} className="min-h-10 flex-1 rounded-full border border-border text-sm font-semibold">Cancel</button>
                 </div>
               </div>
             )}
 
             {countdown === null && nextEp && (
-              <button type="button" onClick={goNext} className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-white/[0.06] p-3 text-left">
+              <button type="button" onClick={goNext} className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-foreground/[0.06] p-3 text-left">
                 <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-xl"><SkillPicture skill={skill} /></div>
                 <div className="min-w-0">
                   <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Up next</div>
@@ -835,18 +835,18 @@ const Player = () => {
             )}
 
             {autoNext && autoCountdown !== null && (
-              <div className="mt-4 rounded-2xl bg-white/[0.08] p-4">
+              <div className="mt-4 rounded-2xl bg-foreground/[0.08] p-4">
                 <div className="text-sm font-semibold">Next story in {autoCountdown}s</div>
                 <div className="truncate text-sm text-muted-foreground">{autoNext.title}</div>
                 <div className="mt-3 flex gap-2">
                   <button type="button" onClick={() => setAutoCountdown(0)} className="h-10 flex-1 bg-primary text-sm text-primary-foreground">Play now</button>
-                  <button type="button" onClick={stopAutoplay} className="min-h-10 flex-1 rounded-full border border-white/20 text-sm font-semibold">Stop</button>
+                  <button type="button" onClick={stopAutoplay} className="min-h-10 flex-1 rounded-full border border-border text-sm font-semibold">Stop</button>
                 </div>
               </div>
             )}
 
             {autoPrompt && (
-              <div className="mt-4 rounded-2xl bg-white/[0.08] p-4">
+              <div className="mt-4 rounded-2xl bg-foreground/[0.08] p-4">
                 <div className="text-sm font-semibold">Still listening?</div>
                 <div className="text-sm text-muted-foreground">We’ve played a few stories in a row. Keep going?</div>
                 <div className="mt-3 flex gap-2">
@@ -861,7 +861,7 @@ const Player = () => {
                   >
                     Keep going
                   </button>
-                  <button type="button" onClick={stopAutoplay} className="min-h-10 flex-1 rounded-full border border-white/20 text-sm font-semibold">Stop</button>
+                  <button type="button" onClick={stopAutoplay} className="min-h-10 flex-1 rounded-full border border-border text-sm font-semibold">Stop</button>
                 </div>
               </div>
             )}

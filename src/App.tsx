@@ -1,3 +1,4 @@
+import { EmailLinkHelper } from "@/components/EmailLinkHelper";
 import { RouteSeo } from "@/components/RouteSeo";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
@@ -49,6 +50,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <RouteSeo />
+          <EmailLinkHelper />
           <RouteTracker />
           <LookApplier />
           <Routes>

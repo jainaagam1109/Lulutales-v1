@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Plus, Mail, Flag, Info, Shield, LogOut, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
+import { HelpSheet } from "@/components/HelpSheet";
 import { PhoneShell } from "@/components/PhoneShell";
 import { BottomNav } from "@/components/BottomNav";
 import { ProfileSwitcherChip } from "@/components/ProfileAvatarButton";
@@ -110,7 +111,7 @@ const Profile = () => {
   const fam = useFamily();
   const { settings, update } = useParentSettings();
   const [checked, setChecked] = useState(parentCheckPassed());
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [help, setHelp] = useState<"problem" | "delete" | null>(null);
 
   const { data: kids = [] } = useQuery({
     queryKey: ["parents-kids", user?.id],
@@ -390,12 +391,7 @@ const Profile = () => {
           {/* ---------- Help ---------- */}
           <Section title="Help and info">
             <Card className="divide-y divide-border">
-              <LinkRow
-                icon={Flag}
-                title="Report a problem"
-                sub="Tell us what went wrong"
-                href="mailto:hello@lulutales.in?subject=Problem%20with%20LuluTales"
-              />
+              <LinkRow icon={Flag} title="Report a problem" sub="Tell us what went wrong" onClick={() => setHelp("problem")} />
               <LinkRow icon={Mail} title="Contact us" sub="hello@lulutales.in" href="mailto:hello@lulutales.in" />
               <LinkRow icon={Info} title="About LuluTales" sub="Who we are and how stories are made" to="/welcome" />
               <LinkRow icon={Shield} title="Privacy policy" to="/privacy" />
@@ -408,44 +404,13 @@ const Profile = () => {
             <Card className="divide-y divide-border">
               {isAdmin && <LinkRow icon={Shield} title="Admin" sub="Only you can see this" to="/admin" />}
               <LinkRow icon={LogOut} title="Sign out" sub={user?.email ?? undefined} onClick={handleSignOut} />
-              <LinkRow icon={Trash2} title="Delete account" sub="Removes your account, your children’s details and all stories for good" onClick={() => setConfirmDelete(true)} danger />
+              <LinkRow icon={Trash2} title="Delete account" sub="Permanently deletes your account, your children’s details and all stories" onClick={() => setHelp("delete")} danger />
             </Card>
           </Section>
         </div>
       </main>
 
-      {confirmDelete && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 md:items-center" role="dialog" aria-modal="true" onClick={() => setConfirmDelete(false)}>
-          <div
-            className="w-full max-w-[440px] rounded-t-[28px] bg-card p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-foreground md:rounded-[28px]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <h2 className="font-[Quicksand] text-[22px] font-bold">Delete your account?</h2>
-              <button type="button" onClick={() => setConfirmDelete(false)} aria-label="Close" className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <p className="mt-2 text-[15px] text-muted-foreground">
-              This removes your account, your children’s details and every story made for them. It can’t be undone.
-            </p>
-            <p className="mt-2 text-[15px] text-muted-foreground">
-              Send us the request from this email address and we’ll confirm once it’s done.
-            </p>
-            <a
-              href={`mailto:hello@lulutales.in?subject=${encodeURIComponent("Please delete my LuluTales account")}&body=${encodeURIComponent(
-                `Please delete my LuluTales account and all my family's data.\n\nAccount email: ${user?.email ?? ""}`
-              )}`}
-              className="lt-card mt-5 flex min-h-12 w-full items-center justify-center rounded-full bg-destructive font-semibold text-destructive-foreground"
-            >
-              Email my delete request
-            </a>
-            <button type="button" onClick={() => setConfirmDelete(false)} className="mt-2 min-h-12 w-full font-semibold text-primary">
-              Keep my account
-            </button>
-          </div>
-        </div>
-      )}
+      {help && <HelpSheet kind={help} onClose={() => setHelp(null)} />}
 
       <BottomNav />
     </PhoneShell>
