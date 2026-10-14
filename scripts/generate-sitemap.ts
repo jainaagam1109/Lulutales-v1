@@ -10,20 +10,11 @@ interface SitemapEntry {
   priority?: string;
 }
 
+// Only pages anyone can open. Everything else needs sign-in and is marked "don't list".
 const entries: SitemapEntry[] = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
-  { path: "/auth", changefreq: "monthly", priority: "0.6" },
-  { path: "/reset-password", changefreq: "monthly", priority: "0.5" },
-  { path: "/onboarding", changefreq: "monthly", priority: "0.6" },
-  { path: "/select-profile", changefreq: "monthly", priority: "0.6" },
-  { path: "/happy-place", changefreq: "weekly", priority: "0.9" },
-  { path: "/library", changefreq: "weekly", priority: "0.8" },
-  { path: "/profile", changefreq: "monthly", priority: "0.6" },
-  { path: "/profiles", changefreq: "monthly", priority: "0.6" },
-  { path: "/insights", changefreq: "weekly", priority: "0.7" },
-  { path: "/magic-hub", changefreq: "weekly", priority: "0.8" },
-  { path: "/magic-hub/audio", changefreq: "weekly", priority: "0.7" },
-  { path: "/magic-hub/bedtime", changefreq: "weekly", priority: "0.7" },
+  { path: "/privacy", changefreq: "yearly", priority: "0.3" },
+  { path: "/terms", changefreq: "yearly", priority: "0.3" },
 ];
 
 function generateSitemap(entries: SitemapEntry[]) {

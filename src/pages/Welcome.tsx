@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import desktopHtml from "./welcome/desktop.html?raw";
 import phoneHtml from "./welcome/phone.html?raw";
@@ -10,11 +10,29 @@ import { setupReviewCarousel, type ReviewCarousel } from "./welcome/reviewCarous
  * Public welcome (sales) page shown at "/" to visitors who are not signed in.
  * The markup comes straight from the approved design (computer + phone versions);
  * this component only wires up the FAQ accordion and in-app links.
+ * Only the version that fits the screen is put on the page, so search engines and
+ * screen readers see one headline and one copy of each section.
  */
+const PHONE_QUERY = "(max-width: 760px)";
+const usePhoneLayout = () => {
+  const [isPhone, setIsPhone] = useState(() =>
+    typeof window !== "undefined" && typeof window.matchMedia === "function" ? window.matchMedia(PHONE_QUERY).matches : false,
+  );
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    const mq = window.matchMedia(PHONE_QUERY);
+    const onChange = () => setIsPhone(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+  return isPhone;
+};
+
 const Welcome = () => {
   const ref = useRef<HTMLDivElement>(null);
   const nav = useNavigate();
   const { session } = useAuth();
+  const isPhone = usePhoneLayout();
 
   // A parent who is already signed in (e.g. from "About LuluTales") sees "Open the app",
   // not "Log in" / "Sign up free".
@@ -31,7 +49,7 @@ const Welcome = () => {
       const note = a.nextElementSibling as HTMLElement | null;
       if (note && /no card needed/i.test(note.textContent ?? "")) note.style.display = "none";
     });
-  }, [session]);
+  }, [session, isPhone]);
 
   useEffect(() => {
     document.title = "LuluTales – Personalised Audio Stories for Kids, in English & Hindi";
@@ -84,12 +102,15 @@ const Welcome = () => {
       root.removeEventListener("click", onClick);
       carousels.forEach((c) => c.destroy());
     };
-  }, [nav]);
+  }, [nav, isPhone]);
 
   return (
     <div ref={ref} className="lt-welcome">
-      <div className="lt-welcome-d" dangerouslySetInnerHTML={{ __html: desktopHtml }} />
-      <div className="lt-welcome-m" dangerouslySetInnerHTML={{ __html: phoneHtml }} />
+      {isPhone ? (
+        <div key="m" className="lt-welcome-m" dangerouslySetInnerHTML={{ __html: phoneHtml }} />
+      ) : (
+        <div key="d" className="lt-welcome-d" dangerouslySetInnerHTML={{ __html: desktopHtml }} />
+      )}
     </div>
   );
 };
