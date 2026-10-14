@@ -1,20 +1,19 @@
 import { Link } from "react-router-dom";
 import { Plus, Clock } from "lucide-react";
 import { useFamily, formatDay, nextMonthStart } from "@/lib/family";
+import { LuluLogo } from "@/components/LuluLogo";
 
-/** A little Lulu face that peeks out of the corner of the big violet card. */
-const LuluPeek = () => (
-  <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true" className="pointer-events-none absolute -bottom-7 -right-5 opacity-95">
-    <circle cx="60" cy="60" r="56" fill="hsl(var(--lamplight))" />
-    <path d="M38 52q7-8 14 0M68 52q7-8 14 0" fill="none" stroke="hsl(var(--lamplight-foreground))" strokeWidth="4.5" strokeLinecap="round" />
-    <path d="M46 66v4a14 14 0 0 0 28 0v-4" fill="none" stroke="hsl(var(--lamplight-foreground))" strokeWidth="4.5" strokeLinecap="round" />
-  </svg>
+/** Lulu, shown whole (with clear space) on the right of the big card. */
+const LuluMark = () => (
+  <span className="pointer-events-none absolute right-5 top-1/2 hidden -translate-y-1/2 min-[340px]:block" aria-hidden="true">
+    <LuluLogo size={72} showWordmark={false} />
+  </span>
 );
 
-const Pill = ({ children, dark = false }: { children: React.ReactNode; dark?: boolean }) => (
+const Pill = ({ children, onTint = false }: { children: React.ReactNode; onTint?: boolean }) => (
   <span
     className={`relative inline-flex min-h-7 items-center self-start rounded-full px-3 text-[13px] font-semibold ${
-      dark ? "bg-white/20 text-white" : "bg-accent text-foreground"
+      onTint ? "bg-background/80 text-foreground" : "bg-accent text-foreground"
     }`}
   >
     {children}
@@ -98,36 +97,37 @@ export const MakeStoryCard = ({
     return (
       <Link
         to={to}
-        className="lt-card flex items-center gap-3 rounded-[20px] bg-primary p-3.5 pl-4 text-primary-foreground"
+        className="lt-card flex items-center gap-3 rounded-[20px] border border-border bg-accent p-3.5 pl-4 text-accent-foreground dark:bg-card"
       >
         <div className="min-w-0 flex-1">
-          <div className="brand-title text-white">New story for {name}</div>
-          {left && <div className="text-xs text-white/80">{left}</div>}
+          <div className="brand-title text-accent-foreground">New story for {name}</div>
+          {left && <div className="text-xs text-muted-foreground">{left}</div>}
         </div>
-        <span className="inline-flex min-h-10 items-center gap-1 rounded-full bg-[hsl(var(--lamplight))] px-4 text-sm font-semibold text-[hsl(var(--lamplight-foreground))]">
+        <span className="inline-flex min-h-10 items-center gap-1 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground">
           <Plus className="h-4 w-4" /> Make
         </span>
       </Link>
     );
   }
 
-  // ---------- Big violet card (Home) ----------
+  // ---------- Big Lamplight card (Home) ----------
+  // Brand rule: violet only on the button and Lulu; the card itself is a flat tint with Night Ink text.
   return (
     <Link
       to={to}
-      className="lt-card relative flex flex-col gap-2.5 overflow-hidden rounded-[26px] bg-primary p-[22px] text-primary-foreground"
+      className="lt-card relative flex flex-col gap-2.5 overflow-hidden rounded-[26px] border border-border bg-accent p-[22px] text-accent-foreground dark:bg-card"
     >
-      <LuluPeek />
-      {left && <Pill dark>{left}</Pill>}
-      <h2 className="relative max-w-[240px] font-[Quicksand] text-[23px] font-bold leading-tight text-white">
+      <LuluMark />
+      {left && <Pill onTint>{left}</Pill>}
+      <h2 className="relative min-[340px]:max-w-[calc(100%-92px)] font-[Quicksand] text-[23px] font-bold leading-tight text-accent-foreground">
         {firstStory ? `Let’s make ${name}’s first story` : `Make a new story for ${name}`}
       </h2>
-      <p className="relative max-w-[230px] text-sm !text-white/85">
+      <p className="relative min-[340px]:max-w-[calc(100%-92px)] text-sm text-muted-foreground">
         {firstStory
           ? "Pick a moment they’re facing. It takes about 5 minutes."
           : "Pick a feeling or a moment. We write it just for them."}
       </p>
-      <span className="relative mt-1 inline-flex min-h-[46px] items-center self-start rounded-full bg-[hsl(var(--lamplight))] px-[22px] font-semibold text-[hsl(var(--lamplight-foreground))]">
+      <span className="relative mt-1 inline-flex min-h-[46px] items-center self-start rounded-full bg-primary px-[22px] font-semibold text-primary-foreground">
         {firstStory ? "Make the first story" : "Make a story"}
       </span>
     </Link>
