@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Made automatically on every build by Lovable's sitemap script; our real sitemap is sitemap-pages.xml
+public/sitemap.xml
