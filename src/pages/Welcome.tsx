@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { removePrerender } from "@/lib/prerender";
 import { useNavigate } from "react-router-dom";
 import desktopHtml from "./welcome/desktop.html?raw";
 import phoneHtml from "./welcome/phone.html?raw";
@@ -33,6 +34,9 @@ const Welcome = () => {
   const nav = useNavigate();
   const { session } = useAuth();
   const isPhone = usePhoneLayout();
+
+  // The real page is now on screen, so the copy shipped inside index.html goes (before paint, so no double).
+  useLayoutEffect(() => removePrerender(), []);
 
   // A parent who is already signed in (e.g. from "About LuluTales") sees "Open the app",
   // not "Log in" / "Sign up free".
